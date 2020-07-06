@@ -35,13 +35,13 @@ var dsl = {
                 if (isObject(this.lang[dslKey || '$'][key])) {
                     this.lang[dslKey || '$'][key].method(param);
                 } else if (this.api[key]) this.api[key](param)
-            }
+            } else if (this.api[key]) this.api[key](param)
         }
 
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId) => {
 
-            //console.log(token, instructionKey);
+            //console.log('#', token, instructionKey);
 
             var instruction = getTokenSequence(this.lang['$'][instructionKey.substring(1)]);
 
@@ -68,10 +68,14 @@ var dsl = {
             } else { // not equal
 
                 if (instructionKey.substring(1).charAt(0) == "{") {
-                    tokens.shift();
+
+
+                    // console.log('..---', tokens[0], instructionKey);
 
                     // execute param method
                     callTokenFunction(tokens[0], tokens[0])
+
+                    tokens.shift();
 
                     instruction.forEach(instr => {
                         if (instr.charAt(0) == '$') {
@@ -111,7 +115,17 @@ var dsl = {
 
                 if (isObject(this.lang.commands[t])) {
                     this.lang.commands[t].follow.forEach(f => {
-                        sequence(tokens, tokens[0], f, partId);
+
+                        if (f.charAt(0) == '$') {
+                            // pass to next sequence
+                            if (tokens.length > 0) sequence(tokens, tokens[0], f, partId);
+                        } else if (f.charAt(0) == '{') {
+                            // tokens.shift();
+                            // execute dynamic method
+                            callTokenFunction(f.substring(1), undefined, 'commands')
+                        }
+
+                        //sequence(tokens, tokens[0], f, partId);
                     })
 
                 } else sequence(tokens, tokens[0], this.lang.commands[t], partId);

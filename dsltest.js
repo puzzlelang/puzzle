@@ -5,15 +5,21 @@ dsl.lang = {
     assignmentOperator: "=",
     commands: {
         add: {
-            follow: ["$objectFamily"],
-            method: function() {
-
+            follow: ["${ofName}"],
+            method: function(p) {
+            	console.log('add('+p+')');
             }
         },
         delete: "${ofName}",
         get: "${ofName}",
         update: "${ofName}",
-        define: "$objectFamily"
+        define: {
+        	follow: ["$objectFamily"],
+        	method: function()
+        	{
+        		console.log('define');
+        	}
+        }
     },
     $: {
         obj: {
@@ -24,8 +30,8 @@ dsl.lang = {
         },
         "{ofName}": {
             follow: ["$set"],
-            method: function() {
-
+            method: function(p) {
+            	console.log('ofname('+p+')');
             }
         },
         objectFamily: {
@@ -61,6 +67,10 @@ dsl.lang = {
     }
 };
 
+dsl.api.template = function()
+{
+	console.log('tmpls');
+}
 
 
 //dsl.parse("set objectFamily w test")
@@ -69,4 +79,4 @@ dsl.lang = {
 
 //dsl.parse("define objectFamily width name=type and width pluralName=types;")
 
-dsl.parse("add objectFamily object set sg exec")
+dsl.parse("define objectFamily template set sg exec")
