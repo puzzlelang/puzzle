@@ -7,7 +7,7 @@ var dsl = {
     api: {},
 
     // Custom context for storing custom data
-    context: },
+    context: {},
 
     parse: function(code) {
 
