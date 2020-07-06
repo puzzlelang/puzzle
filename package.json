@@ -1,0 +1,19 @@
+{
+  "name": "fluent-dsl",
+  "version": "0.0.1",
+  "description": "A toolkit for building DSLs for APIs",
+  "main": "dsl.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/4ty711/fluent-dsl.git"
+  },
+  "author": "Marco Boelling",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/4ty711/fluent-dsl/issues"
+  },
+  "homepage": "https://github.com/4ty711/fluent-dsl#readme"
+}

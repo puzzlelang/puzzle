@@ -7,16 +7,19 @@ var dsl = {
 
         var parts = code.split(this.lang.delimeter);
 
+        // Check if parameter is an object
         var isObject = (a) => {
             return (!!a) && (a.constructor === Object);
         };
 
+        // Return the dynamic following tokens
         var getTokenSequence = (reference) => {
             if (isObject(reference)) {
                 return reference.follow
             } else return reference;
         }
 
+        // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (key, param, dslKey) => {
             if (this.lang['$'][key]) {
                 if (isObject(this.lang[dslKey || '$'][key])) {
@@ -25,23 +28,24 @@ var dsl = {
             }
         }
 
-        var sequence = (tokens, token, instructionKey, finished) => {
+        // Recoursively parse tokens
+        var sequence = (tokens, token, instructionKey, partId) => {
+
+        	console.log(token, tokens.length, partId);
 
             var instruction = getTokenSequence(this.lang['$'][instructionKey.substring(1)]);
-            var finished = finished || false;
-
+           
             // eaual
             if (instructionKey.substring(1) == token) {
                 tokens.shift();
 
                 // execute exact method
-                //if (this.api[token]) this.api[token](tokens[0])
                 callTokenFunction(token, tokens[0])
 
                 instruction.forEach(instr => {
                     if (instr.charAt(0) == '$') {
                         // pass to next sequence
-                        if (tokens.length > 0) sequence(tokens, tokens[0], instr, finished);
+                        if (tokens.length > 0) sequence(tokens, tokens[0], instr, partId);
 
                     } else if (instr.charAt(0) == '{') {
 
@@ -55,22 +59,19 @@ var dsl = {
                     tokens.shift();
 
                     // execute param method
-                    //if (this.api[tokens[0]]) this.api[tokens[0]](tokens[0])
                     callTokenFunction(tokens[0], tokens[0])
 
                     instruction.forEach(instr => {
                         if (instr.charAt(0) == '$') {
                             // pass to next sequence
-                            if (tokens.length > 0) sequence(tokens, tokens[0], instr, finished);
+                            if (tokens.length > 0) sequence(tokens, tokens[0], instr, partId);
 
                         } else if (instr.charAt(0) == '{') {
 
                             tokens.shift();
 
                             // execute dynamic method
-                            //if (this.api[instructionKey.substring(1)]) this.api[instructionKey.substring(1)]();
                             callTokenFunction(instructionKey.substring(1))
-
                         }
                     })
                 }
@@ -79,17 +80,22 @@ var dsl = {
 
         parts.forEach(p => {
 
+        	var partId = Math.random();
+
             var tokens = p.split(/\s+/);
             tokens.push(this.lang.delimeter);
+
+            console.log(tokens);
+
             t = tokens[0]
 
             if (this.lang.commands[t]) {
 
-                //if (this.api[t]) this.api[t]()
+                // execute initial command
                 callTokenFunction(this.api[t], undefined, 'commands')
 
                 tokens.shift()
-                sequence(tokens, tokens[0], this.lang.commands[t]);
+                sequence(tokens, tokens[0], this.lang.commands[t], partId);
             }
         })
     }

@@ -95,4 +95,4 @@ dsl.api =
 
 //dsl.parse("add object set test set 22 ")
 
-dsl.parse("define objectFamily set users ;test obj set name test and set 22 and set 44")
+dsl.parse("define objectFamily set users;test obj set name test and set 22 and set 44 ;")
