@@ -27,7 +27,7 @@ var dsl = {
                 if (param.includes(this.lang.assignmentOperator)) {
                     var spl = param.split("=");
                     var param = {};
-                    param[spl[0]]= spl[1];
+                    param[spl[0]] = spl[1];
                 }
             }
 
@@ -103,11 +103,18 @@ var dsl = {
 
             if (this.lang.commands[t]) {
 
+
                 // execute initial command
                 callTokenFunction(t, undefined, 'commands')
 
                 tokens.shift()
-                sequence(tokens, tokens[0], this.lang.commands[t], partId);
+
+                if (isObject(this.lang.commands[t])) {
+                    this.lang.commands[t].follow.forEach(f => {
+                        sequence(tokens, tokens[0], f, partId);
+                    })
+
+                } else sequence(tokens, tokens[0], this.lang.commands[t], partId);
             }
         })
     }
