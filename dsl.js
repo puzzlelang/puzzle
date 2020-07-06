@@ -1,90 +1,98 @@
 var dsl = {
-	lang : null, 
 
-	api: null,
+    lang: {},
+    api: {},
 
-	parse: function(code){
+    parse: function(code) {
 
-	var parts = code.split(this.lang.delimeter);
+        var parts = code.split(this.lang.delimeter);
 
+        var isObject = (a) => {
+            return (!!a) && (a.constructor === Object);
+        };
 
+        var getTokenSequence = (reference) => {
+            if (isObject(reference)) {
+                return reference.follow
+            } else return reference;
+        }
 
-sequence = (tokens, token, instructionKey, finished) => {
-		
-		var instruction = this.lang['$'][instructionKey.substring(1)];
-		var finished = finished || false;
+        var callTokenFunction = (key, param, dslKey) => {
+            if (this.lang['$'][key]) {
+                if (isObject(this.lang[dslKey || '$'][key])) {
+                    this.lang[dslKey || '$'][key].method(param);
+                } else if (this.api[key]) this.api[key](param)
+            }
+        }
 
-		// eaual
-		if(instructionKey.substring(1) == token)
-		{
-			tokens.shift();
-			
-			// execute exact method
-			if(this.api[token]) this.api[token](tokens[0])
+        var sequence = (tokens, token, instructionKey, finished) => {
 
-			instruction.forEach(instr => { 
-				if(instr.charAt(0) == '$')
-				{
-					// pass to next sequence
-					if(tokens.length > 0) sequence(tokens, tokens[0], instr, finished);
-					
+            var instruction = getTokenSequence(this.lang['$'][instructionKey.substring(1)]);
+            var finished = finished || false;
 
-				} else if(instr.charAt(0) == '{'){
+            // eaual
+            if (instructionKey.substring(1) == token) {
+                tokens.shift();
 
-					tokens.shift();
-				}
-			})
+                // execute exact method
+                //if (this.api[token]) this.api[token](tokens[0])
+                callTokenFunction(token, tokens[0])
 
-		} else { // not equal
+                instruction.forEach(instr => {
+                    if (instr.charAt(0) == '$') {
+                        // pass to next sequence
+                        if (tokens.length > 0) sequence(tokens, tokens[0], instr, finished);
 
-			if(instructionKey.substring(1).charAt(0) == "{")
-			{
-				tokens.shift();
+                    } else if (instr.charAt(0) == '{') {
 
-				// execute param method
-				if(this.api[tokens[0]]) this.api[tokens[0]](tokens[0])
+                        tokens.shift();
+                    }
+                })
 
-				instruction.forEach(instr => { 
-					if(instr.charAt(0) == '$')
-					{
-						// pass to next sequence
-						if(tokens.length > 0) sequence(tokens, tokens[0], instr, finished);
+            } else { // not equal
 
-					} else if(instr.charAt(0) == '{'){
+                if (instructionKey.substring(1).charAt(0) == "{") {
+                    tokens.shift();
 
-						tokens.shift();
-						
-						// execute dynamic method
-						if(this.api[instructionKey.substring(1)]) this.api[instructionKey.substring(1)]();
+                    // execute param method
+                    //if (this.api[tokens[0]]) this.api[tokens[0]](tokens[0])
+                    callTokenFunction(tokens[0], tokens[0])
 
-					}
-				})
+                    instruction.forEach(instr => {
+                        if (instr.charAt(0) == '$') {
+                            // pass to next sequence
+                            if (tokens.length > 0) sequence(tokens, tokens[0], instr, finished);
 
-			}
+                        } else if (instr.charAt(0) == '{') {
 
-		}
+                            tokens.shift();
 
-}
+                            // execute dynamic method
+                            //if (this.api[instructionKey.substring(1)]) this.api[instructionKey.substring(1)]();
+                            callTokenFunction(instructionKey.substring(1))
 
+                        }
+                    })
+                }
+            }
+        }
 
-	parts.forEach(p => {
+        parts.forEach(p => {
 
-		var tokens = p.split(/\s+/);
+            var tokens = p.split(/\s+/);
+            tokens.push(this.lang.delimeter);
+            t = tokens[0]
 
-			tokens.push(this.lang.delimeter);
+            if (this.lang.commands[t]) {
 
-			t = tokens[0]
+                //if (this.api[t]) this.api[t]()
+                callTokenFunction(this.api[t], undefined, 'commands')
 
-			if(this.lang.commands[t])
-				{
-					if(this.api[t]) this.api[t]()
-					tokens.shift()
-					sequence(tokens, tokens[0], this.lang.commands[t]);
-				}
-
-	})
-}
-
+                tokens.shift()
+                sequence(tokens, tokens[0], this.lang.commands[t]);
+            }
+        })
+    }
 }
 
 module.exports = dsl;

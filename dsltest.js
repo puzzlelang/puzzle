@@ -12,7 +12,13 @@ dsl.lang = {
 			obj: ["$set"],
 			"{ofName}":  ["$set"],
 			objectFamily:  ["$set"],
-			set:  ["{name}", "$set", "$and", "$with"],
+			set: {
+				follow: ["{name}", "$set", "$and", "$with"],
+				method: function(r)
+				{
+					console.log('sdg', r);
+				}
+			},
 			"{with}": ["{name}"],
 			and: ["$set"]
 		}
