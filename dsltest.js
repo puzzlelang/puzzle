@@ -2,25 +2,31 @@ var dsl = require('./dsl.js');
 
 dsl.lang = {
 		delimeter: ";",
+		assignmentOperator: "=",
 		commands: {
 			test: "$obj",
 			add: "${ofName}",
 			delete: "${ofName}",
-			"define": "$objectFamily"
+			define: "$objectFamily"
 		},
 		$: {
 			obj: ["$set"],
 			"{ofName}":  ["$set"],
-			objectFamily:  ["$set"],
+			objectFamily:  ["$set", "$width"],
 			set: {
-				follow: ["{name}", "$set", "$and", "$with"],
+				follow: ["{name}", "$set", "$and", "$with", "$key"],
 				method: function(r)
 				{
-					console.log('sdg', r);
+					console.log('set('+r+')');
 				}
 			},
-			"{with}": ["{name}"],
-			and: ["$set"]
+			"width": {
+				follow: ["{name}", "$and"],
+				method: function(p){
+					console.log('width('+JSON.stringify(p)+')');
+				}
+			},
+			and: ["$set", "$width"]
 		}
 	};
 
@@ -95,4 +101,4 @@ dsl.api =
 
 //dsl.parse("add object set test set 22 ")
 
-dsl.parse("define objectFamily set users;test obj set name test and set 22 and set 44 ;")
+dsl.parse("define objectFamily width name=type and width pluralName=types;")

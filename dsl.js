@@ -21,7 +21,17 @@ var dsl = {
 
         // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (key, param, dslKey) => {
-            if (this.lang['$'][key]) {
+
+            //console.log('args', key, param, dslKey)
+            if (param) {
+                if (param.includes(this.lang.assignmentOperator)) {
+                    var spl = param.split("=");
+                    var param = {};
+                    param[spl[0]]= spl[1];
+                }
+            }
+
+            if (this.lang[dslKey || '$'][key]) {
                 if (isObject(this.lang[dslKey || '$'][key])) {
                     this.lang[dslKey || '$'][key].method(param);
                 } else if (this.api[key]) this.api[key](param)
@@ -31,16 +41,18 @@ var dsl = {
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId) => {
 
-        	console.log(token, tokens.length, partId);
+            //console.log(token, instructionKey);
 
             var instruction = getTokenSequence(this.lang['$'][instructionKey.substring(1)]);
-           
+
             // eaual
             if (instructionKey.substring(1) == token) {
                 tokens.shift();
 
                 // execute exact method
                 callTokenFunction(token, tokens[0])
+
+                if (!instruction) return;
 
                 instruction.forEach(instr => {
                     if (instr.charAt(0) == '$') {
@@ -80,19 +92,19 @@ var dsl = {
 
         parts.forEach(p => {
 
-        	var partId = Math.random();
+            var partId = Math.random();
 
             var tokens = p.split(/\s+/);
             tokens.push(this.lang.delimeter);
 
-            console.log(tokens);
+            //console.log(tokens);
 
             t = tokens[0]
 
             if (this.lang.commands[t]) {
 
                 // execute initial command
-                callTokenFunction(this.api[t], undefined, 'commands')
+                callTokenFunction(t, undefined, 'commands')
 
                 tokens.shift()
                 sequence(tokens, tokens[0], this.lang.commands[t], partId);
