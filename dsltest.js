@@ -3,6 +3,7 @@ var dsl = require('./dsl.js');
 dsl.lang = {
     delimeter: ";",
     assignmentOperator: "=",
+    context: {1:2},
     commands: {
         add: {
             follow: ["${ofName}"],
@@ -14,7 +15,7 @@ dsl.lang = {
         	follow: ["$objectFamily"],
         	method: function()
         	{
-        		console.log('define');
+        		console.log('define', dsl.context);
         	}
         }
     },

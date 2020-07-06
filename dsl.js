@@ -1,7 +1,13 @@
 var dsl = {
 
+	// Language definition
     lang: {},
+    
+    // Custom set of methods
     api: {},
+
+    // Custom context for storing custom data
+    context: },
 
     parse: function(code) {
 
@@ -34,8 +40,12 @@ var dsl = {
             if (this.lang[dslKey || '$'][key]) {
                 if (isObject(this.lang[dslKey || '$'][key])) {
                     this.lang[dslKey || '$'][key].method(param);
-                } else if (this.api[key]) this.api[key](param)
-            } else if (this.api[key]) this.api[key](param)
+                } else if (this.api[key]) {
+                    this.api[key](param)
+                }
+            } else if (this.api[key]) {
+                this.api[key](param)
+            }
         }
 
         // Recoursively parse tokens
