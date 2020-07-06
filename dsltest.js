@@ -10,9 +10,6 @@ dsl.lang = {
             	console.log('add('+p+')');
             }
         },
-        delete: "${ofName}",
-        get: "${ofName}",
-        update: "${ofName}",
         define: {
         	follow: ["$objectFamily"],
         	method: function()
@@ -75,7 +72,7 @@ dsl.api.template = function()
 
 //dsl.parse("set objectFamily w test")
 
-//dsl.parse("add object set test set 22 ")
+dsl.parse("add object set test set 22 ")
 
 //dsl.parse("define objectFamily width name=type and width pluralName=types;")
 
