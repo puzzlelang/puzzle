@@ -55,82 +55,6 @@ var dsl = {
             }
         }
 
-        // Recoursively parse tokens
-        /*var sequence = (tokens, token, instructionKey, partId) => {
-
-            console.log('#', token, instructionKey);
-
-
-            var instruction = getTokenSequence(this.lang['$'][instructionKey.substring(1)]);
-
-
-            // eaual
-            if (instructionKey.substring(1) == token) {
-                //tokens.shift();
-                console.log('f', token);
-                // execute exact method
-                callTokenFunction(token, tokens[0])
-
-                if (!instruction) return;
-
-                instruction.forEach(instr => {
-                    if (instr.charAt(0) == '$') {
-                        // pass to next sequence
-                        if (tokens.length > 0) sequence(tokens, tokens[0], instr, partId);
-
-                    } else if (instr.charAt(0) == '{') {
-                        tokens.shift();
-                        sequence(tokens, tokens[0], instr, partId);
-
-                    }
-                })
-
-            } else { // not equal
-
-                //console.log(instructionKey);
-
-                if (instructionKey.substring(1).charAt(0) == "{") {
-
-                    //console.log('..---', tokens[0], instructionKey);
-
-                    // execute param method
-                    callTokenFunction(tokens[0], tokens[1])
-
-
-
-                    instruction.forEach(instr => {
-                        if (instr.charAt(0) == '$') {
-
-                            tokens.shift();
-                            // pass to next sequence
-                            if (tokens.length > 0) sequence(tokens, tokens[0], instr, partId);
-
-                        } else if (instr.charAt(0) == '{') {
-
-                            tokens.shift();
-
-                            sequence(tokens, tokens[0], instr, partId);
-
-                            // execute dynamic method
-                            callTokenFunction(instructionKey.substring(1))
-                        }
-                    })
-                } else if (instructionKey.charAt(0) == "{") {
-                    //console.log('df', tokens);
-
-                } else if (this.groupingOperators.includes(token.charAt(0)) && !this.dataDelimeters.includes(token.charAt(0))) {
-                    // console.log('inludes:', token);
-
-                    token = token.substring(1, token.length - 1);
-
-                    //console.log('ttt', token);
-
-                    splitInit(token.split(this.lang.delimeter))
-
-                }
-            }
-        }*/
-
 
         var getMatchingFollow = (nextInstructions, followToken) => {
             var match = null;
@@ -149,6 +73,7 @@ var dsl = {
             return match;
         }
 
+        // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId) => {
 
             //  console.log(tokens, token, instructionKey);
@@ -169,7 +94,7 @@ var dsl = {
                 tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
-                //console.log('bestNext', token, bestMatching)
+
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
@@ -186,26 +111,8 @@ var dsl = {
                     sequence(tokens, tokens[0], bestMatching, partId);
                 }
 
-
-
-                /*nextInstructions.forEach(instr => {
-                    if (instr.charAt(0) == '$') {
-                        // pass to next sequence
-                        if (tokens.length > 0) sequence(tokens, tokens[0], instr, partId);
-
-                    } else if (instr.charAt(0) == '{') {
-                        tokens.shift();
-                        sequence(tokens, tokens[0], instr, partId);
-
-                    }
-                })*/
-
             } else {
-
-
                 console.log('unequal', instructionKey, token);
-
-                //console.log(nextInstructions);
             }
         }
 
@@ -219,33 +126,25 @@ var dsl = {
 
                 tokens.push(this.lang.delimeter);
 
-                //console.log(tokens);
-
                 t = tokens[0]
+
                 tokens.shift();
 
                 if (this.lang['$'][t]) {
 
                     var bestMatching = getMatchingFollow(this.lang['$'][t].follow, tokens[0]);
 
-
-
                     if ((bestMatching || "").charAt(0) == "$") {
-                        callTokenFunction(tokens[0]);
+                        callTokenFunction(t);
                         sequence(tokens, tokens[0], bestMatching, partId);
                     } else {
-
-                        callTokenFunction(tokens[0], bestMatching)
+                        callTokenFunction(t, bestMatching)
                         tokens.shift();
-
-                        //console.log('a', tokens, bestMatching)
                         bestMatching = getMatchingFollow(this.lang['$'][t].follow, tokens[0]);
-                        //console.log('b', tokens, bestMatching)
                         sequence(tokens, tokens[0], bestMatching, partId);
                     }
 
                 }
-
 
             })
         }

@@ -25,6 +25,12 @@ dsl.lang = {
         }
     },
     $: {
+    	define: {
+            follow: ["$objectFamily"],
+            method: function() {
+                console.log('define');
+            }
+        },
     	add: {
             follow: ["{name}","$width"],
             method: function(p) {
@@ -77,9 +83,9 @@ dsl.api.object = function(p) {
 
 //dsl.parse("set objectFamily w test")
 
-dsl.parse('add object width s and {sdg}')
+//dsl.parse('add object width s and {sdg}')
 
-//dsl.parse('define objectFamily width {sdg} and af')
+dsl.parse('define objectFamily width {sdg} and af and set d')
 
 //dsl.parse('update object 33 set name=test and set type=33')
 
