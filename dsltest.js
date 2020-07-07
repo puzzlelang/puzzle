@@ -3,57 +3,63 @@ var dsl = require('./dsl.js');
 dsl.lang = {
     delimeter: ";",
     assignmentOperator: "=",
-    context: {1:2},
+    context: {},
     commands: {
         add: {
+            follow: ["{name}", "$width"],
+            method: function(p) {
+                console.log('add(' + p + ')');
+            }
+        },
+        update: {
             follow: ["${ofName}"],
             method: function(p) {
-            	console.log('add('+p+')');
+                console.log('update(' + p + ')');
             }
         },
         define: {
-        	follow: ["$objectFamily"],
-        	method: function()
-        	{
-        		console.log('define', dsl.context);
-        	}
+            follow: ["$objectFamily"],
+            method: function() {
+                console.log('define', dsl.context);
+            }
         }
     },
     $: {
+    	add: {
+            follow: ["{name}","$width"],
+            method: function(p) {
+                console.log('add(' + p + ')');
+            }
+        },
         obj: {
             follow: ["$set"],
             method: function() {
 
             }
         },
-        "{ofName}": {
-            follow: ["$set"],
-            method: function(p) {
-            	console.log('ofname('+p+')');
-            }
-        },
         objectFamily: {
-            follow: ["$set", "$width", "${ofName}"],
+            follow: ["$set", "$width", "${ofName}", "{name}"],
             method: function(p) {
                 console.log('objectFamily(' + p + ')');
             }
         },
         set: {
-            follow: ["{name}", "$set", "$and", "$with", "$key", "$exec"],
+            follow: ["{name}", "$set", "$and", "$with", "$exec"],
             method: function(r) {
+                //console.log(r);
                 console.log('set(' + r + ')');
             }
         },
         "width": {
             follow: ["{name}", "$and"],
             method: function(p) {
-                console.log('width(' + JSON.stringify(p) + ')');
+                console.log('width(' + p + ')');
             }
         },
         and: {
-            follow: ["$set", "$width"],
-            method: function() {
-
+            follow: ["$set", "$width", "{sf}"],
+            method: function(p) {
+            	console.log('and', p);
             }
         },
         exec: {
@@ -65,16 +71,18 @@ dsl.lang = {
     }
 };
 
-dsl.api.template = function()
-{
-	console.log('tmpls');
+dsl.api.object = function(p) {
+    console.log('object', p);
 }
-
 
 //dsl.parse("set objectFamily w test")
 
-dsl.parse("add object set test set 22 ")
+dsl.parse('add object width s and {sdg}')
+
+//dsl.parse('define objectFamily width {sdg} and af')
+
+//dsl.parse('update object 33 set name=test and set type=33')
 
 //dsl.parse("define objectFamily width name=type and width pluralName=types;")
 
-dsl.parse("define objectFamily template set sg exec")
+//dsl.parse("define objectFamily template set sg exec")
