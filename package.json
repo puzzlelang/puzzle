@@ -1,6 +1,6 @@
 {
   "name": "@spootechnologies/luke",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "A toolkit for building DSLs for APIs",
   "main": "dsl.js",
   "bin": {
@@ -21,6 +21,6 @@
   "homepage": "https://github.com/4ty711/fluent-dsl#readme",
   "dependencies": {
     "commander": "^5.1.0",
-    "inquirer": "^7.3.0",
+    "inquirer": "^7.3.0"
   }
 }
