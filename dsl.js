@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 var dsl = {
 
     // Language definition
@@ -8,13 +10,32 @@ var dsl = {
         currentNamespace: "default",
         static: {
             execStatement: function() {
-                console.log('EXEC', dsl.lang.context);
 
                 if (dsl.lang.context[dsl.lang.context.importNamespace]) {
                     try {
                         dsl.lang.context[dsl.lang.context.importNamespace] = require(dsl.lang.context.importUrl);
                     } catch (e) {
                         console.log('Import Error:', e)
+                    }
+                }
+
+                if (dsl.lang.context['useNamespace']) {
+
+                    try {
+
+                        var fileName = dsl.lang.context['useNamespace'];
+                        var extention = fileName.split(".")[fileName.split(".").length - 1];
+                        console.log('extention', extention);
+                        if (extention.toLowerCase() == "json") {
+                            var syntax = fs.readFileSync(fileName, 'utf8');
+                            dsl.useSyntax(JSON.parse(syntax));
+                        } else if (extention.toLowerCase() == "js") {
+                            var file = require(fileName);
+                            dsl.useSyntax(file);
+                        } else console.log('unsupported file type')
+
+                    } catch (e) {
+                        console.log('Use Error', e);
                     }
                 }
             }
@@ -29,9 +50,9 @@ var dsl = {
                     }
                 },
                 use: {
-                    follow: ["{namespace}", "$from"],
+                    follow: ["{file}"],
                     method: function(ns) {
-                        dsl.lang.context['importNamespace'] = ns;
+                        dsl.lang.context['useNamespace'] = ns;
                         console.log(ns)
                     }
                 },
@@ -65,6 +86,18 @@ var dsl = {
     // Custom context for storing custom data
     context: {},
 
+    useSyntax: function(jsObject) {
+
+        var _defaultSyntax = this.lang['$'].default;
+
+        Object.assign(this.lang, jsObject)
+        console.log(Object.keys(jsObject['$'])[0], 'can now be used');
+
+        this.lang['$'].default = _defaultSyntax;
+
+        console.log('lanf', this.lang);
+    },
+
     parse: function(code) {
 
         var parts = code.split(this.lang.delimeter);
@@ -94,14 +127,18 @@ var dsl = {
                 }
             }
 
-            if (Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[key]) {
-                if (isObject(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[key])) {
-                    (Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[key]).method(param);
+            var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+
+            if (definition[key]) {
+                if (isObject(definition[key])) {
+                    (definition[key]).method(param);
                 } else if (this.api[key]) {
                     this.api[key](param)
                 }
             } else if (this.api[key]) {
                 this.api[key](param)
+            } else {
+                console.log(key, 'is not a function');
             }
         }
 
@@ -131,12 +168,17 @@ var dsl = {
                 return;
             }
 
-            if (!instructionKey) return;
+            if (!instructionKey) {
 
-            console.log(currentNamespace);
-            var nextInstructions = getTokenSequence(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[instructionKey.substring(1)]);
+                return;
+            }
 
-            if (!nextInstructions) nextInstructions = getTokenSequence(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[instructionKey]);
+            var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+
+
+            var nextInstructions = getTokenSequence(definition[instructionKey.substring(1)]);
+
+            if (!nextInstructions) nextInstructions = getTokenSequence(definition[instructionKey]);
 
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
@@ -183,10 +225,12 @@ var dsl = {
                 t = tokens[0]
 
                 tokens.shift();
+               
+                var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
-                if (Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[t]) {
+                if (definition[t]) {
 
-                    var bestMatching = getMatchingFollow(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[t].follow, tokens[0]);
+                    var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
 
                     if ((bestMatching || "").charAt(0) == "$") {
                         callTokenFunction(t);
@@ -195,10 +239,12 @@ var dsl = {
                         callTokenFunction(t, bestMatching)
                         tokens.shift();
 
-                        bestMatching = getMatchingFollow(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[t].follow, tokens[0]);
+                        bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
                         sequence(tokens, tokens[0], bestMatching, partId);
                     }
 
+                } else {
+                    console.log(t, 'is not defined');
                 }
 
             })

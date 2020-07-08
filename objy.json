@@ -1,0 +1,72 @@
+{
+    "delimeter": ";",
+    "assignmentOperator": "=",
+    "context":
+    {},
+    "$":
+    {
+        "objy":
+        {
+            "use":
+            {
+                "follow": ["{namespace}", "$from"],
+                "method":
+                {}
+            },
+            "import":
+            {
+                "follow": ["{namespace}", "$from"],
+                "method":
+                {}
+            },
+            "from":
+            {
+                "follow": ["{url}"],
+                "method":
+                {}
+            },
+            "define":
+            {
+                "follow": ["$objectFamily"],
+                "method":
+                {}
+            },
+            "add":
+            {
+                "follow": ["{name}", "$width"],
+                "method":
+                {}
+            },
+            "obj":
+            {
+                "follow": ["$set"],
+                "method":
+                {}
+            },
+            "objectFamily":
+            {
+                "follow": ["$set", "$width", "${ofName}", "{name}"],
+                "method":
+                {}
+            },
+            "set":
+            {
+                "follow": ["{name}", "$set", "$and", "$with", "$exec"],
+                "method":
+                {}
+            },
+            "width":
+            {
+                "follow": ["{name}", "$and"],
+                "method":
+                {}
+            },
+            "and":
+            {
+                "follow": ["$set", "$width", "{sf}"],
+                "method":
+                {}
+            }
+        }
+    }
+}
