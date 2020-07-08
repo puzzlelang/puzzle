@@ -2,8 +2,10 @@
 
 const program = require('commander');
 const inquirer = require('inquirer');
+
 const luke = require('./dsl.js');
 const fs = require('fs');
+
 
 program
     .command('run <type>')
@@ -32,9 +34,13 @@ program
 
                     luke.parse(content.input)
                     input();
+
+                }).catch(e => {
+                    console.log(e)
                 });
         }
         input();
+
     });
 
 program.parse(process.argv);

@@ -69,6 +69,12 @@ var dsl = {
                         dsl.lang.context['importUrl'] = url;
                         console.log(url)
                     }
+                },
+                print: {
+                    follow: ["{text}"],
+                    method: function(text) {
+                        console.log(text)
+                    }
                 }
             }
         }
