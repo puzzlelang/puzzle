@@ -1,5 +1,5 @@
 {
-  "name": "fluent-dsl",
+  "name": "@spootechnologies/luke",
   "version": "0.0.1",
   "description": "A toolkit for building DSLs for APIs",
   "main": "dsl.js",
