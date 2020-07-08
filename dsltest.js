@@ -4,35 +4,36 @@ dsl.lang = {
     delimeter: ";",
     assignmentOperator: "=",
     context: {},
-    commands: {
-        add: {
-            follow: ["{name}", "$width"],
-            method: function(p) {
-                console.log('add(' + p + ')');
+    $: {
+        use: {
+            follow: ["{namespace}", "$from"],
+            method: function(ns) {
+                dsl.lang.context['importNamespace'] = ns;
+                console.log(ns)
             }
         },
-        update: {
-            follow: ["${ofName}"],
-            method: function(p) {
-                console.log('update(' + p + ')');
+        import: {
+            follow: ["{namespace}", "$from"],
+            method: function(ns) {
+                dsl.lang.context['importNamespace'] = ns;
+                console.log(ns)
+            }
+        },
+        from: {
+            follow: ["{url}"],
+            method: function(url) {
+                dsl.lang.context['importUrl'] = url;
+                console.log(url)
             }
         },
         define: {
             follow: ["$objectFamily"],
             method: function() {
-                console.log('define', dsl.context);
-            }
-        }
-    },
-    $: {
-    	define: {
-            follow: ["$objectFamily"],
-            method: function() {
                 console.log('define');
             }
         },
-    	add: {
-            follow: ["{name}","$width"],
+        add: {
+            follow: ["{name}", "$width"],
             method: function(p) {
                 console.log('add(' + p + ')');
             }
@@ -65,13 +66,7 @@ dsl.lang = {
         and: {
             follow: ["$set", "$width", "{sf}"],
             method: function(p) {
-            	console.log('and', p);
-            }
-        },
-        exec: {
-            follow: [],
-            method: function() {
-                console.log('exec');
+                console.log('and', p);
             }
         }
     }
@@ -85,7 +80,9 @@ dsl.api.object = function(p) {
 
 //dsl.parse('add object width s and {sdg}')
 
-dsl.parse('define objectFamily width {sdg} and af and set d')
+dsl.parse('import objy from @spootechnologies/objy;')
+
+//dsl.parse('define objectFamily width {sdg} and af and set d')
 
 //dsl.parse('update object 33 set name=test and set type=33')
 

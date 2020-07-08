@@ -1,7 +1,57 @@
 var dsl = {
 
     // Language definition
-    lang: {},
+    lang: {
+        delimeter: ";",
+        assignmentOperator: "=",
+        context: {},
+        currentNamespace: "default",
+        static: {
+            execStatement: function() {
+                console.log('EXEC', dsl.lang.context);
+
+                if (dsl.lang.context[dsl.lang.context.importNamespace]) {
+                    try {
+                        dsl.lang.context[dsl.lang.context.importNamespace] = require(dsl.lang.context.importUrl);
+                    } catch (e) {
+                        console.log('Import Error:', e)
+                    }
+                }
+            }
+        },
+        "$": {
+            default: {
+                ns: {
+                    follow: ["{namespace}"],
+                    method: function(ns) {
+                        dsl.lang.currentNamespace = ns;
+                        console.log('Set namespace', ns)
+                    }
+                },
+                use: {
+                    follow: ["{namespace}", "$from"],
+                    method: function(ns) {
+                        dsl.lang.context['importNamespace'] = ns;
+                        console.log(ns)
+                    }
+                },
+                import: {
+                    follow: ["{namespace}", "$from"],
+                    method: function(ns) {
+                        dsl.lang.context['importNamespace'] = ns;
+                        console.log(ns)
+                    }
+                },
+                from: {
+                    follow: ["{url}"],
+                    method: function(url) {
+                        dsl.lang.context['importUrl'] = url;
+                        console.log(url)
+                    }
+                }
+            }
+        }
+    },
 
     // Custom set of methods
     api: {},
@@ -44,9 +94,9 @@ var dsl = {
                 }
             }
 
-            if (this.lang[dslKey || '$'][key]) {
-                if (isObject(this.lang[dslKey || '$'][key])) {
-                    this.lang[dslKey || '$'][key].method(param);
+            if (Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[key]) {
+                if (isObject(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[key])) {
+                    (Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[key]).method(param);
                 } else if (this.api[key]) {
                     this.api[key](param)
                 }
@@ -76,15 +126,17 @@ var dsl = {
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId) => {
 
-            //  console.log(tokens, token, instructionKey);
+            if (tokens.length == 1 && token == this.lang.delimeter) {
+                this.lang.static.execStatement()
+                return;
+            }
 
             if (!instructionKey) return;
 
+            console.log(currentNamespace);
+            var nextInstructions = getTokenSequence(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[instructionKey.substring(1)]);
 
-
-            var nextInstructions = getTokenSequence(this.lang['$'][instructionKey.substring(1)]);
-
-            if (!nextInstructions) nextInstructions = getTokenSequence(this.lang['$'][instructionKey]);
+            if (!nextInstructions) nextInstructions = getTokenSequence(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[instructionKey]);
 
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
@@ -120,6 +172,8 @@ var dsl = {
         var splitInit = (parts) => {
             parts.forEach(p => {
 
+                if (!p) return;
+
                 var partId = Math.random();
 
                 var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
@@ -130,9 +184,9 @@ var dsl = {
 
                 tokens.shift();
 
-                if (this.lang['$'][t]) {
+                if (Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[t]) {
 
-                    var bestMatching = getMatchingFollow(this.lang['$'][t].follow, tokens[0]);
+                    var bestMatching = getMatchingFollow(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[t].follow, tokens[0]);
 
                     if ((bestMatching || "").charAt(0) == "$") {
                         callTokenFunction(t);
@@ -140,7 +194,8 @@ var dsl = {
                     } else {
                         callTokenFunction(t, bestMatching)
                         tokens.shift();
-                        bestMatching = getMatchingFollow(this.lang['$'][t].follow, tokens[0]);
+
+                        bestMatching = getMatchingFollow(Object.assign(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])[t].follow, tokens[0]);
                         sequence(tokens, tokens[0], bestMatching, partId);
                     }
 

@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A toolkit for building DSLs for APIs",
   "main": "dsl.js",
+  "bin": {
+    "luke": "./cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +18,10 @@
   "bugs": {
     "url": "https://github.com/4ty711/fluent-dsl/issues"
   },
-  "homepage": "https://github.com/4ty711/fluent-dsl#readme"
+  "homepage": "https://github.com/4ty711/fluent-dsl#readme",
+  "dependencies": {
+    "commander": "^5.1.0",
+    "inquirer": "^7.3.0",
+    "tiny-cli-editor": "^0.1.1"
+  }
 }
