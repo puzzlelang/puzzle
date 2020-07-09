@@ -26,7 +26,7 @@ var dsl = {
 
                         var fileName = dsl.lang.context['useNamespace'];
                         var extention = fileName.split(".")[fileName.split(".").length - 1];
-                       
+
                         if (fileName.indexOf('https://') == 0) {
 
                             https.get(fileName, (resp) => {
@@ -44,6 +44,10 @@ var dsl = {
                                 console.log("Error: " + err.message);
                             });
 
+                        } else if (fileName.indexOf('$catalog/') == 0) {
+                            var name = fileName.split('/')[1];
+                            var file = require('node_modules/luke-lang/luke-catalog/modules/' + name);
+                            dsl.useSyntax(file);
                         } else if (extention.toLowerCase() == "json") {
                             var syntax = fs.readFileSync(fileName, 'utf8');
                             dsl.useSyntax(JSON.parse(syntax));
