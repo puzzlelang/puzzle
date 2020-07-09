@@ -63,6 +63,7 @@ var lang = {
         "$": {
             default: {
                 ns: {
+                    manual: "Sets a namespace. Valid until another namespace is set",
                     follow: ["{namespace}"],
                     method: function(ns) {
                         lang.currentNamespace = ns;
@@ -105,9 +106,15 @@ var lang = {
                             break;
                             case 'commands':
                                 Object.keys(lang['$']).forEach((ns) => {
-                                    console.log('namespace:', ns);
+                                    console.log('namespace:', ns, '\n');
                                     Object.keys(lang['$'][ns]).forEach(c => {
-                                        console.log('  ', c, lang['$'][ns][c].follow.join(", "))
+                                        var man = "";
+                                        if(lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
+                                        console.log('  ', c,  man)
+                                        lang['$'][ns][c].follow.forEach(f => {
+                                            console.log('\t...', f)
+                                        })
+                                        console.log('\n')
                                     })
                                 })
                             break;
@@ -141,13 +148,10 @@ var lang = {
                         npm.load({
                             loaded: false
                         }, function (err) {
-                          // catch errors
                           npm.commands.install([param], function (er, data) {
-                            // log the error or data
                             console.log(er, data);
                           });
                           npm.on("log", function (message) {
-                            // log the progress of the installation
                             console.log(message);
                           });
                         });

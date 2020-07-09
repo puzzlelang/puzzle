@@ -24,7 +24,7 @@ var dsl = {
 
         this.lang['$'].default = _defaultSyntax;
 
-        console.log('lanf', this.lang);
+        console.log('lang', this.lang);
     },
 
     parse: function(code) {
@@ -103,7 +103,6 @@ var dsl = {
             }
 
             var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
-
 
             var nextInstructions = getTokenSequence(definition[instructionKey.substring(1)]);
 
