@@ -1,4 +1,5 @@
 const fs = require('fs');
+const https = require('https');
 
 var dsl = {
 
@@ -25,8 +26,25 @@ var dsl = {
 
                         var fileName = dsl.lang.context['useNamespace'];
                         var extention = fileName.split(".")[fileName.split(".").length - 1];
-                        console.log('extention', extention);
-                        if (extention.toLowerCase() == "json") {
+                       
+                        if (fileName.indexOf('https://') == 0) {
+
+                            https.get(fileName, (resp) => {
+                                var data = '';
+
+                                resp.on('data', (chunk) => {
+                                    data += chunk;
+                                });
+
+                                resp.on('end', () => {
+                                    dsl.useSyntax(eval(data));
+                                });
+
+                            }).on("error", (err) => {
+                                console.log("Error: " + err.message);
+                            });
+
+                        } else if (extention.toLowerCase() == "json") {
                             var syntax = fs.readFileSync(fileName, 'utf8');
                             dsl.useSyntax(JSON.parse(syntax));
                         } else if (extention.toLowerCase() == "js") {
@@ -231,7 +249,7 @@ var dsl = {
                 t = tokens[0]
 
                 tokens.shift();
-               
+
                 var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
                 if (definition[t]) {
