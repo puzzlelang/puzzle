@@ -21,14 +21,14 @@ The complete documentaion can be found ***[ here ](Docs.md)***
 luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
 
 
-### Luke CLI:
+### Interactive Shell:
 
 ```shell
 $ npm i luke --global`
 $ luke
 ```
 
-or execute a luke file:
+### Run a file
 
 ```shell
 $ luke run example.luke
@@ -69,9 +69,42 @@ ns rest;
 POST {name: "Peter"} to https://url.com/api
 ```
 
-## Modules
 
-luke is an open and collaborative platform. Developers can descibe their own syntax and create custom modules for any domain.
+### Modules
+
+luke has an extendable module system. Modules provide custom syntax for different domains and usages.
+
+How to use a module?
+
+```luke
+use example.luke.js;
+```
+
+### Namespaces
+
+Namespaces provide a way to seperate syntax from different modules. Namespaces begin with the `ns` keyword and end when another namespace begins or on the end of the script.
+
+```luke
+ns example;
+
+// example-specific code
+
+ns default;
+
+// default code
+```
+
+#### Default namespace
+
+luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic syntax:
+
+```luke
+use <module>;
+ns <namespcace>
+```
+
+Syntax from the default namespace will automatically be available in any other module-specific namespace.
+
 
 
 ### Build a custom syntax/module
