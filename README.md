@@ -36,3 +36,13 @@ luke.parse('print "Hello World');
 ```
 luke.parse('print "Hello World');
 ```
+
+## Examples
+
+```
+use rest.js;
+
+ns rest;
+
+POST {name: "Peter"} to https://url.com/api
+```
