@@ -9,31 +9,34 @@ luke runs on JavaScript Engines and can be used on Node, Browsers and via it's C
 
 ### Luke CLI:
 
-`npm i luke --global`
-
-Then in the terminal, run:
-
-`$ luke`
+```
+$ npm i luke --global`
+$ luke
+```
 
 or execute a luke file:
 
-`$ luke run example.luke`
+```
+$ luke run example.luke
+```
 
 
 ### Luke JS (npm module):
 
-`npm i luke --save`
-
 ```
+npm i luke --save
+
+
 const luke = require('luke');
 luke.parse('print "Hello World');
 ```
 
 ### Luke JS (Browser):
 
-`<script src="luke.js">`
+```<script src="luke.js">
 
-```
+...
+
 luke.parse('print "Hello World');
 ```
 
@@ -73,15 +76,15 @@ Example:
 
 ```
 dsl = {
-	lang: {
-    	$: {
-        	echo: {
-        		follow: ["{param}"],
-        		method: function(param){
-        			console.log(param)
-        		}
-        	}
-    	}
+  lang: {
+    $: {
+      echo: {
+        follow: ["{param}"],
+        method: function(param){
+          console.log(param)
+        }
+      }
+    }
 }
 module.exports = dsl;
 ```
