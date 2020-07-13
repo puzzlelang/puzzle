@@ -2,6 +2,8 @@
 
 An abstract, extendable programming language for domain specific solutions
 
+[ Official Documentation ](Docs.md)
+
 ## Table of contents
 
 * [ Getting started ](#getting-started)

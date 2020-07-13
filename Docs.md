@@ -10,7 +10,7 @@ An abstract, extendable programming language for domain specific solutions
 	* [ modules ](#examples)
 	* [ namespaces ](#examples)
 	* [ syntax ](#examples)
-* [ Custom Syntax ](#modules)
+* [ Custom Modules ](#modules)
 	* [ Module Definition ](#modules)
 	* [ Modules usage ](#modules)
 	* [ Contribute modules ](#modules)
