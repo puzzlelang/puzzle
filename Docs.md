@@ -1,4 +1,4 @@
-# luke
+# luke Docs
 
 An abstract, extendable programming language for domain specific solutions
 
@@ -7,7 +7,6 @@ An abstract, extendable programming language for domain specific solutions
 * [ Getting started ](#getting-started)
 * [ Examples ](#examples)
 * [ Modules ](#modules)
-* [ License ](#license)
 
 ## Getting started
 
@@ -103,9 +102,3 @@ echo "Hello";
 
 REPO LINK
 
-
-## License
-
-luke is a free open source project licensed under the MIT license.
-
-[ LICENSE ](LICENSE)
