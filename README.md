@@ -61,13 +61,6 @@ POST {name: "Peter"} to https://url.com/api
 ## Modules
 
 luke is an open and collaborative platform. Developers can descibe their own syntax and create custom modules for any domain.
-These modules can be contributed and used by others in their code.
-
-### luke module repo
-
-There is a module repository that holds different modules for everyone to use.
-
-REPO LINK
 
 
 ### Build a custom syntax/module
@@ -101,7 +94,10 @@ echo "Hello";
 
 ### Contribute a module
 
-REPO LINK
+luke modules can be contributed to the official module repository and used by others in their code.
+
+
+[ luke-catalog ](https://github.com/luke-lang/luke-catalog)
 
 
 ## License
