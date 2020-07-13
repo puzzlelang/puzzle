@@ -2,6 +2,12 @@
 
 An abstract, extendable programming language for domain specific solutions
 
+## Table of contents
+
+[ Getting started ](#getting-started)
+[ Examples ](#examples)
+[ Modules ](#modules)
+
 ## Getting started
 
 luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
