@@ -1,6 +1,6 @@
 {
   "name": "luke-lang",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A toolkit for building DSLs for APIs",
   "main": "dsl.js",
   "bin": {
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/4ty711/fluent-dsl.git"
+    "url": "git+https://github.com/luke-lang/luke.git"
   },
   "author": "Marco Boelling",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/4ty711/fluent-dsl/issues"
+    "url": "https://github.com/luke-lang/luke/issues"
   },
-  "homepage": "https://github.com/4ty711/fluent-dsl#readme",
+  "homepage": "https://github.com/luke-lang/luke#readme",
   "dependencies": {
     "commander": "^5.1.0",
     "https": "^1.0.0",

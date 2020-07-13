@@ -4,27 +4,35 @@ An abstract, extendable programming language for domain specific solutions
 
 ## Getting started
 
-luke runs on JavaScript and can be used on Node, Browsers and via it's CLI.
+luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
 
-## Installing
 
-As CLI:
+### Luke CLI:
 
 `npm i luke --global`
 
+Then in the terminal, run:
 
-As npm module (for embedding):
+`$ luke`
+
+or execute a luke file:
+
+`$ luke run example.luke`
+
+
+### Luke JS (npm module):
 
 `npm i luke --save`
 
+```
+const luke = require('luke');
+luke.parse('print "Hello World');
+```
 
-For browsers:
+### Luke JS (Browser):
 
-`coming soon...`
-
-
-## Quick start
+`<script src="luke.js">`
 
 ```
-print "Hello World"
+luke.parse('print "Hello World');
 ```
