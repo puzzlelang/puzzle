@@ -1,6 +1,6 @@
 {
   "name": "luke-lang",
-  "version": "0.0.2",
+  "version": "0.0.21",
   "description": "A toolkit for building DSLs for APIs",
   "main": "dsl.js",
   "bin": {

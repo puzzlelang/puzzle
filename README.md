@@ -40,21 +40,25 @@ luke.parse('print "Hello World');
 
 ### Luke JS (Browser):
 
-```javascript
-<script src="luke.js">
+```html
+<script src="luke.js" />
 
-...
-
+<script>
 luke.parse('print "Hello World');
+</script>
 ```
 
-## Examples
+
+## Example
 
 ```javascript
+// use a module
 use rest.js;
 
+// set the module namespace
 ns rest;
 
+// use module-specific code
 POST {name: "Peter"} to https://url.com/api
 ```
 
