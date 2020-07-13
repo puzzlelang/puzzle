@@ -9,21 +9,21 @@ luke runs on JavaScript Engines and can be used on Node, Browsers and via it's C
 
 ### Luke CLI:
 
-```
+```shell
 $ npm i luke --global`
 $ luke
 ```
 
 or execute a luke file:
 
-```
+```shell
 $ luke run example.luke
 ```
 
 
 ### Luke JS (npm module):
 
-```
+```javascript
 npm i luke --save
 
 
@@ -33,7 +33,8 @@ luke.parse('print "Hello World');
 
 ### Luke JS (Browser):
 
-```<script src="luke.js">
+```javascript
+<script src="luke.js">
 
 ...
 
@@ -42,7 +43,7 @@ luke.parse('print "Hello World');
 
 ## Examples
 
-```
+```javascript
 use rest.js;
 
 ns rest;
@@ -59,22 +60,16 @@ These modules can be contributed and used by others in their code.
 
 There is a module repository that holds different modules for everyone to use.
 
-First, get the repo:
-
-`npm i luke-catalog` OR `git clone https://github.com/luke-lang/luke-catalog.git` 
-
-Then use them in your luke script:
-
-`use email.luke.js;`
+REPO LINK
 
 
 ### Build a custom syntax/module
 
 Modules are single JS files in a given structure. They describe a certain syntax for specific domains and purposes. 
 
-Example:
+Example (example.luke.js):
 
-```
+```javascript
 dsl = {
   lang: {
     $: {
@@ -89,18 +84,15 @@ dsl = {
 module.exports = dsl;
 ```
 
+Use it in your code:
+
+```shell
+use example.luke.js;
+
+echo "Hello";
+````
+
 ### Contribute a module
 
-Get the official repo:
-
-```
-git clone https://github.com/luke-lang/luke-catalog.git
-cd luke-catalog/modules
-```
-
-Add your module with the filename:
-
-`<MODULE>.luke.js`
-
-Create a pull request to add it to the repo
+REPO LINK
 
