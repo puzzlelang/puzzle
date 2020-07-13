@@ -4,9 +4,9 @@ An abstract, extendable programming language for domain specific solutions
 
 ## Table of contents
 
-[ Getting started ](#getting-started)
-[ Examples ](#examples)
-[ Modules ](#modules)
+* [ Getting started ](#getting-started)
+* [ Examples ](#examples)
+* [ Modules ](#modules)
 
 ## Getting started
 
