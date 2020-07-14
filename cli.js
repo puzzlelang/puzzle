@@ -50,6 +50,8 @@ program
                     console.log(e)
                 });
         }
+
+        luke.init();
         input();
 
     });

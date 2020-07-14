@@ -1,3 +1,9 @@
+if (typeof module !== 'undefined' && module.exports) {
+    environment = "node";
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./localStorage');
+}
+
 var dsl = {
 
     // Language definition
@@ -5,6 +11,20 @@ var dsl = {
 
     // Custom set of methods
     api: {},
+
+    // internal storage (for saved modules)
+    moduleStorage: {
+        all: localStorage,
+        set: function(key, value) {
+            return localStorage.setItem(key, value)
+        },
+        get: function(key) {
+            return localStorage.getItem(key)
+        },
+        remove: function(key) {
+            return localStorage.removeItem(key)
+        }
+    },
 
     // for breaking code parts down into nested parts
     groupingOperators: ['"', "'", "(", ")", "{", "}"],
@@ -236,7 +256,14 @@ var dsl = {
         }
 
         splitInit(parts);
+    },
+    init: function() {
 
+        console.log('Welcome to luke...');
+
+        localStorage, dsl.moduleStorage.all._keys.forEach(function(key) {
+            if (key.charAt(0) == "_") dsl.parse('use ' + dsl.moduleStorage.get(key));
+        })
     }
 }
 

@@ -2,6 +2,12 @@ const fs = require('fs');
 const https = require('https');
 var npm = require("npm");
 
+if (typeof module !== 'undefined' && module.exports) {
+    environment = "node";
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./localStorage');
+}
+
 var useSyntax = function(lang, jsObject) {
 
     var _defaultSyntax = lang['$'].default;
@@ -62,10 +68,11 @@ var lang = {
                         var syntax = fs.readFileSync(fileName, 'utf8');
                         useSyntax(lang, JSON.parse(syntax));
                     } else if (extention.toLowerCase() == "js") {
-                        if(fileName.charAt(0) != '/') fileName = './' + fileName;
+                        if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
                         useSyntax(lang, file);
                     } else console.log('unsupported file type')
+
 
                 } catch (e) {
                     console.log('Use Error', e);
@@ -84,10 +91,17 @@ var lang = {
                 }
             },
             use: {
+                follow: ["$permanent", "{file}"],
+                method: function(ns) {
+                    lang.context['useNamespace'] = ns;
+                }
+            },
+            permanent: {
                 follow: ["{file}"],
                 method: function(ns) {
                     lang.context['useNamespace'] = ns;
-                    console.log(ns)
+                    localStorage.setItem('_'+Math.random(), ns)
+                    console.log('permanent', ns)
                 }
             },
             print: {
