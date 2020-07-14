@@ -2,10 +2,10 @@
 
 luke as an abstract, extendable programming language that allows custom syntax for domain specific solutions.
 
-*** important Resources:***
+***important Resources:***
 
 * [Luke Website](...)
-* [Luke Module Catalog](...)
+* [Luke Module Catalog](...) (Documentation of all available modules)
 * [npm](...)
 
 # Install
