@@ -99,12 +99,6 @@ print "Hello World"
 ```
 
 
-| Concept   |      Explanation      |  Example |
-|----------|:-------------:|------:|
-| Custom Syntax |  custom language for specific domains | ... |
-| Modules |  luke has an extendable module system. Modules provide custom syntax for different domains and usages. | `use example.luke.js` |
-| Namespaces  |    Namespaces provide a way to seperate syntax from different modules. Namespaces begin with the `ns` keyword and end when another namespace begins or on the end of the script.   |   `ns example;` |
-
 ***Default namespace!***
 
 luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
