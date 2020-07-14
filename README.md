@@ -109,7 +109,7 @@ Syntax from the default namespace will automatically be available in any other m
 
 
 
-## Syntax module
+## Custom syntax
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
 
@@ -138,7 +138,7 @@ ns lower;
 ```
 
 
-## Create a Syntax
+## Create a Syntax module
 
 Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
@@ -163,6 +163,11 @@ dsl = {
 module.exports = dsl;
 ```
 
+Define your available tokens as keys under the "$" object. Each key has an attached `method`, which will be executed, when that token is parsed and an array `follow`, which defines, which tokens can follow the current token.
+
+Following tokens can either be wildcards for user input (`{param}`) or another token, specified with a leading "$" (e.g. `$and`).
+
+These instructions let you create token chains and build your own syntax.
 
 
 ```luke
