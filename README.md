@@ -88,7 +88,7 @@ The main concepts of luke are:
 * ***Open and free platform for modules***
 
 
-## Tutoral
+## Tutorial
 
 ***Example***
 
