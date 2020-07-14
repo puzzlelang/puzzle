@@ -86,43 +86,26 @@ The main concepts of luke are:
 ## Example
 
 ```luke
+// Use a module
 use example.luke.js
+
+// Set the module context
 ns example;
 
+// Use module-specific code
 print "Hello World"
 // "Hello World"
 
 ```
 
-## Modules
 
-luke has an extendable module system. Modules provide custom syntax for different domains and usages.
+| Concept   |      Explanation      |  Example |
+|----------|:-------------:|------:|
+| Custom Syntax |  custom language for specific domains | ... |
+| Modules |  luke has an extendable module system. Modules provide custom syntax for different domains and usages. | `use example.luke.js` |
+| Namespaces  |    Namespaces provide a way to seperate syntax from different modules. Namespaces begin with the `ns` keyword and end when another namespace begins or on the end of the script.   |   `ns example;` |
 
-How to use a module?
-
-```luke
-use example.luke.js;
-```
-
-Modules can be written by yourself or be loaded from the official module repository.
-
-Got to [ luke-catalog ](---)
-
-## Namespaces
-
-Namespaces provide a way to seperate syntax from different modules. Namespaces begin with the `ns` keyword and end when another namespace begins or on the end of the script.
-
-```luke
-ns example;
-
-// example-specific code
-
-ns default;
-
-// default code
-```
-
-***Default namespace***
+***Default namespace!***
 
 luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
 
@@ -156,14 +139,14 @@ ns lower;
 
 // the lower module uses the following syntax:
 
-[lowerCase]-> "Hello" 
+-> print -> "Hello" ->[lowerCase]
 // prints: hello
 ```
 
 
 ## Create a Syntax
 
-Building your own custom syntax is fairly simple. It's defined
+Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
 ```javascript
 dsl = {
