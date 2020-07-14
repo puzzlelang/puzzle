@@ -19,7 +19,17 @@ program
     .description('Run your app')
     .action(function(type, args) {
 
-    
+        if (args) {
+            try {
+                if (args[0] == "include") {
+                	var code = fs.readFileSync(args[1], 'utf8');
+        			luke.parse(code);
+                }
+            } catch (e) {
+                console.log('Error including file');
+            }
+        }
+
         function input() {
             inquirer
                 .prompt([{

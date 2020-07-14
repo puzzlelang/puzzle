@@ -87,18 +87,25 @@ The main concepts of luke are:
 * ***Custom syntax creation***
 * ***Open and free platform for modules***
 
+
+## Tutoral
+
 ***Example***
 
 ```luke
-// Use a module
+// 1. Use a module
 use example.luke.js
 
-// Set the module context
+// 2. Set the module context
 ns example;
 
-// Use module-specific code
+// 3. Use module-specific code
 print "Hello World"
-// "Hello World"
+
+// 4. Use another module (modules can be used anywhere)
+use antoher.luke.js
+
+// ...
 
 ```
 
