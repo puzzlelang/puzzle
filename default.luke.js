@@ -11,7 +11,7 @@ var useSyntax = function(lang, jsObject) {
 
     lang['$'].default = _defaultSyntax;
 
-//    console.log('lang', lang);
+    //    console.log('lang', lang);
 };
 
 var lang = {
@@ -62,6 +62,7 @@ var lang = {
                         var syntax = fs.readFileSync(fileName, 'utf8');
                         useSyntax(lang, JSON.parse(syntax));
                     } else if (extention.toLowerCase() == "js") {
+                        fileName = './' + fileName;
                         var file = require(fileName);
                         useSyntax(lang, file);
                     } else console.log('unsupported file type')
@@ -87,20 +88,6 @@ var lang = {
                 method: function(ns) {
                     lang.context['useNamespace'] = ns;
                     console.log(ns)
-                }
-            },
-            import: {
-                follow: ["{namespace}", "$from"],
-                method: function(ns) {
-                    lang.context['importNamespace'] = ns;
-                    console.log(ns)
-                }
-            },
-            from: {
-                follow: ["{url}"],
-                method: function(url) {
-                    lang.context['importUrl'] = url;
-                    console.log(url)
                 }
             },
             print: {
