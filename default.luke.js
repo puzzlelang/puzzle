@@ -7,7 +7,7 @@ var useSyntax = function(lang, jsObject) {
     var _defaultSyntax = lang['$'].default;
 
     Object.assign(lang, jsObject)
-    console.log(Object.keys(jsObject['$'])[0], 'can now be used');
+    console.log(Object.keys(jsObject['$'])[0], 'can now be used using: ns', Object.keys(jsObject['$'])[0]);
 
     lang['$'].default = _defaultSyntax;
 
@@ -47,7 +47,6 @@ var lang = {
                             });
 
                             resp.on('end', () => {
-                                console.log('data', data);
                                 useSyntax(lang, eval(data));
                             });
 

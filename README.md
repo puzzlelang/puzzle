@@ -1,6 +1,6 @@
-# luke Docs
+# luke
 
-luke as an abstract, extendable programming language that allows custom syntax for domain specific solutions.
+luke as an abstract, extendable programming language and platform that allows custom syntax for domain specific solutions.
 
 ***important Resources:***
 
