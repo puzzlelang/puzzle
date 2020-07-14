@@ -82,6 +82,14 @@ The main concepts of luke are:
 * Custom syntax creation
 * Open and free platform for modules
 
+## Example
+
+```luke
+
+print "Hello World"
+
+```
+
 ## Modules
 
 luke has an extendable module system. Modules provide custom syntax for different domains and usages.
