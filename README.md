@@ -109,7 +109,7 @@ Syntax from the default namespace will automatically be available in any other m
 
 
 
-## Custom syntax
+# Custom syntax
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
 
@@ -183,6 +183,9 @@ command  command  command command delimeter;
 
 ```
 
+## Publish your module
+
+Your custom syntax modules can be contributed to the official luke module repo, called [luke-catalog](...)
 
 # License
 
