@@ -109,7 +109,7 @@ Syntax from the default namespace will automatically be available in any other m
 
 
 
-## Syntax
+## Syntax module
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
 
