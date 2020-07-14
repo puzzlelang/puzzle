@@ -10,6 +10,8 @@ if (typeof module !== 'undefined' && module.exports) {
 
 var useSyntax = function(lang, jsObject) {
 
+    //console.log(jsObject);
+
     var _defaultSyntax = lang['$'].default;
 
     Object.assign(lang, jsObject)
@@ -19,6 +21,8 @@ var useSyntax = function(lang, jsObject) {
 
     //    console.log('lang', lang);
 };
+
+
 
 var lang = {
     delimeter: ";",
@@ -100,7 +104,7 @@ var lang = {
                 follow: ["{file}"],
                 method: function(ns) {
                     lang.context['useNamespace'] = ns;
-                    localStorage.setItem('_'+Math.random(), ns)
+                    if(!localStorage.getItem('_' + ns)) localStorage.setItem('_' + ns, ns)
                     console.log('permanent', ns)
                 }
             },
@@ -171,6 +175,9 @@ var lang = {
                 }
             },
         }
+
     }
+
 }
+
 module.exports = lang;

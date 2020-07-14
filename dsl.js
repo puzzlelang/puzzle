@@ -7,8 +7,8 @@ if (typeof module !== 'undefined' && module.exports) {
 var dsl = {
 
     // Language definition
-    lang: new require('./default.luke.js'),
-
+    lang: require('./default.luke.js'),
+    
     // Custom set of methods
     api: {},
 
@@ -266,5 +266,6 @@ var dsl = {
         })
     }
 }
+
 
 module.exports = dsl;
