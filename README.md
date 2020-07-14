@@ -4,8 +4,8 @@ luke as an abstract, extendable programming language that allows custom syntax f
 
 ***important Resources:***
 
-* [Luke Website](...)
-* [Luke Module Catalog](...) (Documentation of all available modules)
+* [Luke Website](https://luke-lang.github.io)
+* [Luke Module Catalog](https://luke-lang.github.io/modules) (Documentation of all available modules)
 * [npm](...)
 
 # Install
