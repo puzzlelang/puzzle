@@ -159,7 +159,7 @@ These instructions let you create token chains and build your own syntax.
    ^        ^        ^      ^       ^
 command  command  command command delimeter;
 
-(token)  {param}  (token) {param}
+ $.echo  {param}   $.and  {param}
 
 ```
 
