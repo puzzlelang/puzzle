@@ -198,7 +198,6 @@ command  command  command command delimeter;
 ```
 
 
-
-## Contribute to luke-lang
-
 # License
+
+luke is completely free and openly licensed under MIT. [ License ](LICENSE)
