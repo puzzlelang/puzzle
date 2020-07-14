@@ -1,91 +1,170 @@
-# luke
+# luke Docs
 
-An abstract, extendable programming language for domain specific solutions
+luke as an abstract, extendable programming language that allows custom syntax for domain specific solutions.
 
 
-
-## Table of contents
-
-* [ Docs ](#full-documentation)
-* [ Getting started ](#getting-started)
-* [ Examples ](#examples)
-* [ Modules ](#modules)
-* [ License ](#license)
-
-## Full Documentation
-
-The complete documentaion can be found ***[ here ](Docs.md)***
-
-## Getting started
+# Install
 
 luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
 
 
-### Luke CLI:
+## CLI
 
 ```shell
-$ npm i luke --global`
-$ luke
-```
-
-or execute a luke file:
-
-```shell
-$ luke run example.luke
+$ npm i luke --global
 ```
 
 
-### Luke JS (npm module):
+## npm module
 
 ```javascript
 npm i luke --save
-
-
-const luke = require('luke');
-luke.parse('print "Hello World');
 ```
 
-### Luke JS (Browser):
+## Browser
 
 ```html
-<script src="luke.js" />
-
-<script>
-luke.parse('print "Hello World');
-</script>
+<script src="luke.js">
 ```
 
+# Usage
 
-## Example
+
+After you have installed luke via npm, you can use it in your terminal as an interactive CLI or run your luke script files
+
+## Interactive Shell
+
+```shell
+$ luke
+$ print "Hello World!"
+"Hello World"
+```
+
+## Run a File
 
 ```javascript
-// use a module
-use rest.js;
-
-// set the module namespace
-ns rest;
-
-// use module-specific code
-POST {name: "Peter"} to https://url.com/api
+// hello.luke
+print "I am a luke file"
 ```
+
+
+```shell
+$ luke run hello.luke
+"I am a luke file"
+```
+
+
+## Embedded (JavaScript)
+
+luke scripts can also be run inside JavaScript:
+
+```javascript
+// For Node.js
+const luke = require('luke-lang');
+
+// For browsers:
+<script src="luke.js"/>
+```
+
+```javascript
+luke.parse('Hello, I am embedded!')
+```
+
+# Language
+
+The luke language aims to provide simple language to build solutions that are taylored for different domains and probblems.
+
+The main concepts of luke are:
+
+
+* Simple, clean language
+* Understandable for developers and non-developers
+* Custom syntax creation
+* Open and free platform for modules
 
 ## Modules
 
-luke is an open and collaborative platform. Developers can descibe their own syntax and create custom modules for any domain.
+luke has an extendable module system. Modules provide custom syntax for different domains and usages.
+
+How to use a module?
+
+```luke
+use example.luke.js;
+```
+
+Modules can be written by yourself or be loaded from the official module repository.
+
+Got to [ luke-catalog ](---)
+
+## Namespaces
+
+Namespaces provide a way to seperate syntax from different modules. Namespaces begin with the `ns` keyword and end when another namespace begins or on the end of the script.
+
+```luke
+ns example;
+
+// example-specific code
+
+ns default;
+
+// default code
+```
+
+***Default namespace***
+
+luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
+
+[ View the module ](...)
+
+Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
 
-### Build a custom syntax/module
 
-Modules are single JS files in a given structure. They describe a certain syntax for specific domains and purposes. 
+## Syntax
 
-Example (example.luke.js):
+The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
+
+
+A simple syntax could look like this:
+
+```luke
+use rest.luke.js;
+ns rest;
+
+// the rest module provides a simple syntax:
+
+POST {name: "Peter"} to "https://api.com"
+```
+
+A more complex one could look like this;
+
+```luke
+use lower.luke.js
+ns lower;
+
+// the lower module uses the following syntax:
+
+[lowerCase]-> "Hello" 
+// prints: hello
+```
+
+
+## Create a Syntax
+
+Building your own custom syntax is fairly simple. It's defined
 
 ```javascript
 dsl = {
   lang: {
     $: {
       echo: {
-        follow: ["{param}"],
+        follow: ["{param}", "$and"],
+        method: function(param){
+          console.log(param)
+        }
+      },
+      and: {
+        follow: ["{param}", "$and"],
         method: function(param){
           console.log(param)
         }
@@ -95,24 +174,23 @@ dsl = {
 module.exports = dsl;
 ```
 
-Use it in your code:
-
-```shell
-use example.luke.js;
-
-echo "Hello";
-````
-
-### Contribute a module
-
-luke modules can be contributed to the official module repository and used by others in their code.
 
 
-[ luke-catalog ](https://github.com/luke-lang/luke-catalog)
+```luke
+
+|-------------- Statement ------------|
+
+  echo    "Peter"   and  "Nicole"   ;
+
+   ^        ^        ^      ^       ^
+command  command  command command delimeter;
+
+(token)  {param}  (token) {param}
+
+```
 
 
-## License
 
-luke is a free open source project licensed under the MIT license.
+## Contribute to luke-lang
 
-[ LICENSE ](LICENSE)
+# License

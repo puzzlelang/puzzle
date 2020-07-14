@@ -1,5 +1,0 @@
-use ./spoo.luke.js;
-
-client spoo;
-
-auth username=admin,password=__..--1234;
