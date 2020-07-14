@@ -152,7 +152,7 @@ lang = {
     }
   }
 }
-module.exports = dsl;
+module.exports = lang;
 ```
 
 Define your available tokens as keys under the "$" object. Each key has an attached `method`, which will be executed, when that token is parsed and an array `follow`, which defines, which tokens can follow the current token.

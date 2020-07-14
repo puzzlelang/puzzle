@@ -22,8 +22,8 @@ program
         if (args) {
             try {
                 if (args[0] == "include") {
-                	var code = fs.readFileSync(args[1], 'utf8');
-        			luke.parse(code);
+                    var code = fs.readFileSync(args[1], 'utf8');
+                    luke.parse(code);
                 }
             } catch (e) {
                 console.log('Error including file', e);
@@ -55,3 +55,11 @@ program
     });
 
 program.parse(process.argv);
+
+process
+    .on('unhandledRejection', (reason, p) => {
+        console.error(reason, 'Unhandled Rejection at Promise', p);
+    })
+    .on('uncaughtException', err => {
+        console.error(err, 'Uncaught Exception thrown');
+    });
