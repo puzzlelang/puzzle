@@ -62,7 +62,7 @@ var lang = {
                         var syntax = fs.readFileSync(fileName, 'utf8');
                         useSyntax(lang, JSON.parse(syntax));
                     } else if (extention.toLowerCase() == "js") {
-                        fileName = './' + fileName;
+                        if(fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
                         useSyntax(lang, file);
                     } else console.log('unsupported file type')

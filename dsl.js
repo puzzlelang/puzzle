@@ -49,7 +49,9 @@ var dsl = {
 
             //console.log('args', key, param, dslKey)
             if (param) {
-                if (param.includes(this.lang.assignmentOperator)) {
+                if (isObject(param)) {
+
+                } else if (param.includes(this.lang.assignmentOperator)) {
                     var spl = param.split("=");
                     var param = {};
                     param[spl[0]] = spl[1];
@@ -89,6 +91,23 @@ var dsl = {
             return match;
         }
 
+        var getMatchingFollowInstruction = (nextInstructions, followToken) => {
+            var match = null;
+            if (!nextInstructions) return null;
+            nextInstructions.forEach(next => {
+                //console.log('ft', next, followToken, match);
+                if (next.charAt(0) == "$" && followToken == next.substring(1) && !match) {
+                    // console.log('follow best:', followToken);
+                    match = next;
+                } else if (next.charAt(0) == "{" && !match) {
+                    //console.log('follow best2:', next,  followToken);
+                    match = next;
+                }
+            })
+
+            return match;
+        }
+
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId) => {
 
@@ -116,6 +135,7 @@ var dsl = {
                 tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
+                var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                 // execute exact method
 
@@ -124,8 +144,25 @@ var dsl = {
                     sequence(tokens, tokens[0], bestMatching, partId);
                 } else {
 
-                    callTokenFunction(token, bestMatching)
-                    tokens.shift();
+                    if (bestMatchingInstruction.includes(",")) {
+                        var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
+
+                        var argList = {};
+                        var t2;
+
+                        rawSequence.forEach(function(s, i) {
+                            t2 = tokens[0]
+                            argList[s] = t2;
+                            tokens.shift();
+                        })
+
+                        callTokenFunction(token, argList);
+                        //tokens.shift();
+
+                    } else {
+                        callTokenFunction(token, bestMatching)
+                        tokens.shift();
+                    }
 
                     //console.log('a', tokens, bestMatching)
                     bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
@@ -159,13 +196,33 @@ var dsl = {
                 if (definition[t]) {
 
                     var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                    var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                     if ((bestMatching || "").charAt(0) == "$") {
                         callTokenFunction(t);
                         sequence(tokens, tokens[0], bestMatching, partId);
                     } else {
-                        callTokenFunction(t, bestMatching)
-                        tokens.shift();
+
+                        if (bestMatchingInstruction.includes(",")) {
+                            var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
+
+
+                            var argList = {};
+                            var t2;
+
+                            rawSequence.forEach(function(s, i) {
+                                t2 = tokens[0]
+                                argList[s] = t2;
+                                tokens.shift();
+                            })
+
+                            callTokenFunction(t, argList);
+                            //tokens.shift();
+
+                        } else {
+                            callTokenFunction(t, bestMatching)
+                            tokens.shift();
+                        }
 
                         bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
                         sequence(tokens, tokens[0], bestMatching, partId);
