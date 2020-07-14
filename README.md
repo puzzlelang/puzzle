@@ -19,7 +19,6 @@ luke runs on JavaScript Engines and can be used on Node, Browsers and via it's C
 $ npm i luke --global
 ```
 
-
 ## npm module
 
 ```javascript
@@ -104,11 +103,11 @@ print "Hello World"
 ```
 
 
-***Default namespace!***
+***Default namespace***
 
 luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
 
-[ View the module ](...)
+[ Learn more ](https://luke-lang.github.io/modules)
 
 Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
@@ -117,30 +116,6 @@ Syntax from the default namespace will automatically be available in any other m
 # Custom syntax
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
-
-
-A simple syntax could look like this:
-
-```luke
-use rest.luke.js;
-ns rest;
-
-// the rest module provides a simple syntax:
-
-POST {name: "Peter"} to "https://api.com"
-```
-
-A more complex one could look like this;
-
-```luke
-use lower.luke.js
-ns lower;
-
-// the lower module uses the following syntax:
-
--> print -> "Hello" ->[lowerCase]
-// prints: hello
-```
 
 
 ## Create a Syntax module
