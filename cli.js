@@ -26,7 +26,7 @@ program
         			luke.parse(code);
                 }
             } catch (e) {
-                console.log('Error including file');
+                console.log('Error including file', e);
             }
         }
 

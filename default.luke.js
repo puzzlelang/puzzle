@@ -47,7 +47,7 @@ var lang = {
                             });
 
                             resp.on('end', () => {
-                                //console.log('data', data);
+                                console.log('data', data);
                                 useSyntax(lang, eval(data));
                             });
 
