@@ -44,6 +44,12 @@ $ print "Hello World!"
 "Hello World"
 ```
 
+You can also include existing luke files into your interactive shell:
+
+```shell
+$ luke include main.luke
+```
+
 ## Run a File
 
 ```javascript
@@ -71,7 +77,7 @@ const luke = require('luke-lang');
 ```
 
 ```javascript
-luke.parse('Hello, I am embedded!')
+luke.parse('print "Hello, I am embedded"')
 ```
 
 
