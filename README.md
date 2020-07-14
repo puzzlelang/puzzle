@@ -88,7 +88,7 @@ The main concepts of luke are:
 * ***Custom syntax creation***
 * ***Open and free platform for modules***
 
-## Example
+***Example***
 
 ```luke
 // Use a module
