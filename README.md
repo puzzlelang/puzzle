@@ -143,9 +143,12 @@ luke comes with a default namespace, which is initalized by default. The default
 Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
 
-# Custom syntax
+# Custom syntax, modules
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
+
+
+![module packing](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/module-packing.png "Custom syntax becomes a module")
 
 
 ## Create a Syntax module
