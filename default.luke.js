@@ -104,7 +104,7 @@ var lang = {
                 follow: ["{file}"],
                 method: function(ns) {
                     lang.context['useNamespace'] = ns;
-                    if(!localStorage.getItem('_' + ns)) localStorage.setItem('_' + ns, ns)
+                    if (!localStorage.getItem('_' + ns)) localStorage.setItem('_' + ns, ns)
                     console.log('permanent', ns)
                 }
             },

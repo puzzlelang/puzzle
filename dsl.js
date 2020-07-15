@@ -8,7 +8,7 @@ var dsl = {
 
     // Language definition
     lang: require('./default.luke.js'),
-    
+
     // Custom set of methods
     api: {},
 
