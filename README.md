@@ -9,7 +9,27 @@ luke as an abstract, extendable programming language and platform that allows cu
 * [npm](...)
 
 
-#Example
+# Examples
+
+
+
+<!-- tabs:start -->
+
+#### ** English **
+
+Hello!
+
+#### ** French **
+
+Bonjour!
+
+#### ** Italian **
+
+Ciao!
+
+<!-- tabs:end -->
+
+
 
 ```luke
 // 1. Use a module
