@@ -12,35 +12,29 @@ luke as an abstract, extendable programming language and platform that allows cu
 # Examples
 
 
+***Code***
 
-<!-- tabs:start -->
-
-#### ** English **
-
-Hello!
-
-#### ** French **
-
-Bonjour!
-
-#### ** Italian **
-
-Ciao!
-
-<!-- tabs:end -->
+```luke
+print "Starting lukeprogram";
+```
 
 
+***Modules***
 
 ```luke
 // 1. Use a module
-use example.luke.js
+use example.luke.js;
 
-// 2. Set the module context
+// or remote
+use https://domain.com/example.luke.js;
+
+// 2. Set the module namespace
 ns example;
 
 // 3. Use module-specific code
-print "Hello World"
+echo "Hello World"
 ```
+
 
 # Install
 
@@ -128,30 +122,6 @@ The main concepts of luke are:
 * ***Open and free platform for modules***
 
 
-## Tutorial
-
-***Use modules***
-
-```luke
-use example.luke.js;
-use https://remote.com/example.luke.js
-```
-
-
-***Set namespace***
-
-```luke
-ns example;
-```
-
-
-***Module specific code***
-
-```luke
-print "Hello World"
-```
-
-
 ***Default namespace***
 
 luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
@@ -159,7 +129,6 @@ luke comes with a default namespace, which is initalized by default. The default
 [ Learn more ](https://luke-lang.github.io/modules)
 
 Syntax from the default namespace will automatically be available in any other module-specific namespace.
-
 
 
 # Custom syntax
