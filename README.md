@@ -20,7 +20,7 @@ luke as an abstract, extendable programming language and platform that allows cu
 # Resources
 
 | Resource        | Description           | 
-| ------------- |-------------| -----|
+| ------------- |-------------|
 | [Luke Website](https://luke-lang.github.io)  | Official website of the luke project |
 | [Luke Module Catalog](https://luke-lang.github.io/modules)    | Complete collection and documentation of luke modules     |  
 | [Luke on npm](https://npmjs.com/package/luke-lang) | Official npm package   |  
