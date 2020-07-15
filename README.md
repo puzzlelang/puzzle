@@ -15,24 +15,27 @@ luke as an abstract, extendable programming language and platform that allows cu
 ***Code***
 
 ```luke
-print "Starting lukeprogram";
+print "Starting luke program";
 ```
 
 
 ***Modules***
 
 ```luke
-// 1. Use a module
-use example.luke.js;
+// 1. Use a module (local or remote)
 
-// or remote
-use https://domain.com/example.luke.js;
+use rest.luke.js;
+use https://domain.com/rest.luke.js;
+
 
 // 2. Set the module namespace
-ns example;
+
+ns rest;
+
 
 // 3. Use module-specific code
-echo "Hello World"
+
+POST {name "Hello"} to https://api.com/resource
 ```
 
 
@@ -111,7 +114,7 @@ luke.parse('print "Hello, I am embedded"')
 
 # Language
 
-The luke language aims to provide simple language to build solutions that are taylored for different domains and probblems.
+The luke language aims to provide simple language to build solutions that are taylored for different domains and problems.
 
 The main concepts of luke are:
 
@@ -122,11 +125,14 @@ The main concepts of luke are:
 * ***Open and free platform for modules***
 
 
+[ Check out the Modules ](https://luke-lang.github.io/modules)
+
+
 ***Default namespace***
 
 luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
 
-[ Learn more ](https://luke-lang.github.io/modules)
+[ Default module ](https://luke-lang.github.io/modules)
 
 Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
@@ -143,16 +149,18 @@ Building your own custom syntax is fairly simple. It's defined using a JavaScrip
 ```javascript
 lang = {
   $: {
-    echo: {
-      follow: ["{param}", "$and"],
-      method: function(param){
-        console.log(param)
-      }
-    },
-    and: {
-      follow: ["{param}", "$and"],
-      method: function(param){
-        console.log(param)
+    mymodule: { // your namespace name
+      echo: {
+        follow: ["{param}", "$and"],
+        method: function(param){
+          console.log(param)
+        }
+      },
+      and: {
+        follow: ["{param}", "$and"],
+        method: function(param){
+          console.log(param)
+        }
       }
     }
   }
@@ -182,7 +190,9 @@ command  command  command command delimeter;
 
 ## Publish your module
 
-Your custom syntax modules can be contributed to the official luke module repo, called [luke-catalog](...)
+Your custom syntax modules can be contributed to the official luke module repo.
+
+Learn more: [ Luke Module Repo](https://luke-lang.github.io/modules)
 
 # License
 
