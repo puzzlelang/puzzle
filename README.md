@@ -151,7 +151,7 @@ The luke language is a platform for different syntax. Each syntax ist delivered 
 ![module packing](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/module-packing.png "Custom syntax becomes a module")
 
 
-## Create a Syntax module
+## Create a syntax
 
 Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
@@ -177,7 +177,21 @@ lang = {
 module.exports = lang;
 ```
 
+
+
+
+| Key        | Description           | Example  |
+| ------------- |:-------------:| -----:|
+| lang.$.<NAMESPACE>      | The name of your moudle/namespace | `example` |
+| lang.$.namespace.<TOKEN>     | Custom tokens      |   `echo` |
+| lang.$.namespace.<TOKEN>.follow | A list of possible tokens that can follow.     |    `["{param}", "$and"]` |
+| lang.$.namespace.<TOKEN>.method | The function to be executed, when that token ist parsed     |    `function(param){console.log(param)}` |
+
+
+
 Define your available tokens as keys under the "$" object. Each key has an attached `method`, which will be executed, when that token is parsed and an array `follow`, which defines, which tokens can follow the current token.
+
+***Following tokens***
 
 Following tokens can either be wildcards for user input (`{param}`) or another token, specified with a leading "$" (e.g. `$and`).
 
@@ -197,7 +211,7 @@ command  command  command command delimeter;
 
 ```
 
-## Publish your module
+## Publish syntax as module
 
 Your custom syntax modules can be contributed to the official luke module repo.
 
