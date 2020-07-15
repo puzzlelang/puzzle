@@ -179,6 +179,7 @@ module.exports = lang;
 
 
 
+***The required keys and fields in your syntax definition are:***
 
 | Key        | Description           | Example  |
 | ------------- |-------------| -----|
@@ -187,6 +188,9 @@ module.exports = lang;
 | lang.$.NAMESPACE.TOKEN.follow | A list of possible tokens that can follow.   |    `["{param}", "$and"]` |
 | lang.$.NAMESPACE.TOKEN.method | The function to be executed, when that token ist parsed     |    `function(param){console.log(param)}` |
 
+
+
+***Follow tokens can be defined as follows:***
 
 
 
