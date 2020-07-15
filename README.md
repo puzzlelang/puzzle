@@ -8,6 +8,20 @@ luke as an abstract, extendable programming language and platform that allows cu
 * [Luke Module Catalog](https://luke-lang.github.io/modules) (Documentation of all available modules)
 * [npm](...)
 
+
+#Example
+
+```luke
+// 1. Use a module
+use example.luke.js
+
+// 2. Set the module context
+ns example;
+
+// 3. Use module-specific code
+print "Hello World"
+```
+
 # Install
 
 luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
@@ -96,23 +110,25 @@ The main concepts of luke are:
 
 ## Tutorial
 
-***Example***
+***Use modules***
 
 ```luke
-// 1. Use a module
-use example.luke.js
+use example.luke.js;
+use https://remote.com/example.luke.js
+```
 
-// 2. Set the module context
+
+***Set namespace***
+
+```luke
 ns example;
+```
 
-// 3. Use module-specific code
+
+***Module specific code***
+
+```luke
 print "Hello World"
-
-// 4. Use another module (modules can be used anywhere)
-use antoher.luke.js
-
-// ...
-
 ```
 
 
