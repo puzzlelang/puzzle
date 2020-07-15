@@ -2,6 +2,8 @@ const fs = require('fs');
 const https = require('https');
 var npm = require("npm");
 
+var dsl = require('./dsl.js');
+
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
     var LocalStorage = require('node-localstorage').LocalStorage;
@@ -28,6 +30,7 @@ var lang = {
     delimeter: ";",
     assignmentOperator: "=",
     context: {},
+    vars: {},
     currentNamespace: "default",
     static: {
         execStatement: function() {
@@ -92,6 +95,14 @@ var lang = {
                 method: function(ns) {
                     lang.currentNamespace = ns;
                     console.log('Set namespace', ns)
+                }
+            },
+            var: {
+                manual: "Sets a variable",
+                follow: ["{key,value}"],
+                method: function(data) {
+                    global.luke.vars[data.key] = data.value;
+                    console.log('vars', global.luke.vars)
                 }
             },
             use: {

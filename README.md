@@ -3,16 +3,28 @@
 luke as an abstract, extendable programming language and platform that allows custom syntax for domain specific solutions.
 
 
-***Important***
-
-The luke project is in early stage and under development. It's not yet production ready. If you'd like to contribute to the code or the module ecosystem, feel free to open a PR.
+***Important:*** The luke project is in early stage and under development. It's not yet production ready. If you'd like to contribute to the code or the module ecosystem, feel free to open a PR.
 
 
-***Resources:***
+# Table of contents
 
-* [Luke Website](https://luke-lang.github.io)
-* [Luke Module Catalog](https://luke-lang.github.io/modules) (Documentation of all available modules)
-* [npm](...)
+* [Resources](#resources)
+* [Examples](#examples)
+* [Install](#install)
+* [Usage](#usage)
+* [Language](#language)
+* [Custom syntax](#custom-syntax-modules)
+* [License](#license)
+
+
+# Resources
+
+| Resource        | Description           | 
+| ------------- |-------------| -----|
+| [Luke Website](https://luke-lang.github.io)  | Official website of the luke project |
+| [Luke Module Catalog](https://luke-lang.github.io/modules)    | Complete collection and documentation of luke modules     |  
+| [Luke on npm](https://npmjs.com/package/luke-lang) | Official npm package   |  
+| [Luke on GitHub](https://github.com/luke-lang/luke) | Official luke core repo   |  
 
 
 # Examples
@@ -181,6 +193,7 @@ module.exports = lang;
 
 ***The required keys and fields in your syntax definition are:***
 
+
 | Key        | Description           | Example  |
 | ------------- |-------------| -----|
 | lang.$.NAMESPACE      | The name of your moudle/namespace | `example` |
@@ -191,7 +204,6 @@ module.exports = lang;
 
 
 ***Follow tokens can be defined as follows:***
-
 
 
 | Follow token        | Description    | 

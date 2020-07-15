@@ -4,6 +4,10 @@ if (typeof module !== 'undefined' && module.exports) {
     localStorage = new LocalStorage('./localStorage');
 }
 
+global.luke = {
+    vars: {}
+};
+
 var dsl = {
 
     // Language definition
@@ -11,6 +15,10 @@ var dsl = {
 
     // Custom set of methods
     api: {},
+
+    // variables
+
+    vars: global.luke.vars,
 
     // internal storage (for saved modules)
     moduleStorage: {
@@ -164,7 +172,11 @@ var dsl = {
                     sequence(tokens, tokens[0], bestMatching, partId);
                 } else {
 
-                    if (bestMatchingInstruction.includes(",")) {
+                    if (global.luke.vars[bestMatching]) {
+
+                        callTokenFunction(t, global.luke.vars[bestMatching]);
+                        tokens.shift();
+                    } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                         var argList = {};
@@ -223,7 +235,11 @@ var dsl = {
                         sequence(tokens, tokens[0], bestMatching, partId);
                     } else {
 
-                        if (bestMatchingInstruction.includes(",")) {
+                        if (global.luke.vars[bestMatching]) {
+
+                            callTokenFunction(t, global.luke.vars[bestMatching]);
+                            tokens.shift();
+                        } else if (bestMatchingInstruction.includes(",")) {
                             var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
 
