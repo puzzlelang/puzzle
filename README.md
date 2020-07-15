@@ -181,11 +181,20 @@ module.exports = lang;
 
 
 | Key        | Description           | Example  |
-| ------------- |:-------------:| -----:|
-| lang.$.<NAMESPACE>      | The name of your moudle/namespace | `example` |
-| lang.$.namespace.<TOKEN>     | Custom tokens      |   `echo` |
-| lang.$.namespace.<TOKEN>.follow | A list of possible tokens that can follow.     |    `["{param}", "$and"]` |
-| lang.$.namespace.<TOKEN>.method | The function to be executed, when that token ist parsed     |    `function(param){console.log(param)}` |
+| ------------- |-------------| -----|
+| lang.$.NAMESPACE      | The name of your moudle/namespace | `example` |
+| lang.$.NAMESPACE.TOKEN     | Custom tokens      |   `echo` |
+| lang.$.NAMESPACE.TOKEN.follow | A list of possible tokens that can follow.   |    `["{param}", "$and"]` |
+| lang.$.NAMESPACE.TOKEN.method | The function to be executed, when that token ist parsed     |    `function(param){console.log(param)}` |
+
+
+
+
+| Follow token        | Description    | 
+| ------------- |-------------| 
+| `$and`      | Corresponds to the exact token without the leading dollar sign. |
+| `{param}`     | A custom input of any type. This will be available as single parameter in your method: `method: function(param){}`      |
+| `{param1,param2}` | Multiple custom inputs followed by another. These will be available as object parameter: `method: function(obj){//obj.param1, obj.param2}`  | 
 
 
 
