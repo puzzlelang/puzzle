@@ -132,10 +132,10 @@ The luke language aims to provide simple language to build solutions that are ta
 The main concepts of luke are:
 
 
-* ***Simple, clean language***
-* ***Understandable for developers and non-developers***
+* ***Simple language design, understandable for developers and non-developers***
 * ***Custom syntax creation***
-* ***Open and free platform for modules***
+* ***Open and free platform for syntax modules***
+
 
 
 ![language architecture](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/lang-architecture.png "Language architecture")
@@ -144,11 +144,29 @@ The main concepts of luke are:
 [ Check out the Modules ](https://luke-lang.github.io/modules)
 
 
-***Default namespace***
+***Default module example***
 
-luke comes with a default namespace, which is initalized by default. The default nameapace contains some basic functionalities.
+luke comes with a built-in default module, which is initalized by default. The default module contains some basic functionalities.
 
-[ Default module ](https://luke-lang.github.io/modules)
+
+Some code examples from the default module:
+
+
+```luke
+print "I am a luke program";
+
+var myVariable "Variable Content";
+
+print myVariable;
+
+download https://google.com to /directory;
+
+list commands;
+
+list modules;
+```
+
+[ Full reference ](https://luke-lang.github.io/modules)
 
 Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
