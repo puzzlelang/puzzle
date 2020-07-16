@@ -14,12 +14,17 @@ var useSyntax = function(lang, jsObject) {
 
     //console.log(jsObject);
 
+    var ns = Object.keys(jsObject['$'])[0];
+
     var _defaultSyntax = lang['$'].default;
 
     Object.assign(lang, jsObject)
-    console.log(Object.keys(jsObject['$'])[0], 'can now be used using: ns', Object.keys(jsObject['$'])[0]);
+
+    console.log(ns, 'can now be used.');
 
     lang['$'].default = _defaultSyntax;
+
+    lang.currentNamespace = ns;
 
     //    console.log('lang', lang);
 };
