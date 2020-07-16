@@ -45,14 +45,9 @@ print "Starting luke program";
 use rest.luke.js;
 use https://domain.com/rest.luke.js;
 
-
-// 2. Set the module namespace
-
-ns rest;
-
-
 // 3. Use module-specific code
 
+ns rest; // (set the module namespace)
 POST {name "Hello"} to https://api.com/resource
 ```
 
