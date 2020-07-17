@@ -239,7 +239,7 @@ var dsl = {
 
                             callTokenFunction(t, global.luke.vars[bestMatching]);
                             tokens.shift();
-                        } else if (bestMatchingInstruction.includes(",")) {
+                        } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                             var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
 

@@ -6,6 +6,8 @@ const inquirer = require('inquirer');
 const luke = require('./dsl.js');
 const fs = require('fs');
 
+const npmview = require('npmview');
+const pjson = require('./package.json');
 
 program
     .command('run <type>')
@@ -18,6 +20,10 @@ program
 program
     .description('Run your app')
     .action(function(type, args) {
+
+        npmview(pjson.name, function(err, version, moduleInfo) {
+            if (version > pjson.version) console.log('There is a newer version of luke available. Run "npm i luke-lang -g" to install it.');
+        });
 
         if (args) {
             try {

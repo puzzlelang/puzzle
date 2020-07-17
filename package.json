@@ -24,7 +24,8 @@
     "https": "^1.0.0",
     "inquirer": "^7.3.0",
     "node-localstorage": "^2.1.6",
-    "npm": "^6.14.6"
+    "npm": "^6.14.6",
+    "npmview": "0.0.4"
   },
   "devDependencies": {}
 }

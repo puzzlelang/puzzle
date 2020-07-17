@@ -1,6 +1,7 @@
 const fs = require('fs');
 const https = require('https');
-var npm = require("npm");
+const npm = require("npm");
+const pjson = require('./package.json');
 
 var dsl = require('./dsl.js');
 
@@ -108,6 +109,13 @@ var lang = {
                 method: function(data) {
                     global.luke.vars[data.key] = data.value;
                     console.log('vars', global.luke.vars)
+                }
+            },
+            version: {
+                manual: "See the installed version of luke",
+                follow: [],
+                method: function(data) {
+                    console.log('luke version: ', pjson.version)
                 }
             },
             use: {
