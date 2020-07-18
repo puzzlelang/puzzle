@@ -132,6 +132,47 @@ var lang = {
                     console.log('permanent', ns)
                 }
             },
+            if: {
+                manual: "If statement",
+                follow: ["{statement}", "$then", "$and"],
+                method: function(statement) {
+                    console.log('c', statement);
+                    lang.context['if'] = statement;
+                }
+            },
+            then: {
+                manual: "Then statement",
+                follow: ["{statement}", "$then", "*"],
+                method: function(statement) {
+
+                    if(lang.context['if']) {
+                        if(eval(lang.context['if'])) {
+                            console.log('eval', eval(lang.context['if']));
+                        } else return;
+                    }
+                }
+            },
+            while: {
+                manual: "while statement",
+                follow: ["{statement}", "$do"],
+                method: function(statement) {
+                    console.log('c', statement);
+                    lang.context['while'] = statement;
+                }
+            },
+            do: {
+                manual: "while statement",
+                follow: ["{statement}", "$do"],
+                method: function(statement) {
+                     if(lang.context['while']) {
+                        while(eval(lang.context['while']))
+                        {
+
+                        }
+                      
+                    }
+                }
+            },
             print: {
                 follow: ["{text}"],
                 method: function(text) {
