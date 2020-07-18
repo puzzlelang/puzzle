@@ -95,6 +95,13 @@ var lang = {
     },
     "$": {
         default: {
+            include: {
+                manual: "include a luke file",
+                follow: ["{file}"],
+                method: function(ns) {
+                    //...
+                }
+            },
             ns: {
                 manual: "Sets a namespace. Valid until another namespace is set",
                 follow: ["{namespace}"],
