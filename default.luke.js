@@ -92,7 +92,7 @@ var lang = {
             include: {
                 manual: "include a luke file",
                 follow: ["{file}"],
-                method: function(file) {
+                method: function(ctx, file) {
 
                     function includeScript(code)
                     {
@@ -131,7 +131,7 @@ var lang = {
             ns: {
                 manual: "Sets a namespace. Valid until another namespace is set",
                 follow: ["{namespace}"],
-                method: function(ns) {
+                method: function(ctx, ns) {
                     lang.currentNamespace = ns;
                     console.log('Set namespace', ns)
                 }
@@ -139,7 +139,7 @@ var lang = {
             var: {
                 manual: "Sets a variable",
                 follow: ["{key,value}"],
-                method: function(data) {
+                method: function(ctx, data) {
                     global.luke.vars[data.key] = data.value;
                     console.log('vars', global.luke.vars)
                 }
@@ -147,25 +147,25 @@ var lang = {
             version: {
                 manual: "See the installed version of luke",
                 follow: [],
-                method: function(data) {
+                method: function(ctx, data) {
                     console.log('luke version: ', pjson.version)
                 }
             },
             use: {
                 follow: ["$permanent", "{file}"],
-                method: function(ns) {
+                method: function(ctx, ns) {
                     lang.context['useNamespace'] = ns;
                 }
             },
             unuse: {
                 follow: ["{file}"],
-                method: function(ns) {
+                method: function(ctx, ns) {
                     lang.context['unUseNamespace'] = ns;
                 }
             },
             permanent: {
                 follow: ["{file}"],
-                method: function(file) {
+                method: function(ctx, file) {
                     lang.context['useNamespace'] = file;
                     lang.context['_' + file + 'permanent'] = true;
                     console.log('permanent', file)
@@ -173,13 +173,13 @@ var lang = {
             },
             print: {
                 follow: ["{text}"],
-                method: function(text) {
+                method: function(ctx, text) {
                     console.log(text)
                 }
             },
             list: {
                 follow: ["{param}"],
-                method: function(param) {
+                method: function(ctx, param) {
                     switch (param) {
                         case 'modules':
                             console.log(Object.keys(lang['$']).join(', '));
@@ -203,7 +203,7 @@ var lang = {
             },
             download: {
                 follow: ["{param}"],
-                method: function(param) {
+                method: function(ctx, param) {
                     https.get(param, (resp) => {
                         var data = '';
 
@@ -224,7 +224,7 @@ var lang = {
             },
             install: {
                 follow: ["{param}"],
-                method: function(param) {
+                method: function(ctx, param) {
                     npm.load({
                         loaded: false
                     }, function(err) {

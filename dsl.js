@@ -79,7 +79,7 @@ var dsl = {
 
 
         // Call the dynamic, corresponding api method that blongs to a single token
-        var callTokenFunction = (key, param, dslKey) => {
+        var callTokenFunction = (ctx, key, param, dslKey) => {
 
             //console.log('args', key, param, dslKey)
             if (param) {
@@ -96,12 +96,12 @@ var dsl = {
 
             if (definition[key]) {
                 if (isObject(definition[key])) {
-                    (definition[key]).method(param);
+                    (definition[key]).method(ctx, param);
                 } else if (this.api[key]) {
-                    this.api[key](param)
+                    this.api[key](ctx, param)
                 }
             } else if (this.api[key]) {
-                this.api[key](param)
+                this.api[key](ctx, param)
             } else {
                 console.log(key, 'is not a function');
             }
@@ -182,7 +182,7 @@ var dsl = {
 
                     if (global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(t, global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -196,11 +196,11 @@ var dsl = {
                             tokens.shift();
                         })
 
-                        callTokenFunction(token, argList);
+                        callTokenFunction(global.luke.ctx[partId], token, argList);
                         //tokens.shift();
 
                     } else {
-                        callTokenFunction(token, bestMatching)
+                        callTokenFunction(global.luke.ctx[partId], token, bestMatching)
                         tokens.shift();
                     }
 
@@ -244,13 +244,13 @@ var dsl = {
                     var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                     if ((bestMatching || "").charAt(0) == "$") {
-                        callTokenFunction(t);
+                        callTokenFunction(global.luke.ctx[partId], t);
                         sequence(tokens, tokens[0], bestMatching, partId);
                     } else {
 
                         if (global.luke.vars[bestMatching]) {
 
-                            callTokenFunction(t, global.luke.vars[bestMatching]);
+                            callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
                             tokens.shift();
                         } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                             var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -265,11 +265,11 @@ var dsl = {
                                 tokens.shift();
                             })
 
-                            callTokenFunction(t, argList);
+                            callTokenFunction(global.luke.ctx[partId], t, argList);
                             //tokens.shift();
 
                         } else {
-                            callTokenFunction(t, bestMatching)
+                            callTokenFunction(global.luke.ctx[partId], t, bestMatching)
                             tokens.shift();
                         }
 
