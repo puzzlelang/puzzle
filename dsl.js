@@ -288,8 +288,6 @@ var dsl = {
     },
     init: function() {
 
-        console.log('Welcome to luke...');
-
         localStorage, dsl.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
                 dsl.useSyntax(eval(dsl.moduleStorage.get(key)));
