@@ -151,7 +151,7 @@ luke comes with a built-in default module, which is initalized by default. The d
 Some code examples from the default module:
 
 
-| Coce        | Description           | 
+| Code        | Description           | 
 | ------------- |-------------|
 | `print "I'm a luke program"`  | Print something |
 | `var color blue`  | Set a variable | 
