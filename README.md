@@ -184,13 +184,13 @@ lang = {
     mymodule: { // your namespace name
       echo: {
         follow: ["{param}", "$and"],
-        method: function(param){
+        method: function(ctx, param){
           console.log(param)
         }
       },
       and: {
         follow: ["{param}", "$and"],
-        method: function(param){
+        method: function(ctx, param){
           console.log(param)
         }
       }
