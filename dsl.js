@@ -232,15 +232,11 @@ var dsl = {
 
                 tokens.push(this.lang.delimeter);
 
-                t = tokens[0]
+                var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
 
                 tokens.shift();
 
-                console.log('tt', this.lang['$'][this.lang.currentNamespace], '--', this.lang['$'].default);
-
                 var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
-
-                console.log('Def', t, definition, '--', definition[t.toString()], Object.keys(definition));
 
                 if (definition[t]) {
 
