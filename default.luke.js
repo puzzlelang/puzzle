@@ -11,25 +11,7 @@ if (typeof module !== 'undefined' && module.exports) {
     localStorage = new LocalStorage('./localStorage');
 }
 
-var useSyntax = function(lang, jsObject) {
-
-    //console.log(jsObject);
-
-    var ns = Object.keys(jsObject['$'])[0];
-
-    var _defaultSyntax = lang['$'].default;
-
-    Object.assign(lang, jsObject)
-
-    console.log(ns, 'can now be used.');
-
-    lang['$'].default = _defaultSyntax;
-
-    lang.currentNamespace = ns;
-
-    //    console.log('lang', lang);
-};
-
+var useSyntax = global.luke.useSyntax;
 
 
 var lang = {
@@ -46,6 +28,13 @@ var lang = {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
                     console.log('Import Error:', e)
+                }
+            }
+
+            if (lang.context['unUseNamespace']) {
+                if (global.luke.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
+                    global.luke.moduleStorage.remove('_' + lang.context['unUseNamespace']);
+                    console.log(lang.context['unUseNamespace'], 'unused');
                 }
             }
 
@@ -66,6 +55,11 @@ var lang = {
                             });
 
                             resp.on('end', () => {
+
+                                if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
+                                    if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
+                                }
+
                                 useSyntax(lang, eval(data));
                             });
 
@@ -124,12 +118,18 @@ var lang = {
                     lang.context['useNamespace'] = ns;
                 }
             },
-            permanent: {
+            unuse: {
                 follow: ["{file}"],
                 method: function(ns) {
-                    lang.context['useNamespace'] = ns;
-                    if (!localStorage.getItem('_' + ns)) localStorage.setItem('_' + ns, ns)
-                    console.log('permanent', ns)
+                    lang.context['unUseNamespace'] = ns;
+                }
+            },
+            permanent: {
+                follow: ["{file}"],
+                method: function(file) {
+                    lang.context['useNamespace'] = file;
+                    lang.context['_' + file + 'permanent'] = true;
+                    console.log('permanent', file)
                 }
             },
             print: {

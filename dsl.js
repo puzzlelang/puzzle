@@ -5,7 +5,8 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 global.luke = {
-    vars: {}
+    vars: {},
+    ctx: {}
 };
 
 var dsl = {
@@ -17,8 +18,10 @@ var dsl = {
     api: {},
 
     // variables
-
     vars: global.luke.vars,
+
+    // statement context
+    ctx: global.luke.ctx,
 
     // internal storage (for saved modules)
     moduleStorage: {
@@ -53,6 +56,9 @@ var dsl = {
         this.lang['$'].default = _defaultSyntax;
 
         console.log('lang', this.lang);
+
+        this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
+
     },
 
     parse: function(code) {
@@ -158,6 +164,8 @@ var dsl = {
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
 
+                global.luke.ctx[partId].sequence.push(token)
+
                 var nextBestInsturction = null;
 
                 tokens.shift();
@@ -214,6 +222,11 @@ var dsl = {
                 if (!p) return;
 
                 var partId = Math.random();
+
+                global.luke.ctx[partId] = {
+                    sequence: [],
+                    data: {}
+                };
 
                 var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
 
@@ -278,10 +291,14 @@ var dsl = {
         console.log('Welcome to luke...');
 
         localStorage, dsl.moduleStorage.all._keys.forEach(function(key) {
-            if (key.charAt(0) == "_") dsl.parse('use ' + dsl.moduleStorage.get(key));
+            if (key.charAt(0) == "_") {
+                dsl.useSyntax(eval(dsl.moduleStorage.get(key)));
+            }
         })
     }
 }
 
+global.luke.useSyntax = dsl.useSyntax;
+global.luke.moduleStorage = dsl.moduleStorage;
 
 module.exports = dsl;
