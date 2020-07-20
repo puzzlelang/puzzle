@@ -89,6 +89,44 @@ var lang = {
     },
     "$": {
         default: {
+            include: {
+                manual: "include a luke file",
+                follow: ["{file}"],
+                method: function(file) {
+
+                    function includeScript(code)
+                    {
+
+                    }
+                    
+                    var fileName = file;
+                    var extention = fileName.split(".")[fileName.split(".").length - 1];
+
+                    if (fileName.indexOf('https://') == 0) {
+
+                        https.get(fileName, (resp) => {
+                            var data = '';
+
+                            resp.on('data', (chunk) => {
+                                data += chunk;
+                            });
+
+                            resp.on('end', () => {
+                                includeScript(data);
+                            });
+
+                        }).on("error", (err) => {
+                            console.log("Error: " + err.message);
+                        });
+
+                    } else if (extention.toLowerCase() == "luke") {
+                        if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                        var file = require(fileName);
+                        includeScript(file)
+                    } else console.log('unsupported file type')
+
+                }
+            },
             ns: {
                 manual: "Sets a namespace. Valid until another namespace is set",
                 follow: ["{namespace}"],
