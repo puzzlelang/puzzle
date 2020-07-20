@@ -163,7 +163,7 @@ Some code examples from the default module:
 
 [ Full reference ](https://luke-lang.github.io/modules)
 
-Syntax from the default namespace will automatically be available in any other module-specific namespace.
+> Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
 
 # Custom syntax, modules
