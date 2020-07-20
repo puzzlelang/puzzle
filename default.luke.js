@@ -96,7 +96,8 @@ var lang = {
 
                     function includeScript(code)
                     {
-
+                        //console.log('ASff');
+                        global.luke.instance.parse(code);
                     }
                     
                     var fileName = file;
@@ -121,7 +122,7 @@ var lang = {
 
                     } else if (extention.toLowerCase() == "luke") {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                        var file = require(fileName);
+                        var file = fs.readFileSync(fileName, 'utf8');
                         includeScript(file)
                     } else console.log('unsupported file type')
 

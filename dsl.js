@@ -236,7 +236,11 @@ var dsl = {
 
                 tokens.shift();
 
+                console.log('tt', this.lang['$'][this.lang.currentNamespace], '--', this.lang['$'].default);
+
                 var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+
+                console.log('Def', t, definition, '--', definition[t.toString()], Object.keys(definition));
 
                 if (definition[t]) {
 
@@ -300,5 +304,6 @@ var dsl = {
 
 global.luke.useSyntax = dsl.useSyntax;
 global.luke.moduleStorage = dsl.moduleStorage;
+global.luke.instance = dsl;
 
 module.exports = dsl;

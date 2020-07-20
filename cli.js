@@ -13,6 +13,7 @@ program
     .command('run <type>')
     .description('Run your app')
     .action(function(type, args) {
+        luke.init();
         var code = fs.readFileSync(type, 'utf8');
         luke.parse(code);
     });

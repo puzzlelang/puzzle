@@ -1,1 +1,2 @@
-print "hi there";
+include example1.luke;
+print "hi theree";
