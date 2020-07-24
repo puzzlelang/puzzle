@@ -3,8 +3,6 @@ const https = require('https');
 const npm = require("npm");
 const pjson = require('./package.json');
 
-var dsl = require('./dsl.js');
-
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
     var LocalStorage = require('node-localstorage').LocalStorage;
@@ -12,7 +10,6 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 var useSyntax = global.luke.useSyntax;
-
 
 var lang = {
     delimeter: ";",

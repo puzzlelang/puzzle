@@ -3,7 +3,7 @@
 const program = require('commander');
 const inquirer = require('inquirer');
 
-const luke = require('./dsl.js');
+const luke = require('./luke.js');
 const fs = require('fs');
 
 const npmview = require('npmview');
