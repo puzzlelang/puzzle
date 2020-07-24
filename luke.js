@@ -1,7 +1,7 @@
-if (typeof module !== 'undefined' && module.exports) {
+if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
-    var LocalStorage = require('node-localstorage').LocalStorage;
-    localStorage = new LocalStorage('./localStorage');
+    const dependencies = require('./dependencies.js');
+    localStorage = new dependencies.localStorage.LocalStorage('./localStorage');
 } else global = window;
 
 

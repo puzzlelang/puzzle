@@ -1,8 +1,9 @@
-if (typeof module !== 'undefined' && module.exports) {
+if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
-    fs = require('fs');
-    fetch = require('node-fetch');
-    npm = require("npm");
+    const dependencies = require('./dependencies.js');
+    fs = dependencies.fs;
+    fetch = dependencies.fetch;
+    npm = dependencies.npm;
     pjson = require('./package.json');
 } else {
     global = window;
