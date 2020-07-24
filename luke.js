@@ -1,7 +1,7 @@
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    var LocalStorage = require('node-localstorage').LocalStorage;
-    localStorage = new LocalStorage('./localStorage');
+    //var LocalStorage = require('node-localstorage').LocalStorage;
+    //localStorage = new LocalStorage('./localStorage');
 } else global = window;
 
 global.luke = {
@@ -9,7 +9,7 @@ global.luke = {
     ctx: {}
 };
 
-var dsl = {
+var luke = {
 
     // Default language definition
     lang: require('./default.luke.js'),
@@ -288,16 +288,16 @@ var dsl = {
     },
     init: function() {
 
-        localStorage, dsl.moduleStorage.all._keys.forEach(function(key) {
+        localStorage, luke.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                dsl.useSyntax(eval(dsl.moduleStorage.get(key)));
+                luke.useSyntax(eval(luke.moduleStorage.get(key)));
             }
         })
     }
 }
 
-global.luke.useSyntax = dsl.useSyntax;
-global.luke.moduleStorage = dsl.moduleStorage;
-global.luke.instance = dsl;
 
-module.exports = dsl;
+
+global.luke = luke;
+
+module.exports = luke;

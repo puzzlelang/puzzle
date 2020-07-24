@@ -24,8 +24,6 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 }
 
-var useSyntax = global.luke.useSyntax;
-
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -65,7 +63,7 @@ var lang = {
                                 if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
-                                useSyntax(lang, eval(data));
+                                global.luke.useSyntax(lang, eval(data));
                             });
 
                     } else if (extention.toLowerCase() == "js") {
@@ -74,7 +72,7 @@ var lang = {
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
-                        useSyntax(lang, file);
+                        global.luke.useSyntax(lang, file);
                     } else console.log('unsupported file type')
 
 
@@ -94,7 +92,7 @@ var lang = {
                     function includeScript(code)
                     {
                         //console.log('ASff');
-                        global.luke.instance.parse(code);
+                        global.luke.parse(code);
                     }
                     
                     var fileName = file;
@@ -146,6 +144,7 @@ var lang = {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
                     lang.context['useNamespace'] = ns;
+                    console.log('ctx', lang.context['useNamespace'])
                 }
             },
             unuse: {
