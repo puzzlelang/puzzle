@@ -1,23 +1,27 @@
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    
     fs = require('fs');
     fetch = require('node-fetch');
     npm = require("npm");
     pjson = require('./package.json');
 } else {
     global = window;
-    
+
     fs = {
         readFile: function(url, encoding, cb){
-              const reader = new FileReader();
-              reader.addEventListener('load', (event) => {
-                if(cb) cb(event.target.result);
-              });
-              reader.readAsDataURL(url);
+            if(url.indexOf('ls://') == 0)
+              return cb(localStorage.getItem(url))
+
+            const reader = new FileReader();
+            reader.addEventListener('load', (event) => {
+              if(cb) cb(event.target.result);
+            });
+            reader.readAsDataURL(url);
+        },
+        writeFile: function(url, data, cb){
+            cb(localStorage.setItem('ls://' + url, data))
         }
     }
-
 }
 
 
@@ -33,9 +37,7 @@ var lang = {
         execStatement: function() {
 
             if (lang.context[lang.context.importNamespace]) {
-                
                 if(environment != 'node') return console.log('feature not available in this environment')
-
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
@@ -53,7 +55,6 @@ var lang = {
             if (lang.context['useNamespace']) {
 
                 try {
-
                     var fileName = lang.context['useNamespace'];
                     var extention = fileName.split(".")[fileName.split(".").length - 1];
 
@@ -65,7 +66,6 @@ var lang = {
                                 if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
-
                                 useSyntax(lang, eval(data));
                             });
 
@@ -108,9 +108,6 @@ var lang = {
                             .then(data => {
                                 includeScript(data);
                             });
-
-
-                       
 
                     } else if (extention.toLowerCase() == "luke") {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
@@ -163,7 +160,6 @@ var lang = {
                 method: function(ctx, file) {
                     lang.context['useNamespace'] = file;
                     lang.context['_' + file + 'permanent'] = true;
-                    console.log('permanent', file)
                 }
             },
             print: {
@@ -207,8 +203,9 @@ var lang = {
                            .then(data => {
                                
                                var fileName = param.split('/')[param.split('/').length - 1];
-                               fs.writeFileSync(fileName, data)
-                               console.log(fileName, 'downloaded');
+                               fs.writeFile(fileName, data, function(err, data){
+                                    console.log(fileName, 'downloaded');
+                               })
                            });
                   
                 }

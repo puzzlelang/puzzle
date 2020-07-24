@@ -11,7 +11,7 @@ global.luke = {
 
 var dsl = {
 
-    // Language definition
+    // Default language definition
     lang: require('./default.luke.js'),
 
     // Custom set of methods
