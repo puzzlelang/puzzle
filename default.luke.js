@@ -1,13 +1,23 @@
-const fs = require('fs');
-const https = require('https');
-const npm = require("npm");
-const pjson = require('./package.json');
-
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    var LocalStorage = require('node-localstorage').LocalStorage;
-    localStorage = new LocalStorage('./localStorage');
+    
+    fs = require('fs');
+    fetch = require('node-fetch');
+    npm = require("npm");
+    pjson = require('./package.json');
+} else {
+    fs = {
+        readFile: function(url, encoding, cb){
+              const reader = new FileReader();
+              reader.addEventListener('load', (event) => {
+                if(cb) cb(event.target.result);
+              });
+              reader.readAsDataURL(url);
+        }
+    }
+
 }
+
 
 var useSyntax = global.luke.useSyntax;
 
@@ -21,6 +31,9 @@ var lang = {
         execStatement: function() {
 
             if (lang.context[lang.context.importNamespace]) {
+                
+                if(environment != 'node') return console.log('feature not available in this environment')
+
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
@@ -44,15 +57,9 @@ var lang = {
 
                     if (fileName.indexOf('https://') == 0) {
 
-                        https.get(fileName, (resp) => {
-                            var data = '';
-
-                            resp.on('data', (chunk) => {
-                                data += chunk;
-                            });
-
-                            resp.on('end', () => {
-
+                        fetch(fileName)
+                            .then(res => res.text())
+                            .then(data => {
                                 if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
@@ -60,18 +67,10 @@ var lang = {
                                 useSyntax(lang, eval(data));
                             });
 
-                        }).on("error", (err) => {
-                            console.log("Error: " + err.message);
-                        });
-
-                    } else if (fileName.indexOf('$catalog/') == 0) {
-                        var name = fileName.split('/')[1];
-                        var file = require('node_modules/luke-lang/luke-catalog/modules/' + name);
-                        useSyntax(lang, file);
-                    } else if (extention.toLowerCase() == "json") {
-                        var syntax = fs.readFileSync(fileName, 'utf8');
-                        useSyntax(lang, JSON.parse(syntax));
                     } else if (extention.toLowerCase() == "js") {
+                        
+                        if(environment != 'node') return console.log('feature not available in this environment')
+
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
                         useSyntax(lang, file);
@@ -102,24 +101,21 @@ var lang = {
 
                     if (fileName.indexOf('https://') == 0) {
 
-                        https.get(fileName, (resp) => {
-                            var data = '';
-
-                            resp.on('data', (chunk) => {
-                                data += chunk;
-                            });
-
-                            resp.on('end', () => {
+                        fetch(fileName)
+                            .then(res => res.text())
+                            .then(data => {
                                 includeScript(data);
                             });
 
-                        }).on("error", (err) => {
-                            console.log("Error: " + err.message);
-                        });
+
+                       
 
                     } else if (extention.toLowerCase() == "luke") {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                        var file = fs.readFileSync(fileName, 'utf8');
+                        fs.readFile(fileName, function(err, data){
+                            if(err) return console.log('Error reading file');
+                            file = data;
+                        });
                         includeScript(file)
                     } else console.log('unsupported file type')
 
@@ -201,27 +197,26 @@ var lang = {
             download: {
                 follow: ["{param}"],
                 method: function(ctx, param) {
-                    https.get(param, (resp) => {
-                        var data = '';
 
-                        resp.on('data', (chunk) => {
-                            data += chunk;
-                        });
+                    if(environment != 'node') return console.log('download not available in this environment')
 
-                        resp.on('end', () => {
-                            var fileName = param.split('/')[param.split('/').length - 1];
-                            fs.writeFileSync(fileName, data)
-                            console.log(fileName, 'downloaded');
-                        });
-
-                    }).on("error", (err) => {
-                        console.log("Error: " + err.message);
-                    });
+                    fetch(param)
+                           .then(res => res.text())
+                           .then(data => {
+                               
+                               var fileName = param.split('/')[param.split('/').length - 1];
+                               fs.writeFileSync(fileName, data)
+                               console.log(fileName, 'downloaded');
+                           });
+                  
                 }
             },
             install: {
                 follow: ["{param}"],
                 method: function(ctx, param) {
+
+                    if(!npm) return console.log('npm not available in this environment');
+
                     npm.load({
                         loaded: false
                     }, function(err) {
