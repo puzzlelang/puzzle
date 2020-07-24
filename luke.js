@@ -4,10 +4,6 @@ if (typeof module !== 'undefined' && module.exports) {
     localStorage = new LocalStorage('./localStorage');
 } else global = window;
 
-global.luke = {
-    vars: {},
-    ctx: {}
-};
 
 var luke = {
 
@@ -18,10 +14,10 @@ var luke = {
     api: {},
 
     // variables
-    vars: global.luke.vars,
+    vars: {},
 
     // statement context
-    ctx: global.luke.ctx,
+    ctx: {},
 
     // internal storage (for saved modules)
     moduleStorage: {
