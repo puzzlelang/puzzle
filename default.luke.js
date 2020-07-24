@@ -1,8 +1,8 @@
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    //fs = require('fs');
-    //fetch = require('node-fetch');
-    //npm = require("npm");
+    fs = require('fs');
+    fetch = require('node-fetch');
+    npm = require("npm");
     pjson = require('./package.json');
 } else {
     global = window;

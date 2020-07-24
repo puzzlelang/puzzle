@@ -1,7 +1,7 @@
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    //var LocalStorage = require('node-localstorage').LocalStorage;
-    //localStorage = new LocalStorage('./localStorage');
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./localStorage');
 } else global = window;
 
 global.luke = {
