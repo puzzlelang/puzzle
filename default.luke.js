@@ -24,7 +24,6 @@ if (typeof module !== 'undefined' && module.exports) {
     }
 }
 
-
 var useSyntax = global.luke.useSyntax;
 
 var lang = {
