@@ -6,6 +6,8 @@ if (typeof module !== 'undefined' && module.exports) {
     npm = require("npm");
     pjson = require('./package.json');
 } else {
+    global = window;
+    
     fs = {
         readFile: function(url, encoding, cb){
               const reader = new FileReader();
