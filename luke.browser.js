@@ -2,9 +2,9 @@
 (function (global){
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    //fs = require('fs');
-    //fetch = require('node-fetch');
-    //npm = require("npm");
+    fs = require('fs');
+    fetch = require('node-fetch');
+    npm = require("npm");
     pjson = require('./package.json');
 } else {
     global = window;
@@ -236,18 +236,14 @@ var lang = {
 
 module.exports = lang;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./package.json":3}],2:[function(require,module,exports){
+},{"./package.json":3,"fs":4,"node-fetch":4,"npm":4}],2:[function(require,module,exports){
 (function (global){
 if (typeof module !== 'undefined' && module.exports) {
     environment = "node";
-    //var LocalStorage = require('node-localstorage').LocalStorage;
-    //localStorage = new LocalStorage('./localStorage');
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./localStorage');
 } else global = window;
 
-global.luke = {
-    vars: {},
-    ctx: {}
-};
 
 var luke = {
 
@@ -258,10 +254,10 @@ var luke = {
     api: {},
 
     // variables
-    vars: global.luke.vars,
+    vars: {},
 
     // statement context
-    ctx: global.luke.ctx,
+    ctx: {},
 
     // internal storage (for saved modules)
     moduleStorage: {
@@ -542,7 +538,7 @@ global.luke = luke;
 
 module.exports = luke;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./default.luke.js":1}],3:[function(require,module,exports){
+},{"./default.luke.js":1,"node-localstorage":4}],3:[function(require,module,exports){
 module.exports={
   "name": "luke-lang",
   "version": "0.0.27",
@@ -553,7 +549,7 @@ module.exports={
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "ncc build luke.js -m -o dist && browserify -p tinyify luke.js -o dist/browser.js"
+    "build-browser": "browserify luke.js -i fs -i npm -i node-fetch -i node-localstorage -o luke.browser.js"
   },
   "repository": {
     "type": "git",
@@ -566,7 +562,6 @@ module.exports={
   },
   "homepage": "https://github.com/luke-lang/luke#readme",
   "dependencies": {
-    "browserify-fs": "^1.0.0",
     "commander": "^5.1.0",
     "https": "^1.0.0",
     "inquirer": "^7.3.0",
@@ -578,5 +573,7 @@ module.exports={
   },
   "devDependencies": {}
 }
+
+},{}],4:[function(require,module,exports){
 
 },{}]},{},[2]);

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "ncc build luke.js -m -o dist && browserify -p tinyify luke.js -o dist/browser.js"
+    "build-browser": "browserify luke.js -i fs -i npm -i node-fetch -i node-localstorage -o luke.browser.js"
   },
   "repository": {
     "type": "git",
