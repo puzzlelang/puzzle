@@ -1,6 +1,6 @@
 module.exports = {
-	fs :require('fs'),
+	fs: require('fs'),
     fetch: require('node-fetch'),
-    npm : require("npm"),
+    npm: require("npm"),
     localStorage: require('node-localstorage')
 }
