@@ -11,17 +11,17 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     global = window;
 
     fs = {
-        readFile: function(url, encoding, cb){
-            if(url.indexOf('ls://') == 0)
-              return cb(localStorage.getItem(url))
+        readFile: function(url, encoding, cb) {
+            if (url.indexOf('ls://') == 0)
+                return cb(localStorage.getItem(url))
 
             const reader = new FileReader();
             reader.addEventListener('load', (event) => {
-              if(cb) cb(event.target.result);
+                if (cb) cb(event.target.result);
             });
             reader.readAsDataURL(url);
         },
-        writeFile: function(url, data, cb){
+        writeFile: function(url, data, cb) {
             cb(localStorage.setItem('ls://' + url, data))
         }
     }
@@ -37,7 +37,7 @@ var lang = {
         execStatement: function() {
 
             if (lang.context[lang.context.importNamespace]) {
-                if(environment != 'node') return console.log('feature not available in this environment')
+                if (environment != 'node') return console.log('feature not available in this environment')
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
@@ -70,8 +70,8 @@ var lang = {
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-                        
-                        if(environment != 'node') return console.log('feature not available in this environment')
+
+                        if (environment != 'node') return console.log('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
@@ -92,12 +92,11 @@ var lang = {
                 follow: ["{file}"],
                 method: function(ctx, file) {
 
-                    function includeScript(code)
-                    {
+                    function includeScript(code) {
                         //console.log('ASff');
                         global.luke.parse(code);
                     }
-                    
+
                     var fileName = file;
                     var extention = fileName.split(".")[fileName.split(".").length - 1];
 
@@ -111,8 +110,8 @@ var lang = {
 
                     } else if (extention.toLowerCase() == "luke") {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                        fs.readFile(fileName, function(err, data){
-                            if(err) return console.log('Error reading file');
+                        fs.readFile(fileName, function(err, data) {
+                            if (err) return console.log('Error reading file');
                             file = data;
                         });
                         includeScript(file)
@@ -134,6 +133,14 @@ var lang = {
                 method: function(ctx, data) {
                     global.luke.vars[data.key] = data.value;
                     console.log('vars', global.luke.vars)
+                }
+            },
+            func: {
+                manual: "Sets a function",
+                follow: ["{key,params,body}"],
+                method: function(ctx, data) {
+                    global.luke.funcs[data.key] = { params: data.params, body: data.body };
+                    console.log('funcs', global.luke.funcs)
                 }
             },
             version: {
@@ -197,25 +204,25 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if(environment != 'node') return console.log('download not available in this environment')
+                    if (environment != 'node') return console.log('download not available in this environment')
 
                     fetch(param)
-                           .then(res => res.text())
-                           .then(data => {
-                               
-                               var fileName = param.split('/')[param.split('/').length - 1];
-                               fs.writeFile(fileName, data, function(err, data){
-                                    console.log(fileName, 'downloaded');
-                               })
-                           });
-                  
+                        .then(res => res.text())
+                        .then(data => {
+
+                            var fileName = param.split('/')[param.split('/').length - 1];
+                            fs.writeFile(fileName, data, function(err, data) {
+                                console.log(fileName, 'downloaded');
+                            })
+                        });
+
                 }
             },
             install: {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if(!npm) return console.log('npm not available in this environment');
+                    if (!npm) return console.log('npm not available in this environment');
 
                     npm.load({
                         loaded: false
@@ -256,6 +263,9 @@ var luke = {
 
     // variables
     vars: {},
+
+    // functions
+    funcs: {},
 
     // statement context
     ctx: {},
@@ -298,7 +308,10 @@ var luke = {
 
     },
 
-    parse: function(code) {
+    parse: function(code, vars, funcs) {
+
+        if (!vars) vars = {};
+        if (!funcs) funcs = {};
 
         var parts = code.split(this.lang.delimeter);
 
@@ -417,9 +430,13 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId);
                 } else {
 
-                    if (global.luke.vars[bestMatching]) {
+                    if (vars[bestMatching] || global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                        tokens.shift();
+                    } else if (global.luke.funcs[bestMatching]) {
+
+                        //callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -447,8 +464,41 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId);
                 }
 
+            } else if (token.includes('(') && funcs || global.luke.funcs[token.substring(0, token.indexOf('('))]) {
+                execFunctionBody(token, vars, funcs)
             } else {
                 console.log('unequal', instructionKey, token);
+            }
+        }
+
+        var execFunctionBody = (bestMatching, vars, funcs) => {
+            if (bestMatching.includes('(') && bestMatching.includes(')')) {
+
+                var scope = {
+                    vars: {},
+                    funcs: {}
+                };
+
+                var rawInputParams = bestMatching.substring(bestMatching.indexOf('(') + 1, bestMatching.indexOf(')'));
+                var inputParams = rawInputParams.split(",");
+                //console.log('params', inputParams);
+
+                bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
+                var rawDefinedParams = global.luke.funcs[bestMatching].params;
+                rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
+                var definedParams = rawDefinedParams.split(",");
+                //console.log('definedParams', definedParams);
+
+                definedParams.forEach(function(param, i) {
+                    scope.vars[param] = inputParams[i]
+                })
+
+                //console.log(global.luke.funcs[bestMatching].body)
+
+                var body = global.luke.funcs[bestMatching].body;
+
+                luke.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars);
+
             }
         }
 
@@ -469,7 +519,7 @@ var luke = {
 
                 tokens.push(this.lang.delimeter);
 
-                var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
+                var t = tokens[0].replace(/(\r\n|\n|\r)/gm, "");
 
                 tokens.shift();
 
@@ -485,9 +535,16 @@ var luke = {
                         sequence(tokens, tokens[0], bestMatching, partId);
                     } else {
 
-                        if (global.luke.vars[bestMatching]) {
+                        if (vars[bestMatching] || global.luke.vars[bestMatching]) {
 
-                            callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                            callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                            tokens.shift();
+                        } else if (global.luke.funcs[bestMatching] || (bestMatching.includes('(') && global.luke.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
+
+                            execFunctionBody(bestMatching, vars, funcs)
+
+
+                            //callTokenFunction(global.luke.ctx[partId], t, global.luke.funcs[bestMatching]);
                             tokens.shift();
                         } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                             var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -514,6 +571,8 @@ var luke = {
                         sequence(tokens, tokens[0], bestMatching, partId);
                     }
 
+                } else if (t.includes('(') && funcs || global.luke.funcs[t.substring(0, t.indexOf('('))]) {
+                    execFunctionBody(t, vars, funcs)
                 } else {
                     console.log(t, 'is not defined');
                 }
@@ -525,12 +584,24 @@ var luke = {
     },
     init: function() {
 
-        localStorage, luke.moduleStorage.all._keys.forEach(function(key) {
+        localStorage,
+        luke.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
                 luke.useSyntax(eval(luke.moduleStorage.get(key)));
             }
         })
     }
+}
+
+if (environment == 'node') {
+
+    process
+        .on('unhandledRejection', (reason, p) => {
+            console.error(reason, 'Unhandled Rejection at Promise', p);
+        })
+        .on('uncaughtException', err => {
+            console.error(err, 'Uncaught Exception thrown');
+        });
 }
 
 
@@ -566,6 +637,7 @@ module.exports={
     "commander": "^5.1.0",
     "https": "^1.0.0",
     "inquirer": "^7.3.0",
+    "node-fetch": "^2.6.0",
     "node-fetch-npm": "^2.0.4",
     "node-localstorage": "^2.1.6",
     "npm": "^6.14.6",
