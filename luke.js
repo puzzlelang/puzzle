@@ -288,9 +288,7 @@ var luke = {
                 }})
 
 
-                 })
-
-            
+                })
 
 
             function execSchedule(next){
