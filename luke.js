@@ -1,30 +1,26 @@
-if (typeof module !== 'undefined' && module.exports) {
+if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
-    var LocalStorage = require('node-localstorage').LocalStorage;
-    localStorage = new LocalStorage('./localStorage');
-}
+    const dependencies = require('./dependencies.js');
+    localStorage = new dependencies.localStorage.LocalStorage('./localStorage');
+} else global = window;
 
-global.luke = {
-    vars: {},
-    ctx: {}
-};
 
-var dsl = {
+var luke = {
 
-    // Language definition
+    // Default language definition
     lang: require('./default.luke.js'),
 
     // Custom set of methods
     api: {},
 
     // variables
-    vars: global.luke.vars,
+    vars: {},
 
     // functions
     funcs: global.luke.funcs,
 
     // statement context
-    ctx: global.luke.ctx,
+    ctx: {},
 
     // internal storage (for saved modules)
     moduleStorage: {
@@ -82,7 +78,7 @@ var dsl = {
 
 
         // Call the dynamic, corresponding api method that blongs to a single token
-        var callTokenFunction = (key, param, dslKey) => {
+        var callTokenFunction = (ctx, key, param, dslKey) => {
 
             //console.log('args', key, param, dslKey)
             if (param) {
@@ -99,12 +95,12 @@ var dsl = {
 
             if (definition[key]) {
                 if (isObject(definition[key])) {
-                    (definition[key]).method(param);
+                    (definition[key]).method(ctx, param);
                 } else if (this.api[key]) {
-                    this.api[key](param)
+                    this.api[key](ctx, param)
                 }
             } else if (this.api[key]) {
-                this.api[key](param)
+                this.api[key](ctx, param)
             } else {
                 console.log(key, 'is not a function');
             }
@@ -185,7 +181,7 @@ var dsl = {
 
                     if (global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(t, global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -199,11 +195,11 @@ var dsl = {
                             tokens.shift();
                         })
 
-                        callTokenFunction(token, argList);
+                        callTokenFunction(global.luke.ctx[partId], token, argList);
                         //tokens.shift();
 
                     } else {
-                        callTokenFunction(token, bestMatching)
+                        callTokenFunction(global.luke.ctx[partId], token, bestMatching)
                         tokens.shift();
                     }
 
@@ -235,7 +231,7 @@ var dsl = {
 
                 tokens.push(this.lang.delimeter);
 
-                t = tokens[0]
+                var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
 
                 tokens.shift();
 
@@ -247,13 +243,13 @@ var dsl = {
                     var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                     if ((bestMatching || "").charAt(0) == "$") {
-                        callTokenFunction(t);
+                        callTokenFunction(global.luke.ctx[partId], t);
                         sequence(tokens, tokens[0], bestMatching, partId);
                     } else {
 
                         if (global.luke.vars[bestMatching]) {
 
-                            callTokenFunction(t, global.luke.vars[bestMatching]);
+                            callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
                             tokens.shift();
                         } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                             var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -268,11 +264,11 @@ var dsl = {
                                 tokens.shift();
                             })
 
-                            callTokenFunction(t, argList);
+                            callTokenFunction(global.luke.ctx[partId], t, argList);
                             //tokens.shift();
 
                         } else {
-                            callTokenFunction(t, bestMatching)
+                            callTokenFunction(global.luke.ctx[partId], t, bestMatching)
                             tokens.shift();
                         }
 
@@ -291,17 +287,16 @@ var dsl = {
     },
     init: function() {
 
-        console.log('Welcome to luke...');
-
-        localStorage, dsl.moduleStorage.all._keys.forEach(function(key) {
+        localStorage, luke.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                dsl.useSyntax(eval(dsl.moduleStorage.get(key)));
+                luke.useSyntax(eval(luke.moduleStorage.get(key)));
             }
         })
     }
 }
 
-global.luke.useSyntax = dsl.useSyntax;
-global.luke.moduleStorage = dsl.moduleStorage;
 
-module.exports = dsl;
+
+global.luke = luke;
+
+module.exports = luke;

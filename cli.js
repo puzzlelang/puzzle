@@ -3,7 +3,7 @@
 const program = require('commander');
 const inquirer = require('inquirer');
 
-const luke = require('./dsl.js');
+const luke = require('./luke.js');
 const fs = require('fs');
 
 const npmview = require('npmview');
@@ -13,6 +13,7 @@ program
     .command('run <type>')
     .description('Run your app')
     .action(function(type, args) {
+        luke.init();
         var code = fs.readFileSync(type, 'utf8');
         luke.parse(code);
     });

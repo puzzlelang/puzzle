@@ -137,14 +137,13 @@ The main concepts of luke are:
 * ***Open and free platform for syntax modules***
 
 
-
 ![language architecture](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/lang-architecture.png "Language architecture")
 
 
 [ Check out the Modules ](https://luke-lang.github.io/modules)
 
 
-***Default module example***
+***Default module***
 
 luke comes with a built-in default module, which is initalized by default. The default module contains some basic functionalities.
 
@@ -152,23 +151,19 @@ luke comes with a built-in default module, which is initalized by default. The d
 Some code examples from the default module:
 
 
-```luke
-print "I am a luke program";
+| Code        | Description           | 
+| ------------- |-------------|
+| `print "I'm a luke program"`  | Print something |
+| `var color blue`  | Set a variable | 
+| `print color`  | Print variable content |
+| `download https://....com`  | Download a file |
+| `list modules`  | List all used modules |
+| `list commands`  | List all commands from available modules |
 
-var myVariable "Variable Content";
-
-print myVariable;
-
-download https://google.com to /directory;
-
-list commands;
-
-list modules;
-```
 
 [ Full reference ](https://luke-lang.github.io/modules)
 
-Syntax from the default namespace will automatically be available in any other module-specific namespace.
+> Syntax from the default namespace will automatically be available in any other module-specific namespace.
 
 
 # Custom syntax, modules
@@ -189,13 +184,13 @@ lang = {
     mymodule: { // your namespace name
       echo: {
         follow: ["{param}", "$and"],
-        method: function(param){
+        method: function(ctx, param){
           console.log(param)
         }
       },
       and: {
         follow: ["{param}", "$and"],
-        method: function(param){
+        method: function(ctx, param){
           console.log(param)
         }
       }
