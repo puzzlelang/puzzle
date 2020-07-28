@@ -9,17 +9,17 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     global = window;
 
     fs = {
-        readFile: function(url, encoding, cb){
-            if(url.indexOf('ls://') == 0)
-              return cb(localStorage.getItem(url))
+        readFile: function(url, encoding, cb) {
+            if (url.indexOf('ls://') == 0)
+                return cb(localStorage.getItem(url))
 
             const reader = new FileReader();
             reader.addEventListener('load', (event) => {
-              if(cb) cb(event.target.result);
+                if (cb) cb(event.target.result);
             });
             reader.readAsDataURL(url);
         },
-        writeFile: function(url, data, cb){
+        writeFile: function(url, data, cb) {
             cb(localStorage.setItem('ls://' + url, data))
         }
     }
@@ -35,7 +35,7 @@ var lang = {
         execStatement: function() {
 
             if (lang.context[lang.context.importNamespace]) {
-                if(environment != 'node') return console.log('feature not available in this environment')
+                if (environment != 'node') return console.log('feature not available in this environment')
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
@@ -68,8 +68,8 @@ var lang = {
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-                        
-                        if(environment != 'node') return console.log('feature not available in this environment')
+
+                        if (environment != 'node') return console.log('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
@@ -90,12 +90,11 @@ var lang = {
                 follow: ["{file}"],
                 method: function(ctx, file) {
 
-                    function includeScript(code)
-                    {
+                    function includeScript(code) {
                         //console.log('ASff');
                         global.luke.parse(code);
                     }
-                    
+
                     var fileName = file;
                     var extention = fileName.split(".")[fileName.split(".").length - 1];
 
@@ -109,8 +108,8 @@ var lang = {
 
                     } else if (extention.toLowerCase() == "luke") {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                        fs.readFile(fileName, function(err, data){
-                            if(err) return console.log('Error reading file');
+                        fs.readFile(fileName, function(err, data) {
+                            if (err) return console.log('Error reading file');
                             file = data;
                         });
                         includeScript(file)
@@ -132,6 +131,14 @@ var lang = {
                 method: function(ctx, data) {
                     global.luke.vars[data.key] = data.value;
                     console.log('vars', global.luke.vars)
+                }
+            },
+            func: {
+                manual: "Sets a function",
+                follow: ["{key,params,body}"],
+                method: function(ctx, data) {
+                    global.luke.funcs[data.key] = { params: data.params, body: data.body };
+                    console.log('funcs', global.luke.funcs)
                 }
             },
             version: {
@@ -195,25 +202,25 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if(environment != 'node') return console.log('download not available in this environment')
+                    if (environment != 'node') return console.log('download not available in this environment')
 
                     fetch(param)
-                           .then(res => res.text())
-                           .then(data => {
-                               
-                               var fileName = param.split('/')[param.split('/').length - 1];
-                               fs.writeFile(fileName, data, function(err, data){
-                                    console.log(fileName, 'downloaded');
-                               })
-                           });
-                  
+                        .then(res => res.text())
+                        .then(data => {
+
+                            var fileName = param.split('/')[param.split('/').length - 1];
+                            fs.writeFile(fileName, data, function(err, data) {
+                                console.log(fileName, 'downloaded');
+                            })
+                        });
+
                 }
             },
             install: {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if(!npm) return console.log('npm not available in this environment');
+                    if (!npm) return console.log('npm not available in this environment');
 
                     npm.load({
                         loaded: false
