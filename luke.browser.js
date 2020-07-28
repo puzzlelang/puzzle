@@ -246,6 +246,7 @@ module.exports = lang;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./dependencies.js":4,"./package.json":3,"_process":5}],2:[function(require,module,exports){
 (function (process,global){
+var environment = 'web';
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
     const dependencies = require('./dependencies.js');
@@ -613,7 +614,7 @@ module.exports = luke;
 },{"./default.luke.js":1,"./dependencies.js":4,"_process":5}],3:[function(require,module,exports){
 module.exports={
   "name": "luke-lang",
-  "version": "0.0.27",
+  "version": "0.0.29",
   "description": "A programing language platform",
   "main": "luke.js",
   "bin": {
