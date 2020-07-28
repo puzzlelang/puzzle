@@ -69,10 +69,12 @@ var lang = {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
                                 
-                                if(environment == 'node') global.luke.useSyntax(eval(data));
+                                if(environment == 'node') {
+                                    var syntax = new Function("module = {}; " + data + " return syntax;" )();
+                                    global.luke.useSyntax(syntax);
+                                } 
                                 else {
-                                    eval(data);
-                                    console.log(syntax);
+                                    var syntax = new Function("module = {}; " + data + " return syntax;" )();
                                     global.luke.useSyntax(syntax);
                                 }
                                 if(done) done();
@@ -259,7 +261,6 @@ module.exports = lang;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./dependencies.js":4,"./package.json":3,"_process":5}],2:[function(require,module,exports){
 (function (process,global){
-var environment = 'web';
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
     const dependencies = require('./dependencies.js');
@@ -280,9 +281,6 @@ var luke = {
 
     // variables
     vars: {},
-
-    // functions
-    funcs: {},
 
     // statement context
     ctx: {},
@@ -325,10 +323,7 @@ var luke = {
 
     },
 
-    parse: function(code, vars, funcs) {
-
-        if (!vars) vars = {};
-        if (!funcs) funcs = {};
+    parse: function(code) {
 
         var parts = code.split(this.lang.delimeter);
 
@@ -349,7 +344,7 @@ var luke = {
         var callTokenFunction = (ctx, key, param, dslKey) => {
 
             //console.log('args', key, param, dslKey)
-            if (param) {
+            /*if (param) {
                 if (isObject(param)) {
 
                 } else if (param.includes(this.lang.assignmentOperator)) {
@@ -357,7 +352,7 @@ var luke = {
                     var param = {};
                     param[spl[0]] = spl[1];
                 }
-            }
+            }*/
 
             var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
@@ -447,15 +442,9 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 } else {
 
-                    if (vars[bestMatching] || global.luke.vars[bestMatching]) {
-
-                        callTokenFunction(global.luke.ctx[partId], token, vars[bestMatching] || global.luke.vars[bestMatching]);
-                        tokens.shift();
-                    } else if (global.luke.funcs[bestMatching]) {
-
+                    if (global.luke.vars[bestMatching]) {
 
                         callTokenFunction(global.luke.ctx[partId], token, global.luke.vars[bestMatching]);
-
                         tokens.shift();
                     } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -483,46 +472,9 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 }
 
-            } else if (token.includes('(') && funcs || global.luke.funcs[token.substring(0, token.indexOf('('))]) {
-                execFunctionBody(token, vars, funcs, tokens)
             } else {
                 console.log('unequal', instructionKey, token);
             }
-        }
-
-        var execFunctionBody = (bestMatching, vars, funcs, tokens) => {
-            if (bestMatching.includes('(') && bestMatching.includes(')')) {
-
-                var scope = {
-                    vars: {},
-                    funcs: {}
-                };
-
-                var rawInputParams = bestMatching.substring(bestMatching.indexOf('(') + 1, bestMatching.indexOf(')'));
-                var inputParams = rawInputParams.split(",");
-                //console.log('params', inputParams);
-
-                bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
-                var rawDefinedParams = global.luke.funcs[bestMatching].params;
-                rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
-                var definedParams = rawDefinedParams.split(",");
-                //console.log('definedParams', definedParams);
-
-                definedParams.forEach(function(param, i) {
-                    scope.vars[param] = inputParams[i]
-                })
-
-                //console.log(global.luke.funcs[bestMatching].body)
-
-                var body = global.luke.funcs[bestMatching].body;
-
-                luke.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars);
-
-            }
-
-             tokens.shift();
-            tokens.shift();
-            tokens.shift();
         }
 
 
@@ -542,7 +494,7 @@ var luke = {
                         data: {}
                     };
 
-
+                    var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
 
                     tokens.push(this.lang.delimeter);
 
@@ -554,6 +506,8 @@ var luke = {
 
                     if (definition[t]) {
 
+                        var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                        var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                         if ((bestMatching || "").charAt(0) == "$") {
                             callTokenFunction(global.luke.ctx[partId], t);
@@ -597,9 +551,7 @@ var luke = {
                 }})
 
 
-                 })
-
-            
+                })
 
 
             function execSchedule(next){
@@ -621,24 +573,13 @@ var luke = {
     },
     init: function() {
 
-        localStorage,
-        luke.moduleStorage.all._keys.forEach(function(key) {
+        localStorage, luke.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                luke.useSyntax(eval(luke.moduleStorage.get(key)));
+                var syntax = new Function("module = {}; " + luke.moduleStorage.get(key) + " return syntax;" )();
+                luke.useSyntax(syntax);
             }
         })
     }
-}
-
-if (environment == 'node') {
-
-    process
-        .on('unhandledRejection', (reason, p) => {
-            console.error(reason, 'Unhandled Rejection at Promise', p);
-        })
-        .on('uncaughtException', err => {
-            console.error(err, 'Uncaught Exception thrown');
-        });
 }
 
 

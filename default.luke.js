@@ -67,10 +67,12 @@ var lang = {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
                                 
-                                if(environment == 'node') global.luke.useSyntax(eval(data));
+                                if(environment == 'node') {
+                                    var syntax = new Function("module = {}; " + data + " return syntax;" )();
+                                    global.luke.useSyntax(syntax);
+                                } 
                                 else {
-                                    eval(data);
-                                    console.log(syntax);
+                                    var syntax = new Function("module = {}; " + data + " return syntax;" )();
                                     global.luke.useSyntax(syntax);
                                 }
                                 if(done) done();

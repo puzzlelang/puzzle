@@ -81,7 +81,7 @@ var luke = {
         var callTokenFunction = (ctx, key, param, dslKey) => {
 
             //console.log('args', key, param, dslKey)
-            if (param) {
+            /*if (param) {
                 if (isObject(param)) {
 
                 } else if (param.includes(this.lang.assignmentOperator)) {
@@ -89,7 +89,7 @@ var luke = {
                     var param = {};
                     param[spl[0]] = spl[1];
                 }
-            }
+            }*/
 
             var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
@@ -312,7 +312,8 @@ var luke = {
 
         localStorage, luke.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                luke.useSyntax(eval(luke.moduleStorage.get(key)));
+                var syntax = new Function("module = {}; " + luke.moduleStorage.get(key) + " return syntax;" )();
+                luke.useSyntax(syntax);
             }
         })
     }
