@@ -1,5 +1,6 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 (function (process,global){
+var environment = 'browser';
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
     const dependencies = require('./dependencies.js');
@@ -34,7 +35,7 @@ var lang = {
     vars: {},
     currentNamespace: "default",
     static: {
-        execStatement: function() {
+        execStatement: function(done) {
 
             if (lang.context[lang.context.importNamespace]) {
                 if(environment != 'node') return console.log('feature not available in this environment')
@@ -43,6 +44,7 @@ var lang = {
                 } catch (e) {
                     console.log('Import Error:', e)
                 }
+                if(done) done();
             }
 
             if (lang.context['unUseNamespace']) {
@@ -66,7 +68,14 @@ var lang = {
                                 if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
-                                global.luke.useSyntax(lang, eval(data));
+                                
+                                if(environment == 'node') global.luke.useSyntax(eval(data));
+                                else {
+                                    eval(data);
+                                    console.log(syntax);
+                                    global.luke.useSyntax(syntax);
+                                }
+                                if(done) done();
                             });
 
                     } else if (extention.toLowerCase() == "js") {
@@ -75,14 +84,19 @@ var lang = {
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
-                        global.luke.useSyntax(lang, file);
-                    } else console.log('unsupported file type')
+                        global.luke.useSyntax(file);
+                        if(done) done();
+                    } else {
+                        console.log('unsupported file type');
+                        if(done) done();
+                    }
 
 
                 } catch (e) {
                     console.log('Use Error', e);
+                    if(done) done();
                 }
-            }
+            } else if(done) done();
         }
     },
     "$": {
@@ -251,6 +265,9 @@ var luke = {
     // Default language definition
     lang: require('./default.luke.js'),
 
+    // Schedule map for statements
+    schedule: [],
+
     // Custom set of methods
     api: {},
 
@@ -380,10 +397,10 @@ var luke = {
         }
 
         // Recoursively parse tokens
-        var sequence = (tokens, token, instructionKey, partId) => {
+        var sequence = (tokens, token, instructionKey, partId, done) => {
 
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.static.execStatement()
+                this.lang.static.execStatement(done)
                 return;
             }
 
@@ -408,18 +425,18 @@ var luke = {
                 tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
-                var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
+                var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
 
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
                     callTokenFunction(token);
-                    sequence(tokens, tokens[0], bestMatching, partId);
+                    sequence(tokens, tokens[0], bestMatching, partId, done);
                 } else {
 
                     if (global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], token, global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -444,7 +461,7 @@ var luke = {
                     //console.log('a', tokens, bestMatching)
                     bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                     //console.log('b', tokens, bestMatching)
-                    sequence(tokens, tokens[0], bestMatching, partId);
+                    sequence(tokens, tokens[0], bestMatching, partId, done);
                 }
 
             } else {
@@ -456,69 +473,94 @@ var luke = {
         var splitInit = (parts) => {
             parts.forEach(p => {
 
-                if (!p) return;
+
 
                 var partId = Math.random();
 
-                global.luke.ctx[partId] = {
-                    sequence: [],
-                    data: {}
-                };
+                luke.schedule.push({partId: partId, fn:(done) => {
 
-                var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
+                    if (!p) return;
 
-                tokens.push(this.lang.delimeter);
+                    global.luke.ctx[partId] = {
+                        sequence: [],
+                        data: {}
+                    };
 
-                var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
+                    var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
 
-                tokens.shift();
+                    tokens.push(this.lang.delimeter);
 
-                var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+                    var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
 
-                if (definition[t]) {
+                    tokens.shift();
 
-                    var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                    var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
+                    var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
-                    if ((bestMatching || "").charAt(0) == "$") {
-                        callTokenFunction(global.luke.ctx[partId], t);
-                        sequence(tokens, tokens[0], bestMatching, partId);
-                    } else {
+                    if (definition[t]) {
 
-                        if (global.luke.vars[bestMatching]) {
+                        var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                        var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
-                            callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
-                            tokens.shift();
-                        } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
-                            var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
-
-
-                            var argList = {};
-                            var t2;
-
-                            rawSequence.forEach(function(s, i) {
-                                t2 = tokens[0]
-                                argList[s] = t2;
-                                tokens.shift();
-                            })
-
-                            callTokenFunction(global.luke.ctx[partId], t, argList);
-                            //tokens.shift();
-
+                        if ((bestMatching || "").charAt(0) == "$") {
+                            callTokenFunction(global.luke.ctx[partId], t);
+                            sequence(tokens, tokens[0], bestMatching, partId, done);
                         } else {
-                            callTokenFunction(global.luke.ctx[partId], t, bestMatching)
-                            tokens.shift();
+
+                            if (global.luke.vars[bestMatching]) {
+
+                                callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                                tokens.shift();
+                            } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
+
+
+                                var argList = {};
+                                var t2;
+
+                                rawSequence.forEach(function(s, i) {
+                                    t2 = tokens[0]
+                                    argList[s] = t2;
+                                    tokens.shift();
+                                })
+
+                                callTokenFunction(global.luke.ctx[partId], t, argList);
+                                //tokens.shift();
+
+                            } else {
+                                callTokenFunction(global.luke.ctx[partId], t, bestMatching)
+                                tokens.shift();
+                            }
+
+                            bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                            sequence(tokens, tokens[0], bestMatching, partId, done);
                         }
 
-                        bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                        sequence(tokens, tokens[0], bestMatching, partId);
+                    } else {
+                        console.log(t, 'is not defined');
                     }
 
-                } else {
-                    console.log(t, 'is not defined');
-                }
 
-            })
+                }})
+
+
+                 })
+
+            
+
+
+            function execSchedule(next){
+                //console.log('next', next);
+                if(!next) return;
+                next.fn(function(){
+                   // console.log('callback called');
+                    execSchedule(luke.schedule.shift());
+                });
+            }
+
+            //console.log(luke.schedule);
+
+            execSchedule(luke.schedule.shift())
+
         }
 
         splitInit(parts);
@@ -566,6 +608,7 @@ module.exports={
     "commander": "^5.1.0",
     "https": "^1.0.0",
     "inquirer": "^7.3.0",
+    "node-fetch": "^2.6.0",
     "node-fetch-npm": "^2.0.4",
     "node-localstorage": "^2.1.6",
     "npm": "^6.14.6",

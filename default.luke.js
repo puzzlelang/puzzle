@@ -1,3 +1,4 @@
+var environment = 'browser';
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
     const dependencies = require('./dependencies.js');
@@ -32,7 +33,7 @@ var lang = {
     vars: {},
     currentNamespace: "default",
     static: {
-        execStatement: function() {
+        execStatement: function(done) {
 
             if (lang.context[lang.context.importNamespace]) {
                 if(environment != 'node') return console.log('feature not available in this environment')
@@ -41,6 +42,7 @@ var lang = {
                 } catch (e) {
                     console.log('Import Error:', e)
                 }
+                if(done) done();
             }
 
             if (lang.context['unUseNamespace']) {
@@ -64,7 +66,14 @@ var lang = {
                                 if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
-                                global.luke.useSyntax(lang, eval(data));
+                                
+                                if(environment == 'node') global.luke.useSyntax(eval(data));
+                                else {
+                                    eval(data);
+                                    console.log(syntax);
+                                    global.luke.useSyntax(syntax);
+                                }
+                                if(done) done();
                             });
 
                     } else if (extention.toLowerCase() == "js") {
@@ -73,14 +82,19 @@ var lang = {
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
-                        global.luke.useSyntax(lang, file);
-                    } else console.log('unsupported file type')
+                        global.luke.useSyntax(file);
+                        if(done) done();
+                    } else {
+                        console.log('unsupported file type');
+                        if(done) done();
+                    }
 
 
                 } catch (e) {
                     console.log('Use Error', e);
+                    if(done) done();
                 }
-            }
+            } else if(done) done();
         }
     },
     "$": {

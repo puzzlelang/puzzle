@@ -10,6 +10,9 @@ var luke = {
     // Default language definition
     lang: require('./default.luke.js'),
 
+    // Schedule map for statements
+    schedule: [],
+
     // Custom set of methods
     api: {},
 
@@ -43,6 +46,7 @@ var luke = {
     context: {},
 
     useSyntax: function(jsObject) {
+        
 
         var _defaultSyntax = this.lang['$'].default;
 
@@ -139,10 +143,10 @@ var luke = {
         }
 
         // Recoursively parse tokens
-        var sequence = (tokens, token, instructionKey, partId) => {
+        var sequence = (tokens, token, instructionKey, partId, done) => {
 
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.static.execStatement()
+                this.lang.static.execStatement(done)
                 return;
             }
 
@@ -167,18 +171,18 @@ var luke = {
                 tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
-                var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
+                var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
 
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
                     callTokenFunction(token);
-                    sequence(tokens, tokens[0], bestMatching, partId);
+                    sequence(tokens, tokens[0], bestMatching, partId, done);
                 } else {
 
                     if (global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], token, global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if (bestMatchingInstruction.includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -203,7 +207,7 @@ var luke = {
                     //console.log('a', tokens, bestMatching)
                     bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                     //console.log('b', tokens, bestMatching)
-                    sequence(tokens, tokens[0], bestMatching, partId);
+                    sequence(tokens, tokens[0], bestMatching, partId, done);
                 }
 
             } else {
@@ -215,69 +219,94 @@ var luke = {
         var splitInit = (parts) => {
             parts.forEach(p => {
 
-                if (!p) return;
+
 
                 var partId = Math.random();
 
-                global.luke.ctx[partId] = {
-                    sequence: [],
-                    data: {}
-                };
+                luke.schedule.push({partId: partId, fn:(done) => {
 
-                var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
+                    if (!p) return;
 
-                tokens.push(this.lang.delimeter);
+                    global.luke.ctx[partId] = {
+                        sequence: [],
+                        data: {}
+                    };
 
-                var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
+                    var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
 
-                tokens.shift();
+                    tokens.push(this.lang.delimeter);
 
-                var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+                    var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
 
-                if (definition[t]) {
+                    tokens.shift();
 
-                    var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                    var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
+                    var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
-                    if ((bestMatching || "").charAt(0) == "$") {
-                        callTokenFunction(global.luke.ctx[partId], t);
-                        sequence(tokens, tokens[0], bestMatching, partId);
-                    } else {
+                    if (definition[t]) {
 
-                        if (global.luke.vars[bestMatching]) {
+                        var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                        var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
-                            callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
-                            tokens.shift();
-                        } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
-                            var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
-
-
-                            var argList = {};
-                            var t2;
-
-                            rawSequence.forEach(function(s, i) {
-                                t2 = tokens[0]
-                                argList[s] = t2;
-                                tokens.shift();
-                            })
-
-                            callTokenFunction(global.luke.ctx[partId], t, argList);
-                            //tokens.shift();
-
+                        if ((bestMatching || "").charAt(0) == "$") {
+                            callTokenFunction(global.luke.ctx[partId], t);
+                            sequence(tokens, tokens[0], bestMatching, partId, done);
                         } else {
-                            callTokenFunction(global.luke.ctx[partId], t, bestMatching)
-                            tokens.shift();
+
+                            if (global.luke.vars[bestMatching]) {
+
+                                callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                                tokens.shift();
+                            } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
+
+
+                                var argList = {};
+                                var t2;
+
+                                rawSequence.forEach(function(s, i) {
+                                    t2 = tokens[0]
+                                    argList[s] = t2;
+                                    tokens.shift();
+                                })
+
+                                callTokenFunction(global.luke.ctx[partId], t, argList);
+                                //tokens.shift();
+
+                            } else {
+                                callTokenFunction(global.luke.ctx[partId], t, bestMatching)
+                                tokens.shift();
+                            }
+
+                            bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                            sequence(tokens, tokens[0], bestMatching, partId, done);
                         }
 
-                        bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                        sequence(tokens, tokens[0], bestMatching, partId);
+                    } else {
+                        console.log(t, 'is not defined');
                     }
 
-                } else {
-                    console.log(t, 'is not defined');
-                }
 
-            })
+                }})
+
+
+                 })
+
+            
+
+
+            function execSchedule(next){
+                //console.log('next', next);
+                if(!next) return;
+                next.fn(function(){
+                   // console.log('callback called');
+                    execSchedule(luke.schedule.shift());
+                });
+            }
+
+            //console.log(luke.schedule);
+
+            execSchedule(luke.schedule.shift())
+
         }
 
         splitInit(parts);
