@@ -46,7 +46,6 @@ var luke = {
     context: {},
 
     useSyntax: function(jsObject) {
-        
 
         var _defaultSyntax = this.lang['$'].default;
 
