@@ -1,3 +1,4 @@
+environment = 'web';
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
     const dependencies = require('./dependencies.js');
