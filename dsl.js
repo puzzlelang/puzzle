@@ -20,6 +20,9 @@ var dsl = {
     // variables
     vars: global.luke.vars,
 
+    // functions
+    funcs: global.luke.funcs,
+
     // statement context
     ctx: global.luke.ctx,
 
