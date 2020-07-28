@@ -174,7 +174,7 @@ var luke = {
                 tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
-                var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
+                var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
 
                 // execute exact method
 
@@ -185,7 +185,7 @@ var luke = {
 
                     if (vars[bestMatching] || global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], token, vars[bestMatching] || global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if (global.luke.funcs[bestMatching]) {
 
@@ -218,13 +218,13 @@ var luke = {
                 }
 
             } else if (token.includes('(') && funcs || global.luke.funcs[token.substring(0, token.indexOf('('))]) {
-                execFunctionBody(token, vars, funcs)
+                execFunctionBody(token, vars, funcs, tokens)
             } else {
                 console.log('unequal', instructionKey, token);
             }
         }
 
-        var execFunctionBody = (bestMatching, vars, funcs) => {
+        var execFunctionBody = (bestMatching, vars, funcs, tokens) => {
             if (bestMatching.includes('(') && bestMatching.includes(')')) {
 
                 var scope = {
@@ -253,6 +253,10 @@ var luke = {
                 luke.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars);
 
             }
+
+             tokens.shift();
+            tokens.shift();
+            tokens.shift();
         }
 
 
@@ -294,11 +298,11 @@ var luke = {
                             tokens.shift();
                         } else if (global.luke.funcs[bestMatching] || (bestMatching.includes('(') && global.luke.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
 
-                            execFunctionBody(bestMatching, vars, funcs)
+                            execFunctionBody(bestMatching, vars, funcs, tokens)
 
 
                             //callTokenFunction(global.luke.ctx[partId], t, global.luke.funcs[bestMatching]);
-                            tokens.shift();
+                            //tokens.shift();
                         } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                             var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
@@ -325,7 +329,7 @@ var luke = {
                     }
 
                 } else if (t.includes('(') && funcs || global.luke.funcs[t.substring(0, t.indexOf('('))]) {
-                    execFunctionBody(t, vars, funcs)
+                    execFunctionBody(t, vars, funcs, tokens)
                 } else {
                     console.log(t, 'is not defined');
                 }
