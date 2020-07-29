@@ -211,10 +211,11 @@ var lang = {
                                 Object.keys(lang['$'][ns]).forEach(c => {
                                     var man = "";
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
-                                    console.log('  ', c, man)
+                                    var seq = "";
                                     lang['$'][ns][c].follow.forEach(f => {
-                                        console.log('\t...', f)
+                                        seq += f+" ";
                                     })
+                                    console.log('  ', c, seq, '\t', man)
                                     console.log('\n')
                                 })
                             })
