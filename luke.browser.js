@@ -147,7 +147,7 @@ var lang = {
                 follow: ["{namespace}"],
                 method: function(ctx, ns) {
                     lang.currentNamespace = ns;
-                    console.log('Set namespace', ns)
+
                 }
             },
             var: {
@@ -155,7 +155,7 @@ var lang = {
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
                     global.luke.vars[data.key] = data.value;
-                    console.log('vars', global.luke.vars)
+
                 }
             },
             func: {
@@ -176,7 +176,7 @@ var lang = {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
                     lang.context['useNamespace'] = ns;
-                    console.log('ctx', lang.context['useNamespace'])
+
                 }
             },
             unuse: {
@@ -324,7 +324,7 @@ var luke = {
 
         this.lang['$'].default = _defaultSyntax;
 
-        console.log('lang', this.lang);
+        //console.log('lang', this.lang);
 
         this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
 

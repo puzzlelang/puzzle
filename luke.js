@@ -54,7 +54,7 @@ var luke = {
 
         this.lang['$'].default = _defaultSyntax;
 
-        console.log('lang', this.lang);
+        //console.log('lang', this.lang);
 
         this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
 
