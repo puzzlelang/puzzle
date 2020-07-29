@@ -78,11 +78,11 @@ var lang = {
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-
                         if (environment != 'node') return console.log('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
+                        console.log('file', fileName, file);
                         global.luke.useSyntax(file);
                         if (done) done();
                     } else {
