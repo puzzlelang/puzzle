@@ -42,7 +42,7 @@ var lang = {
                 } catch (e) {
                     console.log('Import Error:', e)
                 }
-                if(done) done();
+                if (done) done();
             }
 
             if (lang.context['unUseNamespace']) {
@@ -66,16 +66,15 @@ var lang = {
                                 if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
                                     if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
                                 }
-                                
-                                if(environment == 'node') {
-                                    var syntax = new Function("module = {}; " + data + " return syntax;" )();
+
+                                if (environment == 'node') {
+                                    var syntax = new Function("module = {}; " + data + " return syntax;")();
                                     global.luke.useSyntax(syntax);
-                                } 
-                                else {
-                                    var syntax = new Function("module = {}; " + data + " return syntax;" )();
+                                } else {
+                                    var syntax = new Function("module = {}; " + data + " return syntax;")();
                                     global.luke.useSyntax(syntax);
                                 }
-                                if(done) done();
+                                if (done) done();
                             });
 
                     } else if (extention.toLowerCase() == "js") {
@@ -85,18 +84,49 @@ var lang = {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
                         global.luke.useSyntax(file);
-                        if(done) done();
+                        if (done) done();
                     } else {
                         console.log('unsupported file type');
-                        if(done) done();
+                        if (done) done();
                     }
 
 
                 } catch (e) {
                     console.log('Use Error', e);
-                    if(done) done();
+                    if (done) done();
                 }
-            } else if(done) done();
+            } else if (lang.context['includeNamespace']) {
+
+                function includeScript(code) {
+                    //console.log('ASff');
+                    global.luke.parse(code);
+                }
+
+                var fileName = lang.context['includeNamespace'];
+                var extention = fileName.split(".")[fileName.split(".").length - 1];
+
+                if (fileName.indexOf('https://') == 0) {
+
+                    fetch(fileName)
+                        .then(res => res.text())
+                        .then(data => {
+                            includeScript(data);
+                            if (done) done();
+                        });
+
+                } else if (extention.toLowerCase() == "luke") {
+                    if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                    fs.readFile(fileName, function(err, data) {
+                        if (err) return console.log('Error reading file');
+                        file = data;
+                    });
+                    includeScript(file)
+                    if (done) done();
+                } else {
+                    console.log('unsupported file type');
+                    if (done) done();
+                }
+            } else if (done) done();
         }
     },
     "$": {
@@ -106,30 +136,7 @@ var lang = {
                 follow: ["{file}"],
                 method: function(ctx, file) {
 
-                    function includeScript(code) {
-                        //console.log('ASff');
-                        global.luke.parse(code);
-                    }
-
-                    var fileName = file;
-                    var extention = fileName.split(".")[fileName.split(".").length - 1];
-
-                    if (fileName.indexOf('https://') == 0) {
-
-                        fetch(fileName)
-                            .then(res => res.text())
-                            .then(data => {
-                                includeScript(data);
-                            });
-
-                    } else if (extention.toLowerCase() == "luke") {
-                        if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                        fs.readFile(fileName, function(err, data) {
-                            if (err) return console.log('Error reading file');
-                            file = data;
-                        });
-                        includeScript(file)
-                    } else console.log('unsupported file type')
+                    lang.context['includeNamespace'] = file;
 
                 }
             },
