@@ -158,7 +158,7 @@ print (
 Statements can have different literals as dynamic input. These literals can be of two types: single-part literals and multi-part literals.
 
 
-#### single-part literals
+***single-part literals***
 
 These are literals that are contained in a single word or number. Note, that single-worded texts don't need to be written in quotes.
 
@@ -169,7 +169,7 @@ print 1;
 print 2.5;
 ```
 
-#### multi-part literals
+***multi-part literals***
 
 These are literals that can consist of multiple parts, like multiple words, lines or even statements.
 
@@ -189,7 +189,7 @@ print (
 
 > Single-part literals can also be written in the multi-part notation, like `print (hello)` or `use "module.luke.js"`
 
-#### code literals
+***code literals***
 
 Code literals define sub scripts that can be used in conditions or loops. They are also wrappen in `""`, `()` or `{}`
 
