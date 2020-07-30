@@ -49,7 +49,9 @@ var luke = {
     context: {},
 
     output: function() {
-        console.info(agruments);
+        for (arg of arguments) {
+            console.info(arg);
+        }
     },
 
     useSyntax: function(jsObject) {
