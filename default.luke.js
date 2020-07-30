@@ -189,6 +189,32 @@ var lang = {
                     }
                 }
             },
+            while: {
+                follow: ["{condition}", "$do"],
+                method: function(ctx, condition) {
+                    lang.context.while = condition;
+                }
+            },
+            for: {
+                follow: ["{condition}", "$do"],
+                method: function(ctx, condition) {
+                    lang.context.for = condition;
+                }
+            },
+            do: {
+                follow: ["{statement}"],
+                method: function(ctx, statement) {
+                    //new Function("module = {}; " + data + " return syntax;")();
+                    if (lang.context.while) {
+                        lang.context.while = lang.context.while.replace(/AND/g, '&&').replace(/OR/g, '||')
+                        new Function("while(" + global.luke.getRawStatement(lang.context.while)+"){ luke.parse('" + global.luke.getRawStatement(statement) + "') };")()
+                    } else if (lang.context.for) {
+                        lang.context.for = lang.context.for.replace(/AND/g, '&&').replace(/OR/g, '||');
+                        console.log('for:', lang.context.for);
+                        new Function("for(" + global.luke.getRawStatement(lang.context.for) + "){ luke.parse('var i '+i+'; " + global.luke.getRawStatement(statement) + "') };")()
+                    }
+                }
+            },
             version: {
                 manual: "See the installed version of luke",
                 follow: [],

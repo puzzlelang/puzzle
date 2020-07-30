@@ -19,6 +19,9 @@ var luke = {
     // variables
     vars: {},
 
+    // functions
+    funcs: {},
+
     // statement context
     ctx: {},
 
@@ -206,6 +209,7 @@ var luke = {
                         //tokens.shift();
 
                     } else {
+                       // console.log('safasf', bestMatching, tokens)
                         callTokenFunction(global.luke.ctx[partId], token, bestMatching)
                         tokens.shift();
                     }
@@ -224,7 +228,6 @@ var luke = {
 
         var splitInit = (parts) => {
             parts.forEach(p => {
-
 
 
                 var partId = Math.random();
