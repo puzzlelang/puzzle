@@ -209,7 +209,7 @@ var luke = {
                         //tokens.shift();
 
                     } else {
-                       // console.log('safasf', bestMatching, tokens)
+                        // console.log('safasf', bestMatching, tokens)
                         callTokenFunction(global.luke.ctx[partId], token, bestMatching)
                         tokens.shift();
                     }
@@ -229,6 +229,8 @@ var luke = {
         var splitInit = (parts) => {
             parts.forEach(p => {
 
+                // Ignore comments for parsing
+                if (p.indexOf('//') == 0) return;
 
                 var partId = Math.random();
 
