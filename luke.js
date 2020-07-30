@@ -76,7 +76,10 @@ var luke = {
         } else return statement;
     },
 
-    parse: function(code) {
+    parse: function(code, vars, funcs) {
+
+        if (!vars) vars = {};
+        if (!funcs) funcs = {};
 
         var parts = code.split(this.lang.delimeter);
 
@@ -195,9 +198,13 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 } else {
 
-                    if (global.luke.vars[bestMatching]) {
+                    if (vars[bestMatching] || global.luke.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], token, global.luke.vars[bestMatching]);
+                        callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                        tokens.shift();
+                    } else if (global.luke.funcs[bestMatching]) {
+
+                        //callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
                         tokens.shift();
                     } else if ((bestMatchingInstruction || "").includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -226,14 +233,48 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 }
 
+            } else if (token.includes('(') && funcs || global.luke.funcs[token.substring(0, token.indexOf('('))]) {
+                execFunctionBody(token, vars, funcs)
             } else {
                 console.log('unequal', instructionKey, token);
             }
         }
 
+        var execFunctionBody = (bestMatching, vars, funcs) => {
+            if (bestMatching.includes('(') && bestMatching.includes(')')) {
+
+                var scope = {
+                    vars: {},
+                    funcs: {}
+                };
+
+                var rawInputParams = bestMatching.substring(bestMatching.indexOf('(') + 1, bestMatching.indexOf(')'));
+                var inputParams = rawInputParams.split(",");
+                //console.log('params', inputParams);
+
+                bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
+                var rawDefinedParams = global.luke.funcs[bestMatching].params;
+                rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
+                var definedParams = rawDefinedParams.split(",");
+                //console.log('definedParams', definedParams);
+
+                definedParams.forEach(function(param, i) {
+                    scope.vars[param] = inputParams[i]
+                })
+
+                //console.log(global.luke.funcs[bestMatching].body)
+
+                var body = global.luke.funcs[bestMatching].body;
+
+                luke.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars, scope.funcs);
+
+            }
+        }
 
         var splitInit = (parts) => {
             parts.forEach(p => {
+
+                p = p.trim();
 
                 // Ignore comments for parsing
                 if (p.indexOf('//') == 0) return;
@@ -261,6 +302,7 @@ var luke = {
 
                         var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
+
                         if (definition[t]) {
 
                             var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
@@ -271,9 +313,15 @@ var luke = {
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
                             } else {
 
-                                if (global.luke.vars[bestMatching]) {
+                                if (vars[bestMatching] || global.luke.vars[bestMatching]) {
 
-                                    callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                                    callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                                    tokens.shift();
+                                } else if (global.luke.funcs[bestMatching] || (bestMatching.includes('(') && global.luke.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
+
+                                    execFunctionBody(bestMatching, vars, funcs)
+
+                                    //callTokenFunction(global.luke.ctx[partId], t, global.luke.funcs[bestMatching]);
                                     tokens.shift();
                                 } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -300,6 +348,8 @@ var luke = {
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
                             }
 
+                        } else if (t.includes('(') && funcs || global.luke.funcs[t.substring(0, t.indexOf('('))]) {
+                            execFunctionBody(t, vars, funcs)
                         } else {
                             console.log(t, 'is not defined');
                         }

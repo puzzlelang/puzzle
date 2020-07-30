@@ -159,6 +159,8 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.luke.funcs[data.key] = { params: data.params, body: data.body };
+
+                    console.log('fs', global.luke.funcs);
                 }
             },
             if: {
