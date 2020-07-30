@@ -80,11 +80,11 @@ var lang = {
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-
                         if (environment != 'node') return console.log('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
+                        console.log('file', fileName, file);
                         global.luke.useSyntax(file);
                         if (done) done();
                     } else {
@@ -165,6 +165,32 @@ var lang = {
                     global.luke.funcs[data.key] = { params: data.params, body: data.body };
                 }
             },
+            if: {
+                follow: ["{condition}", "$then"],
+                method: function(ctx, condition) {
+                    lang.context.if = condition;
+                }
+            },
+            then: {
+                follow: ["{statement}", "$else"],
+                method: function(ctx, statement) {
+                    if (lang.context.if) {
+                        lang.context.if = lang.context.if.replace(/AND/g, '&&').replace(/OR/g, '||')
+                        if (eval(lang.context.if)) {
+                            lang.context.conditionMet = true;
+                            global.luke.parse(global.luke.getRawStatement(statement));
+                        }
+                    }
+                }
+            },
+            else: {
+                follow: ["{statement}"],
+                method: function(ctx, statement) {
+                    if (lang.context.if && !lang.context.conditionMet) {
+                        global.luke.parse(global.luke.getRawStatement(statement));
+                    }
+                }
+            },
             version: {
                 manual: "See the installed version of luke",
                 follow: [],
@@ -213,7 +239,7 @@ var lang = {
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
                                     var seq = "";
                                     lang['$'][ns][c].follow.forEach(f => {
-                                        seq += f+" ";
+                                        seq += f + " ";
                                     })
                                     console.log('  ', c, seq, '\t', man)
                                     console.log('\n')
@@ -329,6 +355,13 @@ var luke = {
 
         this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
 
+    },
+
+    // Returns the raw statement from an input. e.g. (print hello) will return print hello
+    getRawStatement: function(statement) {
+        if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
+            return statement.substring(1, statement.length - 1)
+        } else return statement;
     },
 
     parse: function(code) {
@@ -454,7 +487,7 @@ var luke = {
 
                         callTokenFunction(global.luke.ctx[partId], token, global.luke.vars[bestMatching]);
                         tokens.shift();
-                    } else if (bestMatchingInstruction.includes(",")) {
+                    } else if ((bestMatchingInstruction || "").includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                         var argList = {};
@@ -493,80 +526,83 @@ var luke = {
 
                 var partId = Math.random();
 
-                luke.schedule.push({partId: partId, fn:(done) => {
+                luke.schedule.push({
+                    partId: partId,
+                    fn: (done) => {
 
-                    if (!p) return;
+                        if (!p) return;
 
-                    global.luke.ctx[partId] = {
-                        sequence: [],
-                        data: {}
-                    };
+                        global.luke.ctx[partId] = {
+                            sequence: [],
+                            data: {}
+                        };
 
-                    var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
+                        var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
 
-                    tokens.push(this.lang.delimeter);
+                        tokens.push(this.lang.delimeter);
 
-                    var t = tokens[0].replace(/(\r\n|\n|\r)/gm,"");
+                        var t = tokens[0].replace(/(\r\n|\n|\r)/gm, "");
 
-                    tokens.shift();
+                        tokens.shift();
 
-                    var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+                        var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
 
-                    if (definition[t]) {
+                        if (definition[t]) {
 
-                        var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                        var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
+                            var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                            var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
-                        if ((bestMatching || "").charAt(0) == "$") {
-                            callTokenFunction(global.luke.ctx[partId], t);
-                            sequence(tokens, tokens[0], bestMatching, partId, done);
-                        } else {
-
-                            if (global.luke.vars[bestMatching]) {
-
-                                callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
-                                tokens.shift();
-                            } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
-                                var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
-
-
-                                var argList = {};
-                                var t2;
-
-                                rawSequence.forEach(function(s, i) {
-                                    t2 = tokens[0]
-                                    argList[s] = t2;
-                                    tokens.shift();
-                                })
-
-                                callTokenFunction(global.luke.ctx[partId], t, argList);
-                                //tokens.shift();
-
+                            if ((bestMatching || "").charAt(0) == "$") {
+                                callTokenFunction(global.luke.ctx[partId], t);
+                                sequence(tokens, tokens[0], bestMatching, partId, done);
                             } else {
-                                callTokenFunction(global.luke.ctx[partId], t, bestMatching)
-                                tokens.shift();
+
+                                if (global.luke.vars[bestMatching]) {
+
+                                    callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                                    tokens.shift();
+                                } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                    var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
+
+
+                                    var argList = {};
+                                    var t2;
+
+                                    rawSequence.forEach(function(s, i) {
+                                        t2 = tokens[0]
+                                        argList[s] = t2;
+                                        tokens.shift();
+                                    })
+
+                                    callTokenFunction(global.luke.ctx[partId], t, argList);
+                                    //tokens.shift();
+
+                                } else {
+                                    callTokenFunction(global.luke.ctx[partId], t, bestMatching)
+                                    tokens.shift();
+                                }
+
+                                bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
+                                sequence(tokens, tokens[0], bestMatching, partId, done);
                             }
 
-                            bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                            sequence(tokens, tokens[0], bestMatching, partId, done);
+                        } else {
+                            console.log(t, 'is not defined');
                         }
 
-                    } else {
-                        console.log(t, 'is not defined');
+
                     }
-
-
-                }})
-
-
                 })
 
 
-            function execSchedule(next){
+            })
+
+
+            function execSchedule(next) {
                 //console.log('next', next);
-                if(!next) return;
-                next.fn(function(){
-                   // console.log('callback called');
+                if (!next) return;
+                next.fn(function() {
+                    // console.log('callback called');
                     execSchedule(luke.schedule.shift());
                 });
             }
@@ -581,15 +617,15 @@ var luke = {
     },
     init: function() {
 
-        localStorage, luke.moduleStorage.all._keys.forEach(function(key) {
+        localStorage,
+        luke.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                var syntax = new Function("module = {}; " + luke.moduleStorage.get(key) + " return syntax;" )();
+                var syntax = new Function("module = {}; " + luke.moduleStorage.get(key) + " return syntax;")();
                 luke.useSyntax(syntax);
             }
         })
     }
 }
-
 
 
 global.luke = luke;

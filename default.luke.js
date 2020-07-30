@@ -136,7 +136,7 @@ var lang = {
                 follow: ["{file}"],
                 method: function(ctx, file) {
 
-                    lang.context['includeNamespace'] = file;
+                    lang.context['includeNamespace'] = global.luke.getRawStatement(file);
 
                 }
             },
@@ -163,6 +163,32 @@ var lang = {
                     global.luke.funcs[data.key] = { params: data.params, body: data.body };
                 }
             },
+            if: {
+                follow: ["{condition}", "$then"],
+                method: function(ctx, condition) {
+                    lang.context.if = condition;
+                }
+            },
+            then: {
+                follow: ["{statement}", "$else"],
+                method: function(ctx, statement) {
+                    if (lang.context.if) {
+                        lang.context.if = lang.context.if.replace(/AND/g, '&&').replace(/OR/g, '||')
+                        if (eval(lang.context.if)) {
+                            lang.context.conditionMet = true;
+                            global.luke.parse(global.luke.getRawStatement(statement));
+                        }
+                    }
+                }
+            },
+            else: {
+                follow: ["{statement}"],
+                method: function(ctx, statement) {
+                    if (lang.context.if && !lang.context.conditionMet) {
+                        global.luke.parse(global.luke.getRawStatement(statement));
+                    }
+                }
+            },
             version: {
                 manual: "See the installed version of luke",
                 follow: [],
@@ -173,7 +199,7 @@ var lang = {
             use: {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
-                    lang.context['useNamespace'] = ns;
+                    lang.context['useNamespace'] = global.luke.getRawStatement(ns);
 
                 }
             },
@@ -186,14 +212,14 @@ var lang = {
             permanent: {
                 follow: ["{file}"],
                 method: function(ctx, file) {
-                    lang.context['useNamespace'] = file;
+                    lang.context['useNamespace'] = global.luke.getRawStatement(file);
                     lang.context['_' + file + 'permanent'] = true;
                 }
             },
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    console.log(text)
+                    console.log(global.luke.getRawStatement(text))
                 }
             },
             list: {
@@ -211,7 +237,7 @@ var lang = {
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
                                     var seq = "";
                                     lang['$'][ns][c].follow.forEach(f => {
-                                        seq += f+" ";
+                                        seq += f + " ";
                                     })
                                     console.log('  ', c, seq, '\t', man)
                                     console.log('\n')
