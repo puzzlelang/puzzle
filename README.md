@@ -136,11 +136,11 @@ The main concepts of luke are:
 * ***Open and free platform for modules***
 
 
-### syntax
+## syntax
 
 luke...
 
-### statements
+## statements
 
 luke scripts are split up into multiple statements, delimited by a semicolon (`;`). 
 Each statement can be single line or multiline, as long as it terminates with a semicolon.
@@ -153,7 +153,7 @@ print (
 );
 ```
 
-### literals
+## literals
 
 Statements can have different literals as dynamic input. These literals can be of two types: single-part literals and multi-part literals.
 
@@ -200,7 +200,7 @@ while {3>2 AND 4>3} ...
 ```
 
 
-### modules
+## modules
 
 The luke language is based upon an open mapper ecosystem.
 
@@ -229,7 +229,7 @@ This will save the module inside a persistent context and make it available, eve
 > luke comes with a built-in default module, which is always initalized. The default module contains some basic functionalities and is available in any other namespace. [ Full reference ](https://luke-lang.github.io/modules)
 
 
-### namespaces
+## namespaces
 
 Since different functionality comes from different modules, it's important to distinguish module-specific code. This is done by setting a namespace using the `ns` keyword.
 
@@ -246,7 +246,7 @@ use mymodule.luke.js;
 // the mymodule namespace will automatically bbe available here.
 ```
 
-### comments
+## comments
 
 Comments can be written using `//`
 
@@ -254,7 +254,7 @@ Comments can be written using `//`
 // this is a comment
 ```
 
-### conditions
+## conditions
 
 Conditional code execution can be used with the following pattern:  `if CONDITION-LITERAL then CODE-LITERAL else CODE-LITERAL` 
 
@@ -274,7 +274,7 @@ if (1<2 OR 2==2) then (print true) else (print false);
 if (1<2 OR 2==2) then "print true" else {print false};
 ```
 
-### loops
+## loops
 
 Loops are for repeating code. They can be written as `while CONDITION-LITERAL do CODE-LITERAL`
 
@@ -289,7 +289,7 @@ while (1<2 OR 2==2) do {
 ```
 
 
-### reusing code
+## reusing code
 
 Luke scripts can be included into other luke scripts for code reusage using `include`
 
@@ -301,7 +301,7 @@ or remote
 include https://domain.com/otherscript.luke;
 ```
 
-### variables
+## variables
 
 Variables are set using the `var` keyword.
 
@@ -311,7 +311,7 @@ print name;
 // will output Peter
 ```
 
-### functions
+## functions
 
 Functions are defines with `func`.
 
@@ -335,7 +335,7 @@ The luke language is a platform for different syntax. Each syntax ist delivered 
 ![module packing](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/module-packing.png "Custom syntax becomes a module")
 
 
-## Create a syntax
+# Create a syntax
 
 Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
