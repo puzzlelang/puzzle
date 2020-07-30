@@ -187,6 +187,18 @@ print (
 );
 ```
 
+> Single-part literals can also be written in the multi-part notation, like `print (hello)` or `use "module.luke.js"`
+
+#### code literals
+
+Code literals define sub scripts that can be used in conditions or loops. They are also wrappen in `""`, `()` or `{}`
+
+```luke
+while (3>2 AND 4>3) ...
+while "3>2 AND 4>3" ...
+while {3>2 AND 4>3} ...
+```
+
 
 ### modules
 
@@ -210,7 +222,6 @@ use permanent https://afasf.com/module.js;
 ```
 
 This will save the module inside a persistent context and make it available, even if the original path or url is not accessible (e.g. offline usage)
-
 
 
 ***Default module***
@@ -245,10 +256,76 @@ Comments can be written using `//`
 
 ### conditions
 
+Conditional code execution can be used with the following pattern:  `if CONDITION-LITERAL then CODE-LITERAL else CODE-LITERAL` 
+
+A condition can be either a single-part or multi-part literal. The executable code has to be a code literal.
+
+```luke
+// single-part literal condition
+if 1<2 then (print true);
+
+// multi-part literal condition
+if (1<2 OR 2==2) then (print true);
+
+// if and else
+if (1<2 OR 2==2) then (print true) else (print false);
+
+// different notations for code literals
+if (1<2 OR 2==2) then "print true" else {print false};
+```
+
 ### loops
+
+Loops are for repeating code. They can be written as `while CONDITION-LITERAL do CODE-LITERAL`
+
+```luke
+// single-part literal condition
+while 1>0 do (print running);
+
+// multi-part literal condition
+while (1<2 OR 2==2) do {
+  print true
+};
+```
+
 
 ### reusing code
 
+Luke scripts can be included into other luke scripts for code reusage using `include`
+
+```luke
+// local
+include otherscript.luke;
+
+or remote
+include https://domain.com/otherscript.luke;
+```
+
+### variables
+
+Variables are set using the `var` keyword.
+
+```luke
+var name Peter;
+print name;
+// will output Peter
+```
+
+### functions
+
+Functions are defines with `func`.
+
+```luke
+func sayHello (param) { print param }
+
+//or
+
+func sayHello (param) { 
+  print param 
+}
+
+sayHello(hello);
+```
 
 # Custom syntax, modules
 
