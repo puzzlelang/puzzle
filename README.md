@@ -47,7 +47,6 @@ use https://domain.com/rest.luke.js;
 
 // 3. Use module-specific code
 
-ns rest; // (set the module namespace)
 POST {name "Hello"} to https://api.com/resource
 ```
 
@@ -134,36 +133,121 @@ The main concepts of luke are:
 
 * ***Simple language design, understandable for developers and non-developers***
 * ***Custom syntax creation***
-* ***Open and free platform for syntax modules***
+* ***Open and free platform for modules***
 
 
-![language architecture](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/lang-architecture.png "Language architecture")
+### syntax
+
+luke...
+
+### statements
+
+luke scripts are split up into multiple statements, delimited by a semicolon (`;`). 
+Each statement can be single line or multiline, as long as it terminates with a semicolon.
+
+```luke
+print "this is a single line stamement. It ends with a semicolon";
+
+print (
+	this is a multiline statement. It also ends with a semicolon.
+);
+```
+
+### literals
+
+Statements can have different literals as dynamic input. These literals can be of two types: single-part literals and multi-part literals.
 
 
-[ Check out the Modules ](https://luke-lang.github.io/modules)
+#### single-part literals
+
+These are literals that are contained in a single word or number. Note, that single-worded texts don't need to be written in quotes.
+
+```luke
+// single-part literals
+print hello;
+print 1;
+print 2.5;
+```
+
+#### multi-part literals
+
+These are literals that can consist of multiple parts, like multiple words, lines or even statements.
+
+Multi-part literals must be wrappen in any of these: `""`, `()`, `{}`.
+
+```luke
+// equivalent multi word example:
+print "hello world";
+print (hello world);
+print {hello world};
+
+// multi line example
+print (
+	hello world!
+);
+```
+
+
+### modules
+
+The luke language is based upon an open mapper ecosystem.
+
+Each module is designed to archieve a specific (mostly domain-specific) goal and brings it's own syntax. 
+Any luke script can use multiple modules, loaded from a remote server or a local file.
+
+```luke
+// remove module
+use https://afasf.com/module.js;
+
+// local module
+use module.js;
+```
+
+If you'd like to cache a module, use the `permanent` option:
+
+```luke
+use permanent https://afasf.com/module.js;
+```
+
+This will save the module inside a persistent context and make it available, even if the original path or url is not accessible (e.g. offline usage)
+
 
 
 ***Default module***
 
-luke comes with a built-in default module, which is initalized by default. The default module contains some basic functionalities.
+> luke comes with a built-in default module, which is always initalized. The default module contains some basic functionalities and is available in any other namespace. [ Full reference ](https://luke-lang.github.io/modules)
 
 
-Some code examples from the default module:
+### namespaces
 
+Since different functionality comes from different modules, it's important to distinguish module-specific code. This is done by setting a namespace using the `ns` keyword.
 
-| Code        | Description           | 
-| ------------- |-------------|
-| `print "I'm a luke program"`  | Print something |
-| `var color blue`  | Set a variable | 
-| `print color`  | Print variable content |
-| `download https://....com`  | Download a file |
-| `list modules`  | List all used modules |
-| `list commands`  | List all commands from available modules |
+```luke
+ns mynamespace;
+// namespace will be available here
+```
+A namespace will be active until another one is set using `ns`.
 
+Note, that after loading a module using `use` will automatically set that modules namespace for you.
 
-[ Full reference ](https://luke-lang.github.io/modules)
+```luke
+use mymodule.luke.js;
+// the mymodule namespace will automatically bbe available here.
+```
 
-> Syntax from the default namespace will automatically be available in any other module-specific namespace.
+### comments
+
+Comments can be written using `//`
+
+```luke
+// this is a comment
+```
+
+### conditions
+
+### loops
+
+### reusing code
 
 
 # Custom syntax, modules
