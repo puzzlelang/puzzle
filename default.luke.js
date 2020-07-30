@@ -36,11 +36,11 @@ var lang = {
         execStatement: function(done) {
 
             if (lang.context[lang.context.importNamespace]) {
-                if (environment != 'node') return console.log('feature not available in this environment')
+                if (environment != 'node') return global.luke.output('feature not available in this environment')
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
-                    console.log('Import Error:', e)
+                    global.luke.output('Import Error:', e)
                 }
                 if (done) done();
             }
@@ -48,7 +48,7 @@ var lang = {
             if (lang.context['unUseNamespace']) {
                 if (global.luke.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
                     global.luke.moduleStorage.remove('_' + lang.context['unUseNamespace']);
-                    console.log(lang.context['unUseNamespace'], 'unused');
+                    global.luke.output(lang.context['unUseNamespace'], 'unused');
                 }
             }
 
@@ -78,27 +78,25 @@ var lang = {
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-                        if (environment != 'node') return console.log('feature not available in this environment')
+                        if (environment != 'node') return global.luke.output('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
-                        console.log('file', fileName, file);
                         global.luke.useSyntax(file);
                         if (done) done();
                     } else {
-                        console.log('unsupported file type');
+                        global.luke.output('unsupported file type');
                         if (done) done();
                     }
 
 
                 } catch (e) {
-                    console.log('Use Error', e);
+                    global.luke.output('Use Error', e);
                     if (done) done();
                 }
             } else if (lang.context['includeNamespace']) {
 
                 function includeScript(code) {
-                    //console.log('ASff');
                     global.luke.parse(code);
                 }
 
@@ -117,13 +115,13 @@ var lang = {
                 } else if (extention.toLowerCase() == "luke") {
                     if (fileName.charAt(0) != '/') fileName = './' + fileName;
                     fs.readFile(fileName, function(err, data) {
-                        if (err) return console.log('Error reading file');
+                        if (err) return global.luke.output('Error reading file');
                         file = data;
                     });
                     includeScript(file)
                     if (done) done();
                 } else {
-                    console.log('unsupported file type');
+                    global.luke.output('unsupported file type');
                     if (done) done();
                 }
             } else if (done) done();
@@ -210,7 +208,6 @@ var lang = {
                         new Function("while(" + global.luke.getRawStatement(lang.context.while)+"){ luke.parse('" + global.luke.getRawStatement(statement) + "') };")()
                     } else if (lang.context.for) {
                         lang.context.for = lang.context.for.replace(/AND/g, '&&').replace(/OR/g, '||');
-                        console.log('for:', lang.context.for);
                         new Function("for(" + global.luke.getRawStatement(lang.context.for) + "){ luke.parse('var i '+i+'; " + global.luke.getRawStatement(statement) + "') };")()
                     }
                 }
@@ -219,7 +216,7 @@ var lang = {
                 manual: "See the installed version of luke",
                 follow: [],
                 method: function(ctx, data) {
-                    console.log('luke version: ', pjson.version)
+                    global.luke.output('luke version: ', pjson.version)
                 }
             },
             use: {
@@ -245,7 +242,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    console.log(global.luke.getRawStatement(text))
+                    global.luke.output(global.luke.getRawStatement(text))
                 }
             },
             list: {
@@ -253,11 +250,11 @@ var lang = {
                 method: function(ctx, param) {
                     switch (param) {
                         case 'modules':
-                            console.log(Object.keys(lang['$']).join(', '));
+                            global.luke.output(Object.keys(lang['$']).join(', '));
                             break;
                         case 'commands':
                             Object.keys(lang['$']).forEach((ns) => {
-                                console.log('namespace:', ns, '\n');
+                                global.luke.output('namespace:', ns, '\n');
                                 Object.keys(lang['$'][ns]).forEach(c => {
                                     var man = "";
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
@@ -265,8 +262,8 @@ var lang = {
                                     lang['$'][ns][c].follow.forEach(f => {
                                         seq += f + " ";
                                     })
-                                    console.log('  ', c, seq, '\t', man)
-                                    console.log('\n')
+                                    global.luke.output('  ', c, seq, '\t', man)
+                                    global.luke.output('\n')
                                 })
                             })
                             break;
@@ -277,7 +274,7 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if (environment != 'node') return console.log('download not available in this environment')
+                    if (environment != 'node') return global.luke.output('download not available in this environment')
 
                     fetch(param)
                         .then(res => res.text())
@@ -285,7 +282,7 @@ var lang = {
 
                             var fileName = param.split('/')[param.split('/').length - 1];
                             fs.writeFile(fileName, data, function(err, data) {
-                                console.log(fileName, 'downloaded');
+                                global.luke.output(fileName, 'downloaded');
                             })
                         });
 
@@ -295,16 +292,16 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if (!npm) return console.log('npm not available in this environment');
+                    if (!npm) return global.luke.output('npm not available in this environment');
 
                     npm.load({
                         loaded: false
                     }, function(err) {
                         npm.commands.install([param], function(er, data) {
-                            console.log(er, data);
+                            global.luke.output(er, data);
                         });
                         npm.on("log", function(message) {
-                            console.log(message);
+                            global.luke.output(message);
                         });
                     });
                 }

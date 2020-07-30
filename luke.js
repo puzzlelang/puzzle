@@ -48,6 +48,10 @@ var luke = {
     // Custom context for storing custom data
     context: {},
 
+    output: function() {
+        console.info(agruments);
+    },
+
     useSyntax: function(jsObject) {
 
         var _defaultSyntax = this.lang['$'].default;
