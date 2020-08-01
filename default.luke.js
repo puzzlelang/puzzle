@@ -259,9 +259,16 @@ var lang = {
                 }
             },
             remove: {
-                follow: ["$file"],
+                follow: ["$file", "$dir"],
                 method: function(ctx) {
                     lang.context.fileOperation = 'remove';
+                    lang.context.dirOperation = 'remove';
+                }
+            },
+            make: {
+                follow: ["$dir"],
+                method: function(ctx) {
+                    lang.context.dirOperation = 'make';
                 }
             },
             file: {
@@ -285,6 +292,25 @@ var lang = {
                         break;
                         case 'remove':
                         fs.unlink(file.name, function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data);
+                        })
+                        break;
+                    }
+                }
+            },
+            dir: {
+                follow: ["{dir}"],
+                method: function(ctx, dir) {
+                    switch(lang.context.dirOperation){
+                        case 'make':
+                        fs.mkdir(dir, {}, function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data);
+                        })
+                        break;
+                        case 'remove':
+                        fs.rmdir(dir, function(err, data){
                             if(err) return global.luke.output(err);
                             global.luke.output(data);
                         })
