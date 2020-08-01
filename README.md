@@ -51,12 +51,6 @@ $ print "Hello World!"
 "Hello World"
 ```
 
-You can also include existing luke files into your interactive shell:
-
-```shell
-$ luke include main.luke
-```
-
 ## Run a File
 
 ```javascript
@@ -102,7 +96,8 @@ The main concepts of luke are:
 
 ## syntax
 
-luke...
+The luke syntax is designed to be simple and easily understandable for developers and non-developers. Luke scripts are built up on different statements that execute something in the background.
+Each statement consists of simple, mostly natual word-based commands, like `write file hello.txt 'world';`
 
 ## statements
 
