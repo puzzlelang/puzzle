@@ -9,21 +9,26 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
 } else {
     global = window;
 
-    fs = {
-        readFile: function(url, encoding, cb) {
-            if (url.indexOf('ls://') == 0)
-                return cb(localStorage.getItem(url))
+    /*fs = {
+        readFile: function(url, cb) {
+            if (url.indexOf('http://') == 0 || url.indexOf('https://') == 0)
+            {
+                    // TODO fetch!
+                    return;
+            }
 
-            const reader = new FileReader();
-            reader.addEventListener('load', (event) => {
-                if (cb) cb(event.target.result);
-            });
-            reader.readAsDataURL(url);
+            if(localStorage.getItem(url)) cb(null, localStorage.getItem(url));
+            else cb("file not found", null)
         },
         writeFile: function(url, data, cb) {
-            cb(localStorage.setItem('ls://' + url, data))
+            localStorage.setItem(url, data)
+            cb(null, localStorage.getItem(url));
         }
-    }
+    }*/
+
+    var LightningFS = require('./dependencies/lightning-fs.min.js');
+
+    fs = new LightningFS('fs')
 }
 
 var lang = {
