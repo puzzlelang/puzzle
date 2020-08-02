@@ -213,6 +213,24 @@ Comments can be written using `//`
 // this is a comment
 ```
 
+## files
+
+Files can be writen, read and removed.
+
+> In Node, file access is native. In browsers, there is no access to the device's real filesystem. However, luke handles files and directories directly inside the browser's `indexedDb`
+
+```luke
+mkdir /test;
+
+write file /test/hello.txt "word";
+read file /test/hello.txt;
+remove file /test/hello.txt;
+```
+
+```luke
+// this is a comment
+```
+
 ## conditions
 
 Conditional code execution can be used with the following pattern:  `if CONDITION-LITERAL then CODE-LITERAL else CODE-LITERAL` 
