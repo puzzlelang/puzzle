@@ -15,7 +15,7 @@ luke as an abstract, extendable programming language and platform that allows cu
 * [Contribute](#contribute)
 * [License](#license)
 
-# Quick start
+# Examples
 
 If you'd like to start with an example for every supported environment, see [Quick Start](https://luke-lang.github.io/quickstart)
 
