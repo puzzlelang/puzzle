@@ -317,7 +317,7 @@ The luke language is a platform for different syntax. Each syntax ist delivered 
 Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
 ```javascript
-lang = {
+syntax = {
   $: {
     mymodule: { // your namespace name
       echo: {
