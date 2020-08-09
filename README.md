@@ -391,8 +391,14 @@ Your custom syntax modules can be contributed to the official luke module repo.
 
 Learn more: [ Luke Module Repo](https://luke-lang.github.io/modules)
 
+# Contribute
+
+You are welcome to contribute to the luke language and ecosystem. Make sure you familiarize yourself with the [Contribution Guidelines](.github/CONTRIBUTE.md) before opening a PR or Issue.
+
 # License
 
 luke is open source and released under the MIT License.
 
 [ See the license ](https://github.com/luke-lang/luke/blob/master/LICENSE)
+
+Copyright (c) 2020 - present, Marco Boelling + all luke contributors
