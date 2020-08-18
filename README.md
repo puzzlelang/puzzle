@@ -8,10 +8,9 @@ luke as an abstract, extendable programming language and platform that allows cu
 
 # Table of contents
 
-* [Install](#install)
-* [Usage](#usage)
+* [Get started](#get-started)
 * [Language](#language)
-* [Custom syntax](#custom-syntax-modules)
+* [Custom modules](#custom-syntax-modules)
 * [Contribute](#contribute)
 * [License](#license)
 
@@ -20,34 +19,15 @@ luke as an abstract, extendable programming language and platform that allows cu
 If you'd like to start with an example for every supported environment, see [Quick Start](https://luke-lang.github.io/quickstart)
 
 
-# Install
+# Get started
 
 luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
 
-## CLI
+## Interactive Shell (CLI)
 
 ```shell
 $ npm i luke --global
 ```
-
-## npm module
-
-```javascript
-npm i luke --save
-```
-
-## Browser
-
-```html
-<script src="luke.js">
-```
-
-# Usage
-
-
-After you have installed luke via npm, you can use it in your terminal as an interactive CLI or run your luke script files
-
-## Interactive Shell
 
 ```shell
 $ luke
@@ -56,6 +36,10 @@ $ print "Hello World!"
 ```
 
 ## Run a File
+
+```shell
+$ npm i luke --global
+```
 
 ```javascript
 // hello.luke
@@ -71,7 +55,24 @@ $ luke run hello.luke
 
 ## Embedded (JavaScript)
 
-luke scripts can also be run inside JavaScript:
+luke scripts can also be run inside JavaScript
+
+> Node
+
+```javascript
+npm i luke --save
+```
+
+```javascript
+luke.parse('print "Hello, I am embedded"')
+```
+
+
+> Browsers
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/luke-lang/luke/luke.browser.js">
+```
 
 ```javascript
 // For Node.js
@@ -79,10 +80,6 @@ const luke = require('luke-lang');
 
 // For browsers:
 <script src="luke.js"/>
-```
-
-```javascript
-luke.parse('print "Hello, I am embedded"')
 ```
 
 
@@ -308,7 +305,7 @@ func sayHello (param) {
 sayHello(hello);
 ```
 
-# Custom syntax, modules
+# Custom modules
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
 
@@ -316,7 +313,7 @@ The luke language is a platform for different syntax. Each syntax ist delivered 
 ![module packing](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/module-packing.png "Custom syntax becomes a module")
 
 
-# Create a syntax
+## Create a syntax
 
 Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
