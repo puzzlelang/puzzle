@@ -9,21 +9,26 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
 } else {
     global = window;
 
-    fs = {
-        readFile: function(url, encoding, cb) {
-            if (url.indexOf('ls://') == 0)
-                return cb(localStorage.getItem(url))
+    /*fs = {
+        readFile: function(url, cb) {
+            if (url.indexOf('http://') == 0 || url.indexOf('https://') == 0)
+            {
+                    // TODO fetch!
+                    return;
+            }
 
-            const reader = new FileReader();
-            reader.addEventListener('load', (event) => {
-                if (cb) cb(event.target.result);
-            });
-            reader.readAsDataURL(url);
+            if(localStorage.getItem(url)) cb(null, localStorage.getItem(url));
+            else cb("file not found", null)
         },
         writeFile: function(url, data, cb) {
-            cb(localStorage.setItem('ls://' + url, data))
+            localStorage.setItem(url, data)
+            cb(null, localStorage.getItem(url));
         }
-    }
+    }*/
+
+    var LightningFS = require('./dependencies/lightning-fs.min.js');
+
+    fs = new LightningFS('fs')
 }
 
 var lang = {
@@ -238,6 +243,78 @@ var lang = {
                 method: function(ctx, file) {
                     lang.context['useNamespace'] = global.luke.getRawStatement(file);
                     lang.context['_' + file + 'permanent'] = true;
+                }
+            },
+            write: {
+                follow: ["$file"],
+                method: function(ctx) {
+                    lang.context.fileOperation = 'write';
+                }
+            },
+            read: {
+                follow: ["$file"],
+                method: function(ctx) {
+                    lang.context.fileOperation = 'read';
+                }
+            },
+            remove: {
+                follow: ["$file", "$dir"],
+                method: function(ctx) {
+                    lang.context.fileOperation = 'remove';
+                    lang.context.dirOperation = 'remove';
+                }
+            },
+            make: {
+                follow: ["$dir"],
+                method: function(ctx) {
+                    lang.context.dirOperation = 'make';
+                }
+            },
+            file: {
+                follow: ["{name,content}"],
+                method: function(ctx, file) {
+                    var content = file.content;
+                    if(environment == 'web') content = new TextEncoder("utf-8").encode(file.content);
+
+                    switch(lang.context.fileOperation){
+                        case 'write':
+                        fs.writeFile(file.name, content, 'utf8', function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data);
+                        })
+                        break;
+                        case 'read':
+                        fs.readFile(file.name, function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data.toString());
+                        })
+                        break;
+                        case 'remove':
+                        fs.unlink(file.name, function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data);
+                        })
+                        break;
+                    }
+                }
+            },
+            dir: {
+                follow: ["{dir}"],
+                method: function(ctx, dir) {
+                    switch(lang.context.dirOperation){
+                        case 'make':
+                        fs.mkdir(dir, {}, function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data);
+                        })
+                        break;
+                        case 'remove':
+                        fs.rmdir(dir, function(err, data){
+                            if(err) return global.luke.output(err);
+                            global.luke.output(data);
+                        })
+                        break;
+                    }
                 }
             },
             print: {

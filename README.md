@@ -8,78 +8,26 @@ luke as an abstract, extendable programming language and platform that allows cu
 
 # Table of contents
 
-* [Resources](#resources)
-* [Examples](#examples)
-* [Install](#install)
-* [Usage](#usage)
+* [Get started](#get-started)
 * [Language](#language)
-* [Custom syntax](#custom-syntax-modules)
+* [Custom modules](#custom-syntax-modules)
+* [Contribute](#contribute)
 * [License](#license)
-
-
-# Resources
-
-| Resource        | Description           | 
-| ------------- |-------------|
-| [Luke Website](https://luke-lang.github.io)  | Official website of the luke project |
-| [Luke Module Catalog](https://luke-lang.github.io/modules)    | Complete collection and documentation of luke modules     |  
-| [Luke on npm](https://npmjs.com/package/luke-lang) | Official npm package   |  
-| [Luke on GitHub](https://github.com/luke-lang/luke) | Official luke core repo   |  
-
 
 # Examples
 
-
-***Code***
-
-```luke
-print "Starting luke program";
-```
+If you'd like to start with an example for every supported environment, see [Quick Start](https://luke-lang.github.io/quickstart)
 
 
-***Modules***
-
-```luke
-// 1. Use a module (local or remote)
-
-use rest.luke.js;
-use https://domain.com/rest.luke.js;
-
-// 3. Use module-specific code
-
-POST {name "Hello"} to https://api.com/resource
-```
-
-
-# Install
+# Get started
 
 luke runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
 
-
-## CLI
+## Interactive Shell (CLI)
 
 ```shell
 $ npm i luke --global
 ```
-
-## npm module
-
-```javascript
-npm i luke --save
-```
-
-## Browser
-
-```html
-<script src="luke.js">
-```
-
-# Usage
-
-
-After you have installed luke via npm, you can use it in your terminal as an interactive CLI or run your luke script files
-
-## Interactive Shell
 
 ```shell
 $ luke
@@ -87,13 +35,11 @@ $ print "Hello World!"
 "Hello World"
 ```
 
-You can also include existing luke files into your interactive shell:
+## Run a File
 
 ```shell
-$ luke include main.luke
+$ npm i luke --global
 ```
-
-## Run a File
 
 ```javascript
 // hello.luke
@@ -109,7 +55,24 @@ $ luke run hello.luke
 
 ## Embedded (JavaScript)
 
-luke scripts can also be run inside JavaScript:
+luke scripts can also be run inside JavaScript
+
+> Node
+
+```javascript
+npm i luke --save
+```
+
+```javascript
+luke.parse('print "Hello, I am embedded"')
+```
+
+
+> Browsers
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/luke-lang/luke/luke.browser.js">
+```
 
 ```javascript
 // For Node.js
@@ -117,10 +80,6 @@ const luke = require('luke-lang');
 
 // For browsers:
 <script src="luke.js"/>
-```
-
-```javascript
-luke.parse('print "Hello, I am embedded"')
 ```
 
 
@@ -138,7 +97,8 @@ The main concepts of luke are:
 
 ## syntax
 
-luke...
+The luke syntax is designed to be simple and easily understandable for developers and non-developers. Luke scripts are built up on different statements that execute something in the background.
+Each statement consists of simple, mostly natual word-based commands, like `write file hello.txt 'world';`
 
 ## statements
 
@@ -254,6 +214,24 @@ Comments can be written using `//`
 // this is a comment
 ```
 
+## files
+
+Files can be writen, read and removed.
+
+> In Node, file access is native. In browsers, there is no access to the device's real filesystem. However, luke handles files and directories directly inside the browser's `indexedDb`
+
+```luke
+mkdir /test;
+
+write file /test/hello.txt "word";
+read file /test/hello.txt;
+remove file /test/hello.txt;
+```
+
+```luke
+// this is a comment
+```
+
 ## conditions
 
 Conditional code execution can be used with the following pattern:  `if CONDITION-LITERAL then CODE-LITERAL else CODE-LITERAL` 
@@ -327,7 +305,7 @@ func sayHello (param) {
 sayHello(hello);
 ```
 
-# Custom syntax, modules
+# Custom modules
 
 The luke language is a platform for different syntax. Each syntax ist delivered using a module. Basically any module syntax can be different, however they are all aimed at simplicity.
 
@@ -335,12 +313,12 @@ The luke language is a platform for different syntax. Each syntax ist delivered 
 ![module packing](https://raw.githubusercontent.com/luke-lang/luke/master/assets/images/module-packing.png "Custom syntax becomes a module")
 
 
-# Create a syntax
+## Create a syntax
 
 Building your own custom syntax is fairly simple. It's defined using a JavaScript Object with a common structure.
 
 ```javascript
-lang = {
+syntax = {
   $: {
     mymodule: { // your namespace name
       echo: {
@@ -414,8 +392,14 @@ Your custom syntax modules can be contributed to the official luke module repo.
 
 Learn more: [ Luke Module Repo](https://luke-lang.github.io/modules)
 
+# Contribute
+
+You are welcome to contribute to the luke language and ecosystem. Make sure you familiarize yourself with the [Contribution Guidelines](.github/CONTRIBUTE.md) before opening a PR or Issue.
+
 # License
 
 luke is open source and released under the MIT License.
 
 [ See the license ](https://github.com/luke-lang/luke/blob/master/LICENSE)
+
+Copyright (c) 2020 - present, Marco Boelling + all luke contributors
