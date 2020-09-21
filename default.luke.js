@@ -191,7 +191,6 @@ var lang = {
             },
             while: {
                 follow: ["{condition}", "$do"],
-                method: function(ctx, condition) {
                     lang.context.while = condition;
                 }
             },
