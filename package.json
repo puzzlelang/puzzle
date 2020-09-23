@@ -1,25 +1,25 @@
 {
-  "name": "luke-lang",
-  "version": "0.0.29",
-  "description": "A programing language platform",
-  "main": "luke.js",
+  "name": "puzzlelang",
+  "version": "0.0.1",
+  "description": "An abstract programing language",
+  "main": "puzzle.js",
   "bin": {
-    "luke": "./cli.js"
+    "puzzle": "./cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-browser": "browserify luke.js -i ./dependencies.js -o luke.browser.js"
+    "build-browser": "browserify puzzle.js -i ./dependencies.js -o puzzle.browser.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/luke-lang/luke.git"
+    "url": "git+https://github.com/puzzlelang/puzzle.git"
   },
   "author": "Marco Boelling",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/luke-lang/luke/issues"
+    "url": "https://github.com/puzzlelang/puzzle/issues"
   },
-  "homepage": "https://github.com/luke-lang/luke#readme",
+  "homepage": "https://github.com/puzzlelang/puzzle#readme",
   "dependencies": {
     "commander": "^5.1.0",
     "https": "^1.0.0",

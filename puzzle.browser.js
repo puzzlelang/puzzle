@@ -43,19 +43,19 @@ var lang = {
         execStatement: function(done) {
 
             if (lang.context[lang.context.importNamespace]) {
-                if (environment != 'node') return global.luke.output('feature not available in this environment')
+                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
-                    global.luke.output('Import Error:', e)
+                    global.puzzle.output('Import Error:', e)
                 }
                 if (done) done();
             }
 
             if (lang.context['unUseNamespace']) {
-                if (global.luke.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
-                    global.luke.moduleStorage.remove('_' + lang.context['unUseNamespace']);
-                    global.luke.output(lang.context['unUseNamespace'], 'unused');
+                if (global.puzzle.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
+                    global.puzzle.moduleStorage.remove('_' + lang.context['unUseNamespace']);
+                    global.puzzle.output(lang.context['unUseNamespace'], 'unused');
                 }
             }
 
@@ -76,35 +76,35 @@ var lang = {
 
                                 if (environment == 'node') {
                                     var syntax = new Function("module = {}; " + data + " return syntax;")();
-                                    global.luke.useSyntax(syntax);
+                                    global.puzzle.useSyntax(syntax);
                                 } else {
                                     var syntax = new Function("module = {}; " + data + " return syntax;")();
-                                    global.luke.useSyntax(syntax);
+                                    global.puzzle.useSyntax(syntax);
                                 }
                                 if (done) done();
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-                        if (environment != 'node') return global.luke.output('feature not available in this environment')
+                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
-                        global.luke.useSyntax(file);
+                        global.puzzle.useSyntax(file);
                         if (done) done();
                     } else {
-                        global.luke.output('unsupported file type');
+                        global.puzzle.output('unsupported file type');
                         if (done) done();
                     }
 
 
                 } catch (e) {
-                    global.luke.output('Use Error', e);
+                    global.puzzle.output('Use Error', e);
                     if (done) done();
                 }
             } else if (lang.context['includeNamespace']) {
 
                 function includeScript(code) {
-                    global.luke.parse(code);
+                    global.puzzle.parse(code);
                 }
 
                 var fileName = lang.context['includeNamespace'];
@@ -119,16 +119,16 @@ var lang = {
                             if (done) done();
                         });
 
-                } else if (extention.toLowerCase() == "luke") {
+                } else if (extention.toLowerCase() == "puzzle") {
                     if (fileName.charAt(0) != '/') fileName = './' + fileName;
                     fs.readFile(fileName, function(err, data) {
-                        if (err) return global.luke.output('Error reading file');
+                        if (err) return global.puzzle.output('Error reading file');
                         file = data;
                     });
                     includeScript(file)
                     if (done) done();
                 } else {
-                    global.luke.output('unsupported file type');
+                    global.puzzle.output('unsupported file type');
                     if (done) done();
                 }
             } else if (done) done();
@@ -137,11 +137,11 @@ var lang = {
     "$": {
         default: {
             include: {
-                manual: "include a luke file",
+                manual: "include a puzzle file",
                 follow: ["{file}"],
                 method: function(ctx, file) {
 
-                    lang.context['includeNamespace'] = global.luke.getRawStatement(file);
+                    lang.context['includeNamespace'] = global.puzzle.getRawStatement(file);
 
                 }
             },
@@ -157,7 +157,7 @@ var lang = {
                 manual: "Sets a variable",
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
-                    global.luke.vars[data.key] = data.value;
+                    global.puzzle.vars[data.key] = data.value;
 
                 }
             },
@@ -165,9 +165,9 @@ var lang = {
                 manual: "Sets a function",
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
-                    global.luke.funcs[data.key] = { params: data.params, body: data.body };
+                    global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
 
-                    console.log('fs', global.luke.funcs);
+                    console.log('fs', global.puzzle.funcs);
                 }
             },
             if: {
@@ -183,7 +183,7 @@ var lang = {
                         lang.context.if = lang.context.if.replace(/AND/g, '&&').replace(/OR/g, '||')
                         if (eval(lang.context.if)) {
                             lang.context.conditionMet = true;
-                            global.luke.parse(global.luke.getRawStatement(statement));
+                            global.puzzle.parse(global.puzzle.getRawStatement(statement));
                         }
                     }
                 }
@@ -192,7 +192,7 @@ var lang = {
                 follow: ["{statement}"],
                 method: function(ctx, statement) {
                     if (lang.context.if && !lang.context.conditionMet) {
-                        global.luke.parse(global.luke.getRawStatement(statement));
+                        global.puzzle.parse(global.puzzle.getRawStatement(statement));
                     }
                 }
             },
@@ -214,24 +214,24 @@ var lang = {
                     //new Function("module = {}; " + data + " return syntax;")();
                     if (lang.context.while) {
                         lang.context.while = lang.context.while.replace(/AND/g, '&&').replace(/OR/g, '||')
-                        new Function("while(" + global.luke.getRawStatement(lang.context.while)+"){ luke.parse('" + global.luke.getRawStatement(statement) + "') };")()
+                        new Function("while(" + global.puzzle.getRawStatement(lang.context.while)+"){ puzzle.parse('" + global.puzzle.getRawStatement(statement) + "') };")()
                     } else if (lang.context.for) {
                         lang.context.for = lang.context.for.replace(/AND/g, '&&').replace(/OR/g, '||');
-                        new Function("for(" + global.luke.getRawStatement(lang.context.for) + "){ luke.parse('var i '+i+'; " + global.luke.getRawStatement(statement) + "') };")()
+                        new Function("for(" + global.puzzle.getRawStatement(lang.context.for) + "){ puzzle.parse('var i '+i+'; " + global.puzzle.getRawStatement(statement) + "') };")()
                     }
                 }
             },
             version: {
-                manual: "See the installed version of luke",
+                manual: "See the installed version of puzzle",
                 follow: [],
                 method: function(ctx, data) {
-                    global.luke.output('luke version: ', pjson.version)
+                    global.puzzle.output('puzzle version: ', pjson.version)
                 }
             },
             use: {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
-                    lang.context['useNamespace'] = global.luke.getRawStatement(ns);
+                    lang.context['useNamespace'] = global.puzzle.getRawStatement(ns);
 
                 }
             },
@@ -244,7 +244,7 @@ var lang = {
             permanent: {
                 follow: ["{file}"],
                 method: function(ctx, file) {
-                    lang.context['useNamespace'] = global.luke.getRawStatement(file);
+                    lang.context['useNamespace'] = global.puzzle.getRawStatement(file);
                     lang.context['_' + file + 'permanent'] = true;
                 }
             },
@@ -282,20 +282,20 @@ var lang = {
                     switch(lang.context.fileOperation){
                         case 'write':
                         fs.writeFile(file.name, content, 'utf8', function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
+                            if(err) return global.puzzle.output(err);
+                            global.puzzle.output(data);
                         })
                         break;
                         case 'read':
                         fs.readFile(file.name, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data.toString());
+                            if(err) return global.puzzle.output(err);
+                            global.puzzle.output(data.toString());
                         })
                         break;
                         case 'remove':
                         fs.unlink(file.name, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
+                            if(err) return global.puzzle.output(err);
+                            global.puzzle.output(data);
                         })
                         break;
                     }
@@ -307,14 +307,14 @@ var lang = {
                     switch(lang.context.dirOperation){
                         case 'make':
                         fs.mkdir(dir, {}, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
+                            if(err) return global.puzzle.output(err);
+                            global.puzzle.output(data);
                         })
                         break;
                         case 'remove':
                         fs.rmdir(dir, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
+                            if(err) return global.puzzle.output(err);
+                            global.puzzle.output(data);
                         })
                         break;
                     }
@@ -323,7 +323,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.luke.output(global.luke.getRawStatement(text))
+                    global.puzzle.output(global.puzzle.getRawStatement(text))
                 }
             },
             list: {
@@ -331,11 +331,11 @@ var lang = {
                 method: function(ctx, param) {
                     switch (param) {
                         case 'modules':
-                            global.luke.output(Object.keys(lang['$']).join(', '));
+                            global.puzzle.output(Object.keys(lang['$']).join(', '));
                             break;
                         case 'commands':
                             Object.keys(lang['$']).forEach((ns) => {
-                                global.luke.output('namespace:', ns, '\n');
+                                global.puzzle.output('namespace:', ns, '\n');
                                 Object.keys(lang['$'][ns]).forEach(c => {
                                     var man = "";
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
@@ -343,8 +343,8 @@ var lang = {
                                     lang['$'][ns][c].follow.forEach(f => {
                                         seq += f + " ";
                                     })
-                                    global.luke.output('  ', c, seq, '\t', man)
-                                    global.luke.output('\n')
+                                    global.puzzle.output('  ', c, seq, '\t', man)
+                                    global.puzzle.output('\n')
                                 })
                             })
                             break;
@@ -355,7 +355,7 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if (environment != 'node') return global.luke.output('download not available in this environment')
+                    if (environment != 'node') return global.puzzle.output('download not available in this environment')
 
                     fetch(param)
                         .then(res => res.text())
@@ -363,7 +363,7 @@ var lang = {
 
                             var fileName = param.split('/')[param.split('/').length - 1];
                             fs.writeFile(fileName, data, function(err, data) {
-                                global.luke.output(fileName, 'downloaded');
+                                global.puzzle.output(fileName, 'downloaded');
                             })
                         });
 
@@ -373,16 +373,16 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if (!npm) return global.luke.output('npm not available in this environment');
+                    if (!npm) return global.puzzle.output('npm not available in this environment');
 
                     npm.load({
                         loaded: false
                     }, function(err) {
                         npm.commands.install([param], function(er, data) {
-                            global.luke.output(er, data);
+                            global.puzzle.output(er, data);
                         });
                         npm.on("log", function(message) {
-                            global.luke.output(message);
+                            global.puzzle.output(message);
                         });
                     });
                 }
@@ -406,10 +406,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
 } else global = window;
 
 
-var luke = {
+var puzzle = {
 
     // Default language definition
-    lang: require('./default.luke.js'),
+    lang: require('./default.puzzle.js'),
 
     // Schedule map for statements
     schedule: [],
@@ -583,7 +583,7 @@ var luke = {
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
 
-                global.luke.ctx[partId].sequence.push(token)
+                global.puzzle.ctx[partId].sequence.push(token)
 
                 var nextBestInsturction = null;
 
@@ -599,13 +599,13 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 } else {
 
-                    if (vars[bestMatching] || global.luke.vars[bestMatching]) {
+                    if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                        callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                         tokens.shift();
-                    } else if (global.luke.funcs[bestMatching]) {
+                    } else if (global.puzzle.funcs[bestMatching]) {
 
-                        //callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                        //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.vars[bestMatching]);
                         tokens.shift();
                     } else if ((bestMatchingInstruction || "").includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -619,12 +619,12 @@ var luke = {
                             tokens.shift();
                         })
 
-                        callTokenFunction(global.luke.ctx[partId], token, argList);
+                        callTokenFunction(global.puzzle.ctx[partId], token, argList);
                         //tokens.shift();
 
                     } else {
                         // console.log('safasf', bestMatching, tokens)
-                        callTokenFunction(global.luke.ctx[partId], token, bestMatching)
+                        callTokenFunction(global.puzzle.ctx[partId], token, bestMatching)
                         tokens.shift();
                     }
 
@@ -634,7 +634,7 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 }
 
-            } else if (token.includes('(') && funcs || global.luke.funcs[token.substring(0, token.indexOf('('))]) {
+            } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
                 execFunctionBody(token, vars, funcs)
             } else {
                 console.log('unequal', instructionKey, token);
@@ -654,7 +654,7 @@ var luke = {
                 //console.log('params', inputParams);
 
                 bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
-                var rawDefinedParams = global.luke.funcs[bestMatching].params;
+                var rawDefinedParams = global.puzzle.funcs[bestMatching].params;
                 rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
                 var definedParams = rawDefinedParams.split(",");
                 //console.log('definedParams', definedParams);
@@ -663,11 +663,11 @@ var luke = {
                     scope.vars[param] = inputParams[i]
                 })
 
-                //console.log(global.luke.funcs[bestMatching].body)
+                //console.log(global.puzzle.funcs[bestMatching].body)
 
-                var body = global.luke.funcs[bestMatching].body;
+                var body = global.puzzle.funcs[bestMatching].body;
 
-                luke.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars, scope.funcs);
+                puzzle.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars, scope.funcs);
 
             }
         }
@@ -682,13 +682,13 @@ var luke = {
 
                 var partId = Math.random();
 
-                luke.schedule.push({
+                puzzle.schedule.push({
                     partId: partId,
                     fn: (done) => {
 
                         if (!p) return;
 
-                        global.luke.ctx[partId] = {
+                        global.puzzle.ctx[partId] = {
                             sequence: [],
                             data: {}
                         };
@@ -710,19 +710,19 @@ var luke = {
                             var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                             if ((bestMatching || "").charAt(0) == "$") {
-                                callTokenFunction(global.luke.ctx[partId], t);
+                                callTokenFunction(global.puzzle.ctx[partId], t);
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
                             } else {
 
-                                if (vars[bestMatching] || global.luke.vars[bestMatching]) {
+                                if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                                    callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                                    callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                                     tokens.shift();
-                                } else if (global.luke.funcs[bestMatching] || (bestMatching.includes('(') && global.luke.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
+                                } else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
 
                                     execFunctionBody(bestMatching, vars, funcs)
 
-                                    //callTokenFunction(global.luke.ctx[partId], t, global.luke.funcs[bestMatching]);
+                                    //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.funcs[bestMatching]);
                                     tokens.shift();
                                 } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -737,11 +737,11 @@ var luke = {
                                         tokens.shift();
                                     })
 
-                                    callTokenFunction(global.luke.ctx[partId], t, argList);
+                                    callTokenFunction(global.puzzle.ctx[partId], t, argList);
                                     //tokens.shift();
 
                                 } else {
-                                    callTokenFunction(global.luke.ctx[partId], t, bestMatching)
+                                    callTokenFunction(global.puzzle.ctx[partId], t, bestMatching)
                                     tokens.shift();
                                 }
 
@@ -749,7 +749,7 @@ var luke = {
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
                             }
 
-                        } else if (t.includes('(') && funcs || global.luke.funcs[t.substring(0, t.indexOf('('))]) {
+                        } else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
                             execFunctionBody(t, vars, funcs)
                         } else {
                             console.log(t, 'is not defined');
@@ -767,13 +767,13 @@ var luke = {
                 if (!next) return;
                 next.fn(function() {
                     // console.log('callback called');
-                    execSchedule(luke.schedule.shift());
+                    execSchedule(puzzle.schedule.shift());
                 });
             }
 
-            //console.log(luke.schedule);
+            //console.log(puzzle.schedule);
 
-            execSchedule(luke.schedule.shift())
+            execSchedule(puzzle.schedule.shift())
 
         }
 
@@ -782,43 +782,43 @@ var luke = {
     init: function() {
 
         localStorage,
-        luke.moduleStorage.all._keys.forEach(function(key) {
+        puzzle.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                var syntax = new Function("module = {}; " + luke.moduleStorage.get(key) + " return syntax;")();
-                luke.useSyntax(syntax);
+                var syntax = new Function("module = {}; " + puzzle.moduleStorage.get(key) + " return syntax;")();
+                puzzle.useSyntax(syntax);
             }
         })
     }
 }
 
 
-global.luke = luke;
+global.puzzle = puzzle;
 
-module.exports = luke;
+module.exports = puzzle;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./default.luke.js":1,"./dependencies.js":5,"_process":6}],4:[function(require,module,exports){
+},{"./default.puzzle.js":1,"./dependencies.js":5,"_process":6}],4:[function(require,module,exports){
 module.exports={
-  "name": "luke-lang",
+  "name": "puzzle-lang",
   "version": "0.0.29",
   "description": "A programing language platform",
-  "main": "luke.js",
+  "main": "puzzle.js",
   "bin": {
-    "luke": "./cli.js"
+    "puzzle": "./cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-browser": "browserify luke.js -i ./dependencies.js -o luke.browser.js"
+    "build-browser": "browserify puzzle.js -i ./dependencies.js -o puzzle.browser.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/luke-lang/luke.git"
+    "url": "git+https://github.com/puzzle-lang/puzzle.git"
   },
   "author": "Marco Boelling",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/luke-lang/luke/issues"
+    "url": "https://github.com/puzzle-lang/puzzle/issues"
   },
-  "homepage": "https://github.com/luke-lang/luke#readme",
+  "homepage": "https://github.com/puzzle-lang/puzzle#readme",
   "dependencies": {
     "commander": "^5.1.0",
     "https": "^1.0.0",

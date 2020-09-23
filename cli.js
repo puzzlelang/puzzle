@@ -3,7 +3,7 @@
 const program = require('commander');
 const inquirer = require('inquirer');
 
-const luke = require('./luke.js');
+const puzzle = require('./puzzle.js');
 const fs = require('fs');
 
 const npmview = require('npmview');
@@ -13,9 +13,9 @@ program
     .command('run <type>')
     .description('Run your app')
     .action(function(type, args) {
-        luke.init();
+        puzzle.init();
         var code = fs.readFileSync(type, 'utf8');
-        luke.parse(code);
+        puzzle.parse(code);
     });
 
 program
@@ -23,14 +23,14 @@ program
     .action(function(type, args) {
 
         npmview(pjson.name, function(err, version, moduleInfo) {
-            if (version > pjson.version) console.log('There is a newer version of luke available. Run "npm i luke-lang -g" to install it.');
+            if (version > pjson.version) console.log('There is a newer version of puzzle available. Run "npm i puzzle-lang -g" to install it.');
         });
 
         if (args) {
             try {
                 if (args[0] == "include") {
                     var code = fs.readFileSync(args[1], 'utf8');
-                    luke.parse(code);
+                    puzzle.parse(code);
                 }
             } catch (e) {
                 console.log('Error including file', e);
@@ -50,7 +50,7 @@ program
                         process.exit(0);
                     }
 
-                    luke.parse(content.input)
+                    puzzle.parse(content.input)
                     input();
 
                 }).catch(e => {
@@ -58,7 +58,7 @@ program
                 });
         }
 
-        luke.init();
+        puzzle.init();
         input();
 
     });

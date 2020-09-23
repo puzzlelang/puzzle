@@ -5,10 +5,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
 } else global = window;
 
 
-var luke = {
+var puzzle = {
 
     // Default language definition
-    lang: require('./default.luke.js'),
+    lang: require('./default.puzzle.js'),
 
     // Schedule map for statements
     schedule: [],
@@ -182,7 +182,7 @@ var luke = {
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
 
-                global.luke.ctx[partId].sequence.push(token)
+                global.puzzle.ctx[partId].sequence.push(token)
 
                 var nextBestInsturction = null;
 
@@ -198,13 +198,13 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 } else {
 
-                    if (vars[bestMatching] || global.luke.vars[bestMatching]) {
+                    if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                        callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                        callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                         tokens.shift();
-                    } else if (global.luke.funcs[bestMatching]) {
+                    } else if (global.puzzle.funcs[bestMatching]) {
 
-                        //callTokenFunction(global.luke.ctx[partId], t, global.luke.vars[bestMatching]);
+                        //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.vars[bestMatching]);
                         tokens.shift();
                     } else if ((bestMatchingInstruction || "").includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -218,12 +218,12 @@ var luke = {
                             tokens.shift();
                         })
 
-                        callTokenFunction(global.luke.ctx[partId], token, argList);
+                        callTokenFunction(global.puzzle.ctx[partId], token, argList);
                         //tokens.shift();
 
                     } else {
                         // console.log('safasf', bestMatching, tokens)
-                        callTokenFunction(global.luke.ctx[partId], token, bestMatching)
+                        callTokenFunction(global.puzzle.ctx[partId], token, bestMatching)
                         tokens.shift();
                     }
 
@@ -233,7 +233,7 @@ var luke = {
                     sequence(tokens, tokens[0], bestMatching, partId, done);
                 }
 
-            } else if (token.includes('(') && funcs || global.luke.funcs[token.substring(0, token.indexOf('('))]) {
+            } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
                 execFunctionBody(token, vars, funcs)
             } else {
                 console.log('unequal', instructionKey, token);
@@ -253,7 +253,7 @@ var luke = {
                 //console.log('params', inputParams);
 
                 bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
-                var rawDefinedParams = global.luke.funcs[bestMatching].params;
+                var rawDefinedParams = global.puzzle.funcs[bestMatching].params;
                 rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
                 var definedParams = rawDefinedParams.split(",");
                 //console.log('definedParams', definedParams);
@@ -262,11 +262,11 @@ var luke = {
                     scope.vars[param] = inputParams[i]
                 })
 
-                //console.log(global.luke.funcs[bestMatching].body)
+                //console.log(global.puzzle.funcs[bestMatching].body)
 
-                var body = global.luke.funcs[bestMatching].body;
+                var body = global.puzzle.funcs[bestMatching].body;
 
-                luke.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars, scope.funcs);
+                puzzle.parse(body.substring(body.indexOf('{') + 1, body.indexOf('}')), scope.vars, scope.funcs);
 
             }
         }
@@ -281,13 +281,13 @@ var luke = {
 
                 var partId = Math.random();
 
-                luke.schedule.push({
+                puzzle.schedule.push({
                     partId: partId,
                     fn: (done) => {
 
                         if (!p) return;
 
-                        global.luke.ctx[partId] = {
+                        global.puzzle.ctx[partId] = {
                             sequence: [],
                             data: {}
                         };
@@ -309,19 +309,19 @@ var luke = {
                             var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
 
                             if ((bestMatching || "").charAt(0) == "$") {
-                                callTokenFunction(global.luke.ctx[partId], t);
+                                callTokenFunction(global.puzzle.ctx[partId], t);
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
                             } else {
 
-                                if (vars[bestMatching] || global.luke.vars[bestMatching]) {
+                                if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                                    callTokenFunction(global.luke.ctx[partId], t, vars[bestMatching] || global.luke.vars[bestMatching]);
+                                    callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                                     tokens.shift();
-                                } else if (global.luke.funcs[bestMatching] || (bestMatching.includes('(') && global.luke.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
+                                } else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
 
                                     execFunctionBody(bestMatching, vars, funcs)
 
-                                    //callTokenFunction(global.luke.ctx[partId], t, global.luke.funcs[bestMatching]);
+                                    //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.funcs[bestMatching]);
                                     tokens.shift();
                                 } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
@@ -336,11 +336,11 @@ var luke = {
                                         tokens.shift();
                                     })
 
-                                    callTokenFunction(global.luke.ctx[partId], t, argList);
+                                    callTokenFunction(global.puzzle.ctx[partId], t, argList);
                                     //tokens.shift();
 
                                 } else {
-                                    callTokenFunction(global.luke.ctx[partId], t, bestMatching)
+                                    callTokenFunction(global.puzzle.ctx[partId], t, bestMatching)
                                     tokens.shift();
                                 }
 
@@ -348,7 +348,7 @@ var luke = {
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
                             }
 
-                        } else if (t.includes('(') && funcs || global.luke.funcs[t.substring(0, t.indexOf('('))]) {
+                        } else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
                             execFunctionBody(t, vars, funcs)
                         } else {
                             console.log(t, 'is not defined');
@@ -366,13 +366,13 @@ var luke = {
                 if (!next) return;
                 next.fn(function() {
                     // console.log('callback called');
-                    execSchedule(luke.schedule.shift());
+                    execSchedule(puzzle.schedule.shift());
                 });
             }
 
-            //console.log(luke.schedule);
+            //console.log(puzzle.schedule);
 
-            execSchedule(luke.schedule.shift())
+            execSchedule(puzzle.schedule.shift())
 
         }
 
@@ -381,16 +381,16 @@ var luke = {
     init: function() {
 
         localStorage,
-        luke.moduleStorage.all._keys.forEach(function(key) {
+        puzzle.moduleStorage.all._keys.forEach(function(key) {
             if (key.charAt(0) == "_") {
-                var syntax = new Function("module = {}; " + luke.moduleStorage.get(key) + " return syntax;")();
-                luke.useSyntax(syntax);
+                var syntax = new Function("module = {}; " + puzzle.moduleStorage.get(key) + " return syntax;")();
+                puzzle.useSyntax(syntax);
             }
         })
     }
 }
 
 
-global.luke = luke;
+global.puzzle = puzzle;
 
-module.exports = luke;
+module.exports = puzzle;
