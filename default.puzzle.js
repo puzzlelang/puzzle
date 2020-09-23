@@ -13,8 +13,8 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
         readFile: function(url, cb) {
             if (url.indexOf('http://') == 0 || url.indexOf('https://') == 0)
             {
-                    // TODO fetch!
-                    return;
+                // TODO fetch!
+                return;
             }
 
             if(localStorage.getItem(url)) cb(null, localStorage.getItem(url));
@@ -41,19 +41,19 @@ var lang = {
         execStatement: function(done) {
 
             if (lang.context[lang.context.importNamespace]) {
-                if (environment != 'node') return global.luke.output('feature not available in this environment')
+                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
                 try {
                     lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
                 } catch (e) {
-                    global.luke.output('Import Error:', e)
+                    global.puzzle.output('Import Error:', e)
                 }
                 if (done) done();
             }
 
             if (lang.context['unUseNamespace']) {
-                if (global.luke.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
-                    global.luke.moduleStorage.remove('_' + lang.context['unUseNamespace']);
-                    global.luke.output(lang.context['unUseNamespace'], 'unused');
+                if (global.puzzle.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
+                    global.puzzle.moduleStorage.remove('_' + lang.context['unUseNamespace']);
+                    global.puzzle.output(lang.context['unUseNamespace'], 'unused');
                 }
             }
 
@@ -74,35 +74,35 @@ var lang = {
 
                                 if (environment == 'node') {
                                     var syntax = new Function("module = {}; " + data + " return syntax;")();
-                                    global.luke.useSyntax(syntax);
+                                    global.puzzle.useSyntax(syntax);
                                 } else {
                                     var syntax = new Function("module = {}; " + data + " return syntax;")();
-                                    global.luke.useSyntax(syntax);
+                                    global.puzzle.useSyntax(syntax);
                                 }
                                 if (done) done();
                             });
 
                     } else if (extention.toLowerCase() == "js") {
-                        if (environment != 'node') return global.luke.output('feature not available in this environment')
+                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
 
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
-                        global.luke.useSyntax(file);
+                        global.puzzle.useSyntax(file);
                         if (done) done();
                     } else {
-                        global.luke.output('unsupported file type');
+                        global.puzzle.output('unsupported file type');
                         if (done) done();
                     }
 
 
                 } catch (e) {
-                    global.luke.output('Use Error', e);
+                    global.puzzle.output('Use Error', e);
                     if (done) done();
                 }
             } else if (lang.context['includeNamespace']) {
 
                 function includeScript(code) {
-                    global.luke.parse(code);
+                    global.puzzle.parse(code);
                 }
 
                 var fileName = lang.context['includeNamespace'];
@@ -117,16 +117,16 @@ var lang = {
                             if (done) done();
                         });
 
-                } else if (extention.toLowerCase() == "luke") {
+                } else if (extention.toLowerCase() == "puzzle") {
                     if (fileName.charAt(0) != '/') fileName = './' + fileName;
                     fs.readFile(fileName, function(err, data) {
-                        if (err) return global.luke.output('Error reading file');
+                        if (err) return global.puzzle.output('Error reading file');
                         file = data;
                     });
                     includeScript(file)
                     if (done) done();
                 } else {
-                    global.luke.output('unsupported file type');
+                    global.puzzle.output('unsupported file type');
                     if (done) done();
                 }
             } else if (done) done();
@@ -135,11 +135,11 @@ var lang = {
     "$": {
         default: {
             include: {
-                manual: "include a luke file",
+                manual: "include a puzzle file",
                 follow: ["{file}"],
                 method: function(ctx, file) {
 
-                    lang.context['includeNamespace'] = global.luke.getRawStatement(file);
+                    lang.context['includeNamespace'] = global.puzzle.getRawStatement(file);
 
                 }
             },
@@ -155,7 +155,7 @@ var lang = {
                 manual: "Sets a variable",
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
-                    global.luke.vars[data.key] = data.value;
+                    global.puzzle.vars[data.key] = data.value;
 
                 }
             },
@@ -163,9 +163,9 @@ var lang = {
                 manual: "Sets a function",
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
-                    global.luke.funcs[data.key] = { params: data.params, body: data.body };
+                    global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
 
-                    console.log('fs', global.luke.funcs);
+                    console.log('fs', global.puzzle.funcs);
                 }
             },
             if: {
@@ -181,7 +181,7 @@ var lang = {
                         lang.context.if = lang.context.if.replace(/AND/g, '&&').replace(/OR/g, '||')
                         if (eval(lang.context.if)) {
                             lang.context.conditionMet = true;
-                            global.luke.parse(global.luke.getRawStatement(statement));
+                            global.puzzle.parse(global.puzzle.getRawStatement(statement));
                         }
                     }
                 }
@@ -190,14 +190,16 @@ var lang = {
                 follow: ["{statement}"],
                 method: function(ctx, statement) {
                     if (lang.context.if && !lang.context.conditionMet) {
-                        global.luke.parse(global.luke.getRawStatement(statement));
+                        global.puzzle.parse(global.puzzle.getRawStatement(statement));
                     }
                 }
             },
             while: {
                 follow: ["{condition}", "$do"],
+                method: function(ctx, statement) {
                     lang.context.while = condition;
                 }
+
             },
             for: {
                 follow: ["{condition}", "$do"],
@@ -211,24 +213,24 @@ var lang = {
                     //new Function("module = {}; " + data + " return syntax;")();
                     if (lang.context.while) {
                         lang.context.while = lang.context.while.replace(/AND/g, '&&').replace(/OR/g, '||')
-                        new Function("while(" + global.luke.getRawStatement(lang.context.while)+"){ luke.parse('" + global.luke.getRawStatement(statement) + "') };")()
+                        new Function("while(" + global.puzzle.getRawStatement(lang.context.while) + "){ puzzle.parse('" + global.puzzle.getRawStatement(statement) + "') };")()
                     } else if (lang.context.for) {
                         lang.context.for = lang.context.for.replace(/AND/g, '&&').replace(/OR/g, '||');
-                        new Function("for(" + global.luke.getRawStatement(lang.context.for) + "){ luke.parse('var i '+i+'; " + global.luke.getRawStatement(statement) + "') };")()
+                        new Function("for(" + global.puzzle.getRawStatement(lang.context.for) + "){ puzzle.parse('var i '+i+'; " + global.puzzle.getRawStatement(statement) + "') };")()
                     }
                 }
             },
             version: {
-                manual: "See the installed version of luke",
+                manual: "See the installed version of puzzle",
                 follow: [],
                 method: function(ctx, data) {
-                    global.luke.output('luke version: ', pjson.version)
+                    global.puzzle.output('puzzle version: ', pjson.version)
                 }
             },
             use: {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
-                    lang.context['useNamespace'] = global.luke.getRawStatement(ns);
+                    lang.context['useNamespace'] = global.puzzle.getRawStatement(ns);
 
                 }
             },
@@ -241,7 +243,7 @@ var lang = {
             permanent: {
                 follow: ["{file}"],
                 method: function(ctx, file) {
-                    lang.context['useNamespace'] = global.luke.getRawStatement(file);
+                    lang.context['useNamespace'] = global.puzzle.getRawStatement(file);
                     lang.context['_' + file + 'permanent'] = true;
                 }
             },
@@ -274,53 +276,53 @@ var lang = {
                 follow: ["{name,content}"],
                 method: function(ctx, file) {
                     var content = file.content;
-                    if(environment == 'web') content = new TextEncoder("utf-8").encode(file.content);
+                    if (environment == 'web') content = new TextEncoder("utf-8").encode(file.content);
 
-                    switch(lang.context.fileOperation){
+                    switch (lang.context.fileOperation) {
                         case 'write':
-                        fs.writeFile(file.name, content, 'utf8', function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
-                        })
-                        break;
+                            fs.writeFile(file.name, content, 'utf8', function(err, data) {
+                                if (err) return global.puzzle.output(err);
+                                global.puzzle.output(data);
+                            })
+                            break;
                         case 'read':
-                        fs.readFile(file.name, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data.toString());
-                        })
-                        break;
+                            fs.readFile(file.name, function(err, data) {
+                                if (err) return global.puzzle.output(err);
+                                global.puzzle.output(data.toString());
+                            })
+                            break;
                         case 'remove':
-                        fs.unlink(file.name, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
-                        })
-                        break;
+                            fs.unlink(file.name, function(err, data) {
+                                if (err) return global.puzzle.output(err);
+                                global.puzzle.output(data);
+                            })
+                            break;
                     }
                 }
             },
             dir: {
                 follow: ["{dir}"],
                 method: function(ctx, dir) {
-                    switch(lang.context.dirOperation){
+                    switch (lang.context.dirOperation) {
                         case 'make':
-                        fs.mkdir(dir, {}, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
-                        })
-                        break;
+                            fs.mkdir(dir, {}, function(err, data) {
+                                if (err) return global.puzzle.output(err);
+                                global.puzzle.output(data);
+                            })
+                            break;
                         case 'remove':
-                        fs.rmdir(dir, function(err, data){
-                            if(err) return global.luke.output(err);
-                            global.luke.output(data);
-                        })
-                        break;
+                            fs.rmdir(dir, function(err, data) {
+                                if (err) return global.puzzle.output(err);
+                                global.puzzle.output(data);
+                            })
+                            break;
                     }
                 }
             },
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.luke.output(global.luke.getRawStatement(text))
+                    global.puzzle.output(global.puzzle.getRawStatement(text))
                 }
             },
             list: {
@@ -328,11 +330,11 @@ var lang = {
                 method: function(ctx, param) {
                     switch (param) {
                         case 'modules':
-                            global.luke.output(Object.keys(lang['$']).join(', '));
+                            global.puzzle.output(Object.keys(lang['$']).join(', '));
                             break;
                         case 'commands':
                             Object.keys(lang['$']).forEach((ns) => {
-                                global.luke.output('namespace:', ns, '\n');
+                                global.puzzle.output('namespace:', ns, '\n');
                                 Object.keys(lang['$'][ns]).forEach(c => {
                                     var man = "";
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
@@ -340,8 +342,8 @@ var lang = {
                                     lang['$'][ns][c].follow.forEach(f => {
                                         seq += f + " ";
                                     })
-                                    global.luke.output('  ', c, seq, '\t', man)
-                                    global.luke.output('\n')
+                                    global.puzzle.output('  ', c, seq, '\t', man)
+                                    global.puzzle.output('\n')
                                 })
                             })
                             break;
@@ -352,7 +354,7 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if (environment != 'node') return global.luke.output('download not available in this environment')
+                    if (environment != 'node') return global.puzzle.output('download not available in this environment')
 
                     fetch(param)
                         .then(res => res.text())
@@ -360,7 +362,7 @@ var lang = {
 
                             var fileName = param.split('/')[param.split('/').length - 1];
                             fs.writeFile(fileName, data, function(err, data) {
-                                global.luke.output(fileName, 'downloaded');
+                                global.puzzle.output(fileName, 'downloaded');
                             })
                         });
 
@@ -370,16 +372,16 @@ var lang = {
                 follow: ["{param}"],
                 method: function(ctx, param) {
 
-                    if (!npm) return global.luke.output('npm not available in this environment');
+                    if (!npm) return global.puzzle.output('npm not available in this environment');
 
                     npm.load({
                         loaded: false
                     }, function(err) {
                         npm.commands.install([param], function(er, data) {
-                            global.luke.output(er, data);
+                            global.puzzle.output(er, data);
                         });
                         npm.on("log", function(message) {
-                            global.luke.output(message);
+                            global.puzzle.output(message);
                         });
                     });
                 }
