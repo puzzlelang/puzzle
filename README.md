@@ -59,23 +59,22 @@ puzzle scripts can also be run inside JavaScript
 > Node
 
 ```javascript
-npm i puzzle --save
+npm i puzzlelang --save
 ```
 
 ```javascript
 puzzle.parse('print "Hello, I am embedded"')
 ```
 
-
 > Browsers
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/puzzle-lang/puzzle/puzzle.browser.js">
+<script src="https://cdn.jsdelivr.net/gh/puzzlelang/puzzle/puzzle.browser.js">
 ```
 
 ```javascript
 // For Node.js
-const puzzle = require('puzzle-lang');
+const puzzle = require('puzzlelang');
 
 // For browsers:
 <script src="puzzle.js"/>
@@ -90,6 +89,6 @@ You are welcome to contribute to the puzzle language and ecosystem. Make sure yo
 
 puzzle is open source and released under the MIT License.
 
-[ See the license ](https://github.com/puzzle-lang/puzzle/blob/master/LICENSE)
+[ See the license ](https://github.com/puzzlelang/puzzle/blob/master/LICENSE)
 
 Copyright (c) 2020 - present, Marco Boelling
