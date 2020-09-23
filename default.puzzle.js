@@ -325,6 +325,16 @@ var lang = {
                     global.puzzle.output(global.puzzle.getRawStatement(text))
                 }
             },
+            js: {
+                follow: ["{code}"],
+                method: function(ctx, text) {
+                    try {
+                        global.puzzle.output(eval(global.puzzle.getRawStatement(text)))
+                    } catch (e){
+                        global.puzzle.output('JavaScript Error', e)
+                    }
+                }
+            },
             list: {
                 follow: ["{param}"],
                 method: function(ctx, param) {
