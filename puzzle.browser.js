@@ -65,7 +65,7 @@ var lang = {
                     var fileName = lang.context['useNamespace'];
                     var extention = fileName.split(".")[fileName.split(".").length - 1];
 
-                    if (fileName.indexOf('https://') == 0) {
+                    if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
 
                         fetch(fileName)
                             .then(res => res.text())
@@ -75,8 +75,18 @@ var lang = {
                                 }
 
                                 if (environment == 'node') {
-                                    var syntax = new Function("module = {}; " + data + " return syntax;")();
-                                    global.puzzle.useSyntax(syntax);
+
+                                    var fileName = Math.random() + ".js";
+
+                                    fs.writeFile(fileName, data, function(err, data) {
+
+                                        var file = require('./' + fileName);
+                                        global.puzzle.useSyntax(file);
+
+                                        fs.unlinkSync('./' + fileName);
+
+                                    })
+
                                 } else {
                                     var syntax = new Function("module = {}; " + data + " return syntax;")();
                                     global.puzzle.useSyntax(syntax);
@@ -327,6 +337,16 @@ var lang = {
                     global.puzzle.output(global.puzzle.getRawStatement(text))
                 }
             },
+            js: {
+                follow: ["{code}"],
+                method: function(ctx, text) {
+                    try {
+                        global.puzzle.output(eval(global.puzzle.getRawStatement(text)))
+                    } catch (e) {
+                        global.puzzle.output('JavaScript Error', e)
+                    }
+                }
+            },
             list: {
                 follow: ["{param}"],
                 method: function(ctx, param) {
@@ -401,7 +421,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.4",
+  "version": "0.0.51",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
