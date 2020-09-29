@@ -86,7 +86,7 @@ var lang = {
                                     })
 
                                 } else {
-                                    var syntax = new Function("module = {}; " + data + " return syntax;")();
+                                    var syntax = new Function("module = {}; " + data + " return syntax")();
                                     global.puzzle.useSyntax(syntax);
                                 }
                                 if (done) done();
@@ -98,6 +98,9 @@ var lang = {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
                         global.puzzle.useSyntax(file);
+                        if (done) done();
+                    } else if(fileName.length > 0) {
+                        console.log('inline module..')
                         if (done) done();
                     } else {
                         global.puzzle.output('unsupported file type');

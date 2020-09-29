@@ -163,13 +163,16 @@ var puzzle = {
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId, done) => {
 
+            //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
+                this.lang.static.execStatement(done)
+                return;
+            } else if (tokens.length == 0) {
                 this.lang.static.execStatement(done)
                 return;
             }
 
             if (!instructionKey) {
-
                 return;
             }
 
@@ -392,5 +395,19 @@ var puzzle = {
 
 
 global.puzzle = puzzle;
+
+if (window) {
+    window.puzzle = puzzle;
+    try {
+        window.addEventListener('DOMContentLoaded', (event) => {
+            var scriptTags = document.getElementsByTagName("script");
+            Array.from(scriptTags).forEach(function(s) {
+                if (s.getAttribute("type") == "text/x-puzzle") {
+                    window.puzzle.parse(s.innerHTML);
+                }
+            })
+        });
+    } catch (e) {}
+}
 
 module.exports = puzzle;

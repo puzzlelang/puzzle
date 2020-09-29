@@ -88,7 +88,7 @@ var lang = {
                                     })
 
                                 } else {
-                                    var syntax = new Function("module = {}; " + data + " return syntax;")();
+                                    var syntax = new Function("module = {}; " + data + " return syntax")();
                                     global.puzzle.useSyntax(syntax);
                                 }
                                 if (done) done();
@@ -100,6 +100,9 @@ var lang = {
                         if (fileName.charAt(0) != '/') fileName = './' + fileName;
                         var file = require(fileName);
                         global.puzzle.useSyntax(file);
+                        if (done) done();
+                    } else if(fileName.length > 0) {
+                        console.log('inline module..')
                         if (done) done();
                     } else {
                         global.puzzle.output('unsupported file type');
@@ -622,13 +625,16 @@ var puzzle = {
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, partId, done) => {
 
+            //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
+                this.lang.static.execStatement(done)
+                return;
+            } else if (tokens.length == 0) {
                 this.lang.static.execStatement(done)
                 return;
             }
 
             if (!instructionKey) {
-
                 return;
             }
 
@@ -851,6 +857,20 @@ var puzzle = {
 
 
 global.puzzle = puzzle;
+
+if (window) {
+    window.puzzle = puzzle;
+    try {
+        window.addEventListener('DOMContentLoaded', (event) => {
+            var scriptTags = document.getElementsByTagName("script");
+            Array.from(scriptTags).forEach(function(s) {
+                if (s.getAttribute("type") == "text/x-puzzle") {
+                    window.puzzle.parse(s.innerHTML);
+                }
+            })
+        });
+    } catch (e) {}
+}
 
 module.exports = puzzle;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
