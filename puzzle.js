@@ -396,7 +396,7 @@ var puzzle = {
 
 global.puzzle = puzzle;
 
-if (window) {
+try {
     window.puzzle = puzzle;
     try {
         window.addEventListener('DOMContentLoaded', (event) => {
@@ -408,6 +408,9 @@ if (window) {
             })
         });
     } catch (e) {}
+
+} catch (e) {
+
 }
 
 module.exports = puzzle;

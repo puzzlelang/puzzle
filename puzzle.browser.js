@@ -101,8 +101,8 @@ var lang = {
                         var file = require(fileName);
                         global.puzzle.useSyntax(file);
                         if (done) done();
-                    } else if(fileName.length > 0) {
-                        console.log('inline module..')
+                    } else if (fileName.indexOf('var:') == 0) {
+                        global.puzzle.useSyntax(window[fileName.substring(4)]);
                         if (done) done();
                     } else {
                         global.puzzle.output('unsupported file type');
@@ -858,7 +858,7 @@ var puzzle = {
 
 global.puzzle = puzzle;
 
-if (window) {
+try {
     window.puzzle = puzzle;
     try {
         window.addEventListener('DOMContentLoaded', (event) => {
@@ -870,6 +870,9 @@ if (window) {
             })
         });
     } catch (e) {}
+
+} catch (e) {
+
 }
 
 module.exports = puzzle;
