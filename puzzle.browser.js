@@ -102,7 +102,12 @@ var lang = {
                         global.puzzle.useSyntax(file);
                         if (done) done();
                     } else if (fileName.indexOf('var:') == 0) {
-                        global.puzzle.useSyntax(window[fileName.substring(4)]);
+                        // 
+                        try {
+                            global.puzzle.useSyntax(window[fileName.substring(4)]);
+                        } catch(e) {
+                            global.puzzle.useSyntax(global[fileName.substring(4)]);
+                        }
                         if (done) done();
                     } else {
                         global.puzzle.output('unsupported file type');
@@ -424,7 +429,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.54",
+  "version": "0.0.57",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {

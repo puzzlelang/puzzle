@@ -100,7 +100,12 @@ var lang = {
                         global.puzzle.useSyntax(file);
                         if (done) done();
                     } else if (fileName.indexOf('var:') == 0) {
-                        global.puzzle.useSyntax(window[fileName.substring(4)]);
+                        // 
+                        try {
+                            global.puzzle.useSyntax(window[fileName.substring(4)]);
+                        } catch(e) {
+                            global.puzzle.useSyntax(global[fileName.substring(4)]);
+                        }
                         if (done) done();
                     } else {
                         global.puzzle.output('unsupported file type');
