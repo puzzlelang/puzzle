@@ -424,7 +424,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.51",
+  "version": "0.0.52",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
@@ -582,7 +582,7 @@ var puzzle = {
                 }
             } else if (this.api[key]) {
                 this.api[key](ctx, param)
-            } else {
+            } else if(key !== undefined) {
                 console.log(key, 'is not a function');
             }
         }
