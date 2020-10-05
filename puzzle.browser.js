@@ -424,7 +424,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.52",
+  "version": "0.0.54",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
@@ -457,7 +457,6 @@ module.exports={
   },
   "devDependencies": {}
 }
-
 },{}],4:[function(require,module,exports){
 (function (process,global){
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
@@ -582,7 +581,7 @@ var puzzle = {
                 }
             } else if (this.api[key]) {
                 this.api[key](ctx, param)
-            } else if(key !== undefined) {
+            } else if (key !== undefined) {
                 console.log(key, 'is not a function');
             }
         }
@@ -700,6 +699,7 @@ var puzzle = {
 
             } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
                 execFunctionBody(token, vars, funcs)
+
             } else {
                 console.log('unequal', instructionKey, token);
             }

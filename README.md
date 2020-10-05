@@ -80,6 +80,9 @@ const puzzle = require('puzzlelang');
 
 // For browsers:
 <script src="puzzle.js"/>
+<script type="text/x-puzzle">
+  print "hello from the browser!";
+</script>
 ```
 
 

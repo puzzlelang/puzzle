@@ -120,7 +120,7 @@ var puzzle = {
                 }
             } else if (this.api[key]) {
                 this.api[key](ctx, param)
-            } else if(key !== undefined) {
+            } else if (key !== undefined) {
                 console.log(key, 'is not a function');
             }
         }
@@ -238,7 +238,7 @@ var puzzle = {
 
             } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
                 execFunctionBody(token, vars, funcs)
-                
+
             } else {
                 console.log('unequal', instructionKey, token);
             }
