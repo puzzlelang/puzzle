@@ -103,7 +103,7 @@ var lang = {
                         // 
                         try {
                             global.puzzle.useSyntax(window[fileName.substring(4)]);
-                        } catch(e) {
+                        } catch (e) {
                             global.puzzle.useSyntax(global[fileName.substring(4)]);
                         }
                         if (done) done();
@@ -111,7 +111,6 @@ var lang = {
                         global.puzzle.output('unsupported file type');
                         if (done) done();
                     }
-
 
                 } catch (e) {
                     global.puzzle.output('Use Error', e);
@@ -175,6 +174,14 @@ var lang = {
                 method: function(ctx, data) {
                     global.puzzle.vars[data.key] = data.value;
 
+                }
+            },
+            local: {
+                manual: "Persists a variable",
+                follow: ["{key,value}"],
+                method: function(ctx, data) {
+                    localStorage.setItem('var:' + data.key, data.value);
+                    global.puzzle.vars[data.key] = data.value;
                 }
             },
             func: {

@@ -389,6 +389,9 @@ var puzzle = {
             if (key.charAt(0) == "_") {
                 var syntax = new Function("module = {}; " + puzzle.moduleStorage.get(key) + " return syntax;")();
                 puzzle.useSyntax(syntax);
+            } else if(key.indexOf('var:') == 0)
+            {
+                global.puzzle.vars[key.substring(4)] = puzzle.moduleStorage.get(key);
             }
         })
     }
