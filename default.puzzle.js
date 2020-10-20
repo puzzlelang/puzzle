@@ -160,6 +160,24 @@ var lang = {
 
                 }
             },
+            define: {
+                manual: "Defines somethng",
+                follow: ["$syntax"],
+                method: function(ctx, data) {
+                    ctx.define = true;
+                }
+            },
+            syntax: {
+                manual: "Defines a syntax",
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    if(ctx.define) {
+                        inlineSyntax = eval('('+data+')');
+                        console.log(inlineSyntax);
+                        global.puzzle.parse('use var:inlineSyntax;');
+                    }
+                }
+            },
             ns: {
                 manual: "Sets a namespace. Valid until another namespace is set",
                 follow: ["{namespace}"],
