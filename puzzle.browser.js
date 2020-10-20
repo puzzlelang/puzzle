@@ -105,7 +105,7 @@ var lang = {
                         // 
                         try {
                             global.puzzle.useSyntax(window[fileName.substring(4)]);
-                        } catch(e) {
+                        } catch (e) {
                             global.puzzle.useSyntax(global[fileName.substring(4)]);
                         }
                         if (done) done();
@@ -113,7 +113,6 @@ var lang = {
                         global.puzzle.output('unsupported file type');
                         if (done) done();
                     }
-
 
                 } catch (e) {
                     global.puzzle.output('Use Error', e);
@@ -177,6 +176,14 @@ var lang = {
                 method: function(ctx, data) {
                     global.puzzle.vars[data.key] = data.value;
 
+                }
+            },
+            local: {
+                manual: "Persists a variable",
+                follow: ["{key,value}"],
+                method: function(ctx, data) {
+                    localStorage.setItem('var:' + data.key, data.value);
+                    global.puzzle.vars[data.key] = data.value;
                 }
             },
             func: {
@@ -547,7 +554,85 @@ var puzzle = {
         if (!vars) vars = {};
         if (!funcs) funcs = {};
 
-        var parts = code.split(this.lang.delimeter);
+        var parts = {}; //code.split(this.lang.delimeter);
+
+        var litStart = ['(', '{', '"', "'"];
+        var litEnd = [')', '}', '"', "'"];
+
+
+        partsCounter = 0;
+        var litActive = null;
+        var litActiveCounter = 0;
+
+        code.split('').forEach(function(t) {
+
+            if (/^\s+$/.test(t) && !litActive) partsCounter++;
+
+            if (!parts[partsCounter]) parts[partsCounter] = [];
+
+            if (!litStart.includes(t)) {
+                parts[partsCounter].push(t)
+
+                if (litActive && t == litEnd[litActive.litIdx]) {
+                    litActiveCounter--;
+                    if (litActiveCounter == 0) {
+                        partsCounter++;
+                        if (!parts[partsCounter]) parts[partsCounter] = [];
+                        litActive = null;
+                    }
+                }
+            } else if (litActive && litStart.includes(t) && t == litEnd[litActive.litIdx]) {
+                litActiveCounter--;
+                parts[partsCounter].push(t)
+                if (litActiveCounter == 0) {
+                    partsCounter++;
+                    if (!parts[partsCounter]) parts[partsCounter] = [];
+                    litActive = null;
+                }
+            } else if (!litActive) {
+                partsCounter++;
+                if (!parts[partsCounter]) parts[partsCounter] = [];
+                parts[partsCounter].push(t)
+                litActive = {
+                    token: t,
+                    litIdx: litStart.indexOf(t)
+                };
+                litActiveCounter++;
+            } else {
+                if (litActive && t == litActive.token) litActiveCounter++;
+                parts[partsCounter].push(t)
+            }
+
+        });
+
+        var finalParts = {};
+        var finalPartsCounter = 0;
+
+        Object.keys(parts).forEach((p, i) => {
+
+            parts[p] = parts[p].join('').trim()
+
+            if (!parts[p] || parts[p].length == 0) return;
+            if (!finalParts[finalPartsCounter]) finalParts[finalPartsCounter] = [];
+            if (parts[p].charAt(0) == ';' && parts[p].length > 1) {
+                finalPartsCounter++;
+                if (!finalParts[finalPartsCounter]) finalParts[finalPartsCounter] = [];
+                finalParts[finalPartsCounter].push(parts[p].substring(1))
+            } else if (parts[p].charAt(parts[p].length - 1) == ';' && parts[p].length > 1) {
+                finalParts[finalPartsCounter].push(parts[p].substring(0, parts[p].length - 1))
+                finalPartsCounter++;
+            } else if (parts[p] == ';') {
+                finalPartsCounter++;
+            } else finalParts[finalPartsCounter].push(parts[p])
+
+        })
+
+
+        var _parts = [];
+        Object.keys(finalParts).forEach(p => {
+            _parts.push(finalParts[p]);
+        });
+
 
         // Check if parameter is an object
         var isObject = (a) => {
@@ -631,10 +716,10 @@ var puzzle = {
 
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.static.execStatement(done)
+                this.lang.static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             } else if (tokens.length == 0) {
-                this.lang.static.execStatement(done)
+                this.lang.static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             }
 
@@ -651,7 +736,7 @@ var puzzle = {
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
 
-                global.puzzle.ctx[partId].sequence.push(token)
+                global.puzzle.ctx[partId]._sequence.push(token)
 
                 var nextBestInsturction = null;
 
@@ -744,10 +829,10 @@ var puzzle = {
         var splitInit = (parts) => {
             parts.forEach(p => {
 
-                p = p.trim();
+                //p = p.trim();
 
                 // Ignore comments for parsing
-                if (p.indexOf('//') == 0) return;
+                if ((p[0] || "").indexOf('//') == 0) return;
 
                 var partId = Math.random();
 
@@ -758,11 +843,12 @@ var puzzle = {
                         if (!p) return;
 
                         global.puzzle.ctx[partId] = {
-                            sequence: [],
-                            data: {}
+                            _sequence: [],
                         };
 
-                        var tokens = p.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
+                        var tokens = p; //.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
+
+                        //console.log('tokens', tokens)
 
                         tokens.push(this.lang.delimeter);
 
@@ -781,7 +867,10 @@ var puzzle = {
                             if ((bestMatching || "").charAt(0) == "$") {
                                 callTokenFunction(global.puzzle.ctx[partId], t);
                                 sequence(tokens, tokens[0], bestMatching, partId, done);
+                                global.puzzle.ctx[partId]._sequence.push(t)
                             } else {
+
+                                global.puzzle.ctx[partId]._sequence.push(t)
 
                                 if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
@@ -846,7 +935,7 @@ var puzzle = {
 
         }
 
-        splitInit(parts);
+        splitInit(_parts);
     },
     init: function() {
 
@@ -855,6 +944,8 @@ var puzzle = {
             if (key.charAt(0) == "_") {
                 var syntax = new Function("module = {}; " + puzzle.moduleStorage.get(key) + " return syntax;")();
                 puzzle.useSyntax(syntax);
+            } else if (key.indexOf('var:') == 0) {
+                global.puzzle.vars[key.substring(4)] = puzzle.moduleStorage.get(key);
             }
         })
     }
