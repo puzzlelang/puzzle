@@ -38,29 +38,39 @@ var lang = {
     vars: {},
     currentNamespace: "default",
     static: {
-        execStatement: function(done) {
+        execStatement: function(done, ctx) {
 
-            if (lang.context[lang.context.importNamespace]) {
+            if(ctx.define){
+                lang.$.default[ctx.tokenName] = {
+                    follow: ctx.tokenFollow,
+                    method: ctx.tokenMethod
+                }
+            } else if(ctx.unDefine){
+                if(ctx.tokenName) if(lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
+            }
+
+            if (ctx[ctx.importNamespace]) {
                 if (environment != 'node') return global.puzzle.output('feature not available in this environment')
                 try {
-                    lang.context[lang.context.importNamespace] = require(lang.context.importUrl);
+                    ctx[ctx.importNamespace] = require(ctx.importUrl);
                 } catch (e) {
                     global.puzzle.output('Import Error:', e)
                 }
                 if (done) done();
             }
 
-            if (lang.context['unUseNamespace']) {
-                if (global.puzzle.moduleStorage.get('_' + lang.context['unUseNamespace'])) {
-                    global.puzzle.moduleStorage.remove('_' + lang.context['unUseNamespace']);
-                    global.puzzle.output(lang.context['unUseNamespace'], 'unused');
+            if (ctx['unUseNamespace']) {
+                if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
+                    global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
                 }
+                if(lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
+                global.puzzle.output(ctx['unUseNamespace'], 'unused');
             }
 
-            if (lang.context['useNamespace']) {
+            if (ctx['useNamespace']) {
 
                 try {
-                    var fileName = lang.context['useNamespace'];
+                    var fileName = ctx['useNamespace'];
                     var extention = fileName.split(".")[fileName.split(".").length - 1];
 
                     if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
@@ -68,8 +78,8 @@ var lang = {
                         fetch(fileName)
                             .then(res => res.text())
                             .then(data => {
-                                if (lang.context['_' + lang.context['useNamespace'] + 'permanent']) {
-                                    if (!localStorage.getItem('_' + lang.context['useNamespace'])) localStorage.setItem('_' + lang.context['useNamespace'], data)
+                                if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
+                                    if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
                                 }
 
                                 if (environment == 'node') {
@@ -116,13 +126,13 @@ var lang = {
                     global.puzzle.output('Use Error', e);
                     if (done) done();
                 }
-            } else if (lang.context['includeNamespace']) {
+            } else if (ctx['includeNamespace']) {
 
                 function includeScript(code) {
                     global.puzzle.parse(code);
                 }
 
-                var fileName = lang.context['includeNamespace'];
+                var fileName = ctx['includeNamespace'];
                 var extention = fileName.split(".")[fileName.split(".").length - 1];
 
                 if (fileName.indexOf('https://') == 0) {
@@ -155,16 +165,21 @@ var lang = {
                 manual: "include a puzzle file",
                 follow: ["{file}"],
                 method: function(ctx, file) {
-
-                    lang.context['includeNamespace'] = global.puzzle.getRawStatement(file);
-
+                    ctx['includeNamespace'] = global.puzzle.getRawStatement(file);
                 }
             },
             define: {
                 manual: "Defines somethng",
-                follow: ["$syntax"],
+                follow: ["$syntax", "$token"],
                 method: function(ctx, data) {
                     ctx.define = true;
+                }
+            },
+            undefine: {
+                manual: "Undefines somethng",
+                follow: ["$syntax", "$token"],
+                method: function(ctx, data) {
+                    ctx.unDefine = true;
                 }
             },
             syntax: {
@@ -173,8 +188,53 @@ var lang = {
                 method: function(ctx, data) {
                     if(ctx.define) {
                         inlineSyntax = eval('('+data+')');
-                        console.log(inlineSyntax);
-                        global.puzzle.parse('use var:inlineSyntax;');
+                        ctx.syntaxNamespace = Object.keys(inlineSyntax.$)[0];
+                        ctx['useNamespace'] = 'var:inlineSyntax';
+                    } else if(ctx.unDefine){
+                        ctx['unUseNamespace'] = 'inlineSyntax';
+                    }
+                }
+            },
+            token: {
+                manual: "Defines a custom token for the active syntax",
+                follow: ["{name}", "$width"],
+                method: function(ctx, name) {
+                    if(ctx.define) {
+                        ctx.tokenName = name;
+                    }
+                }
+            },
+            width: {
+                follow: ["$follow", "$method"],
+                method: function(ctx, name) {
+                    if(ctx.define) {
+                        ctx.tokenName = name;
+                    }
+                }
+            },
+            follow: {
+                follow: ["{follow}", "$and"],
+                method: function(ctx, follow) {
+                    if(ctx.define) {
+                        console.log(global.puzzle.getRawStatement(follow))
+                        ctx.tokenFollow = JSON.parse('['+ global.puzzle.getRawStatement(follow) + ']');
+                    }
+                }
+            },
+            method: {
+                follow: ["{method}", "$and"],
+                method: function(ctx, method) {
+                    if(ctx.define) {
+                        console.log(global.puzzle.getRawStatement(method))
+                        ctx.tokenMethod = new Function('ctx','data', global.puzzle.getRawStatement(method))
+                    }
+                }
+            },
+            and: {
+                follow: ["$follow", "$method"],
+                method: function(ctx, follow) {
+                    if(ctx.define) {
+                       
                     }
                 }
             },
@@ -214,16 +274,16 @@ var lang = {
             if: {
                 follow: ["{condition}", "$then"],
                 method: function(ctx, condition) {
-                    lang.context.if = condition;
+                    ctx.if = condition;
                 }
             },
             then: {
                 follow: ["{statement}", "$else"],
                 method: function(ctx, statement) {
-                    if (lang.context.if) {
-                        lang.context.if = lang.context.if.replace(/AND/g, '&&').replace(/OR/g, '||')
-                        if (eval(lang.context.if)) {
-                            lang.context.conditionMet = true;
+                    if (ctx.if) {
+                        ctx.if = ctx.if.replace(/AND/g, '&&').replace(/OR/g, '||')
+                        if (eval(ctx.if)) {
+                            ctx.conditionMet = true;
                             global.puzzle.parse(global.puzzle.getRawStatement(statement));
                         }
                     }
@@ -232,7 +292,7 @@ var lang = {
             else: {
                 follow: ["{statement}"],
                 method: function(ctx, statement) {
-                    if (lang.context.if && !lang.context.conditionMet) {
+                    if (ctx.if && !ctx.conditionMet) {
                         global.puzzle.parse(global.puzzle.getRawStatement(statement));
                     }
                 }
@@ -240,26 +300,26 @@ var lang = {
             while: {
                 follow: ["{condition}", "$do"],
                 method: function(ctx, statement) {
-                    lang.context.while = condition;
+                    ctx.while = condition;
                 }
 
             },
             for: {
                 follow: ["{condition}", "$do"],
                 method: function(ctx, condition) {
-                    lang.context.for = condition;
+                    ctx.for = condition;
                 }
             },
             do: {
                 follow: ["{statement}"],
                 method: function(ctx, statement) {
                     //new Function("module = {}; " + data + " return syntax;")();
-                    if (lang.context.while) {
-                        lang.context.while = lang.context.while.replace(/AND/g, '&&').replace(/OR/g, '||')
-                        new Function("while(" + global.puzzle.getRawStatement(lang.context.while) + "){ puzzle.parse('" + global.puzzle.getRawStatement(statement) + "') };")()
-                    } else if (lang.context.for) {
-                        lang.context.for = lang.context.for.replace(/AND/g, '&&').replace(/OR/g, '||');
-                        new Function("for(" + global.puzzle.getRawStatement(lang.context.for) + "){ puzzle.parse('var i '+i+'; " + global.puzzle.getRawStatement(statement) + "') };")()
+                    if (ctx.while) {
+                        ctx.while = ctx.while.replace(/AND/g, '&&').replace(/OR/g, '||')
+                        new Function("while(" + global.puzzle.getRawStatement(ctx.while) + "){ puzzle.parse('" + global.puzzle.getRawStatement(statement) + "') };")()
+                    } else if (ctx.for) {
+                        ctx.for = ctx.for.replace(/AND/g, '&&').replace(/OR/g, '||');
+                        new Function("for(" + global.puzzle.getRawStatement(ctx.for) + "){ puzzle.parse('var i '+i+'; " + global.puzzle.getRawStatement(statement) + "') };")()
                     }
                 }
             },
@@ -273,46 +333,46 @@ var lang = {
             use: {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
-                    lang.context['useNamespace'] = global.puzzle.getRawStatement(ns);
+                    ctx['useNamespace'] = global.puzzle.getRawStatement(ns);
 
                 }
             },
             unuse: {
                 follow: ["{file}"],
                 method: function(ctx, ns) {
-                    lang.context['unUseNamespace'] = ns;
+                    ctx['unUseNamespace'] = ns;
                 }
             },
             permanent: {
                 follow: ["{file}"],
                 method: function(ctx, file) {
-                    lang.context['useNamespace'] = global.puzzle.getRawStatement(file);
-                    lang.context['_' + file + 'permanent'] = true;
+                    ctx['useNamespace'] = global.puzzle.getRawStatement(file);
+                    ctx['_' + file + 'permanent'] = true;
                 }
             },
             write: {
                 follow: ["$file"],
                 method: function(ctx) {
-                    lang.context.fileOperation = 'write';
+                    ctx.fileOperation = 'write';
                 }
             },
             read: {
                 follow: ["$file"],
                 method: function(ctx) {
-                    lang.context.fileOperation = 'read';
+                    ctx.fileOperation = 'read';
                 }
             },
             remove: {
                 follow: ["$file", "$dir"],
                 method: function(ctx) {
-                    lang.context.fileOperation = 'remove';
-                    lang.context.dirOperation = 'remove';
+                    ctx.fileOperation = 'remove';
+                    ctx.dirOperation = 'remove';
                 }
             },
             make: {
                 follow: ["$dir"],
                 method: function(ctx) {
-                    lang.context.dirOperation = 'make';
+                    ctx.dirOperation = 'make';
                 }
             },
             file: {
@@ -321,7 +381,7 @@ var lang = {
                     var content = file.content;
                     if (environment == 'web') content = new TextEncoder("utf-8").encode(file.content);
 
-                    switch (lang.context.fileOperation) {
+                    switch (ctx.fileOperation) {
                         case 'write':
                             fs.writeFile(file.name, content, 'utf8', function(err, data) {
                                 if (err) return global.puzzle.output(err);
@@ -346,7 +406,7 @@ var lang = {
             dir: {
                 follow: ["{dir}"],
                 method: function(ctx, dir) {
-                    switch (lang.context.dirOperation) {
+                    switch (ctx.dirOperation) {
                         case 'make':
                             fs.mkdir(dir, {}, function(err, data) {
                                 if (err) return global.puzzle.output(err);
