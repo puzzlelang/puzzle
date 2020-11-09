@@ -197,14 +197,14 @@ var lang = {
             },
             token: {
                 manual: "Defines a custom token for the active syntax",
-                follow: ["{name}", "$width"],
+                follow: ["{name}", "$with"],
                 method: function(ctx, name) {
                     if(ctx.define) {
                         ctx.tokenName = name;
                     }
                 }
             },
-            width: {
+            with: {
                 follow: ["$follow", "$method"],
                 method: function(ctx, name) {
                     if(ctx.define) {
