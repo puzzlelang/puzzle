@@ -4,6 +4,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     localStorage = new dependencies.localStorage.LocalStorage('./localStorage');
 } else global = window;
 
+// Check if parameter is an object
+var isObject = (a) => {
+    return (!!a) && (a.constructor === Object);
+};
 
 var puzzle = {
 
@@ -82,12 +86,15 @@ var puzzle = {
 
         if (!isNaN(statement)) return statement;
 
-        try {
-            _statement = JSON.parse(statement)
-            return _statement;
-        } catch (e) {}
-
-        if(Array.isArray(statement)) return statement;
+        if (isObject(statement)) {
+            return statement;
+        } else {
+            try {
+                _statement = JSON.parse(statement)
+                return _statement;
+            } catch (e) { console.log(e) }
+        }
+        if (Array.isArray(statement)) return statement;
 
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             _statement = statement.substring(1, statement.length - 1)
@@ -183,12 +190,6 @@ var puzzle = {
         Object.keys(finalParts).forEach(p => {
             _parts.push(finalParts[p]);
         });
-
-
-        // Check if parameter is an object
-        var isObject = (a) => {
-            return (!!a) && (a.constructor === Object);
-        };
 
         // Return the dynamic following tokens
         var getTokenSequence = (reference) => {

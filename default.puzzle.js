@@ -31,6 +31,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     fs = new LightningFS('fs')
 }
 
+var isObject = (a) => {
+    return (!!a) && (a.constructor === Object);
+};
+
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -258,14 +262,14 @@ var lang = {
                 manual: "adds an entry to an array or object",
                 follow: ["$to", "{data}"],
                 method: function(ctx, data) {
-                    ctx.addData = global.puzzle.getRawStatement(data);
+                    ctx.addData = data
                 }
             },
             pop: {
                 manual: "removes an entry to an array or object",
                 follow: ["$from", "{data}"],
                 method: function(ctx, data) {
-                    if(data) ctx.popData = global.puzzle.getRawStatement(data);
+                    if (data) ctx.popData = data
                 }
             },
             to: {
@@ -276,13 +280,18 @@ var lang = {
 
                     if (ctx.addData) {
                         if (!global.puzzle.vars.hasOwnProperty(varName)) return console.log(varName + 'does not exist');
-
                         var variable = global.puzzle.vars[varName];
-
                         if (Array.isArray(variable)) {
-                            global.puzzle.vars[varName].push(ctx.addData)
+                            global.puzzle.vars[varName].push(global.puzzle.getRawStatement(ctx.addData));
+                        } else if (isObject(variable)) {
+                            try {
+                                var parsed = eval('(' + ctx.addData + ')');
+                                if (variable.hasOwnProperty(Object.keys(parsed)[0])) return console.log(ctx.addData + 'already exists in this object');
+                                global.puzzle.vars[varName][Object.keys(parsed)[0]] = parsed[Object.keys(parsed)[0]];
+                            } catch (e) {
+                                //console.log(e)
+                            }
                         }
-
                     }
                 }
             },
@@ -291,16 +300,15 @@ var lang = {
                 follow: ["{varName}"],
                 method: function(ctx, varName) {
                     varName = global.puzzle.getRawStatement(varName);
-
                     if (ctx.popData) {
                         if (!global.puzzle.vars.hasOwnProperty(varName)) return console.log(varName + 'does not exist');
-
                         var variable = global.puzzle.vars[varName];
-
                         if (Array.isArray(variable)) {
-                            global.puzzle.vars[varName].splice(global.puzzle.vars[varName].indexOf(ctx.popData), 1)
+                            global.puzzle.vars[varName].splice(global.puzzle.vars[varName].indexOf(global.puzzle.getRawStatement(ctx.popData)), 1)
+                        } else if (isObject(variable)) {
+                            if (!global.puzzle.vars[varName].hasOwnProperty(global.puzzle.getRawStatement(ctx.popData))) return console.log(global.puzzle.getRawStatement(ctx.popData) + 'does not exist in this object');
+                            delete global.puzzle.vars[varName][global.puzzle.getRawStatement(ctx.popData)];
                         }
-
                     }
                 }
             },
