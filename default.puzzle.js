@@ -252,23 +252,55 @@ var lang = {
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
                     global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
+                }
+            },
+            add: {
+                manual: "adds an entry to an array or object",
+                follow: ["$to", "{data}"],
+                method: function(ctx, data) {
+                    ctx.addData = global.puzzle.getRawStatement(data);
+                }
+            },
+            to: {
+                manual: "adds an entry to an array or object",
+                follow: ["{varName}"],
+                method: function(ctx, varName) {
+                    varName = global.puzzle.getRawStatement(varName);
 
+                    if (ctx.addData) {
+                        if (!global.puzzle.vars.hasOwnProperty(varName)) return console.log(varName + 'does not exist');
+
+                        var variable = global.puzzle.vars[varName];
+
+                        if (Array.isArray(variable)) {
+                            global.puzzle.vars[varName].push(ctx.addData)
+                        }
+
+                    }
                 }
             },
             set: {
                 manual: "Sets a variable",
-                follow: ["{key,value}"],
+                follow: ["$local", "{key,value}"],
                 method: function(ctx, data) {
-                    global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
+                    if (!data) return;
 
+                    try {
+                        global.puzzle.vars[data.key] = JSON.parse(data.value);
+                    } catch (e) {
+                        global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
+                    }
+
+                    console.log(global.puzzle.vars[data.key])
                 }
             },
             local: {
                 manual: "Persists a variable",
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
-                    localStorage.setItem('var:' + data.key, data.value);
-                    global.puzzle.vars[data.key] = data.value;
+                    var value = global.puzzle.evaluateRawStatement(data.value || '');
+                    localStorage.setItem('var:' + data.key, value);
+                    global.puzzle.vars[data.key] = value;
                 }
             },
             func: {

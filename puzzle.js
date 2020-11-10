@@ -79,7 +79,16 @@ var puzzle = {
     // Rvaluates and returns a raw statement. this includes numeric and string operations
     evaluateRawStatement: function(statement) {
         var _statement;
+
         if (!isNaN(statement)) return statement;
+
+        try {
+            _statement = JSON.parse(statement)
+            return _statement;
+        } catch (e) {}
+
+        if(Array.isArray(statement)) return statement;
+
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             _statement = statement.substring(1, statement.length - 1)
         } else _statement = statement;
@@ -296,7 +305,7 @@ var puzzle = {
 
                     if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                        callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                         tokens.shift();
                     } else if (global.puzzle.funcs[bestMatching]) {
 
