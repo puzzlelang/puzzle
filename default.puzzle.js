@@ -272,6 +272,13 @@ var lang = {
                     if (data) ctx.popData = data
                 }
             },
+            /*update: { @TODO !!!
+                manual: "updates an entry inside an array or object",
+                follow: ["$from", "{data}"],
+                method: function(ctx, data) {
+                    if (data) ctx.popData = data
+                }
+            },*/
             to: {
                 manual: "adds an entry to an array or object",
                 follow: ["{varName}"],
