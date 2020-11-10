@@ -261,6 +261,13 @@ var lang = {
                     ctx.addData = global.puzzle.getRawStatement(data);
                 }
             },
+            pop: {
+                manual: "removes an entry to an array or object",
+                follow: ["$from", "{data}"],
+                method: function(ctx, data) {
+                    if(data) ctx.popData = global.puzzle.getRawStatement(data);
+                }
+            },
             to: {
                 manual: "adds an entry to an array or object",
                 follow: ["{varName}"],
@@ -274,6 +281,24 @@ var lang = {
 
                         if (Array.isArray(variable)) {
                             global.puzzle.vars[varName].push(ctx.addData)
+                        }
+
+                    }
+                }
+            },
+            from: {
+                manual: "removes an entry to an array or object",
+                follow: ["{varName}"],
+                method: function(ctx, varName) {
+                    varName = global.puzzle.getRawStatement(varName);
+
+                    if (ctx.popData) {
+                        if (!global.puzzle.vars.hasOwnProperty(varName)) return console.log(varName + 'does not exist');
+
+                        var variable = global.puzzle.vars[varName];
+
+                        if (Array.isArray(variable)) {
+                            global.puzzle.vars[varName].splice(global.puzzle.vars[varName].indexOf(ctx.popData), 1)
                         }
 
                     }
