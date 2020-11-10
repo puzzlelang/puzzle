@@ -76,6 +76,21 @@ var puzzle = {
         } else return statement;
     },
 
+    // Rvaluates and returns a raw statement. this includes numeric and string operations
+    evaluateRawStatement: function(statement) {
+        var _statement;
+        if (!isNaN(statement)) return statement;
+        if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
+            _statement = statement.substring(1, statement.length - 1)
+        } else _statement = statement;
+
+        try {
+            return eval(_statement)
+        } catch (e) {
+            return _statement;
+        }
+    },
+
     parse: function(code, vars, funcs) {
 
         if (!vars) vars = {};

@@ -40,13 +40,14 @@ var lang = {
     static: {
         execStatement: function(done, ctx) {
 
-            if(ctx.define){
+            if (ctx.define) {
                 lang.$.default[ctx.tokenName] = {
                     follow: ctx.tokenFollow,
                     method: ctx.tokenMethod
                 }
-            } else if(ctx.unDefine){
-                if(ctx.tokenName) if(lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
+            } else if (ctx.unDefine) {
+                if (ctx.tokenName)
+                    if (lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
             }
 
             if (ctx[ctx.importNamespace]) {
@@ -63,7 +64,7 @@ var lang = {
                 if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
                     global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
                 }
-                if(lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
+                if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
                 global.puzzle.output(ctx['unUseNamespace'], 'unused');
             }
 
@@ -186,11 +187,11 @@ var lang = {
                 manual: "Defines a syntax",
                 follow: ["{data}"],
                 method: function(ctx, data) {
-                    if(ctx.define) {
-                        inlineSyntax = eval('('+data+')');
+                    if (ctx.define) {
+                        inlineSyntax = eval('(' + data + ')');
                         ctx.syntaxNamespace = Object.keys(inlineSyntax.$)[0];
                         ctx['useNamespace'] = 'var:inlineSyntax';
-                    } else if(ctx.unDefine){
+                    } else if (ctx.unDefine) {
                         ctx['unUseNamespace'] = 'inlineSyntax';
                     }
                 }
@@ -199,7 +200,7 @@ var lang = {
                 manual: "Defines a custom token for the active syntax",
                 follow: ["{name}", "$with"],
                 method: function(ctx, name) {
-                    if(ctx.define) {
+                    if (ctx.define) {
                         ctx.tokenName = name;
                     }
                 }
@@ -207,7 +208,7 @@ var lang = {
             with: {
                 follow: ["$follow", "$method"],
                 method: function(ctx, name) {
-                    if(ctx.define) {
+                    if (ctx.define) {
                         ctx.tokenName = name;
                     }
                 }
@@ -215,26 +216,26 @@ var lang = {
             follow: {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
-                    if(ctx.define) {
+                    if (ctx.define) {
                         console.log(global.puzzle.getRawStatement(follow))
-                        ctx.tokenFollow = JSON.parse('['+ global.puzzle.getRawStatement(follow) + ']');
+                        ctx.tokenFollow = JSON.parse('[' + global.puzzle.getRawStatement(follow) + ']');
                     }
                 }
             },
             method: {
                 follow: ["{method}", "$and"],
                 method: function(ctx, method) {
-                    if(ctx.define) {
+                    if (ctx.define) {
                         console.log(global.puzzle.getRawStatement(method))
-                        ctx.tokenMethod = new Function('ctx','data', global.puzzle.getRawStatement(method))
+                        ctx.tokenMethod = new Function('ctx', 'data', global.puzzle.getRawStatement(method))
                     }
                 }
             },
             and: {
                 follow: ["$follow", "$method"],
                 method: function(ctx, follow) {
-                    if(ctx.define) {
-                       
+                    if (ctx.define) {
+
                     }
                 }
             },
@@ -250,7 +251,15 @@ var lang = {
                 manual: "Sets a variable",
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
-                    global.puzzle.vars[data.key] = data.value;
+                    global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
+
+                }
+            },
+            set: {
+                manual: "Sets a variable",
+                follow: ["{key,value}"],
+                method: function(ctx, data) {
+                    global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
 
                 }
             },
@@ -425,7 +434,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.puzzle.output(global.puzzle.getRawStatement(text))
+                    global.puzzle.output(global.puzzle.evaluateRawStatement(text))
                 }
             },
             js: {
