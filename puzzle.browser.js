@@ -33,6 +33,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     fs = new LightningFS('fs')
 }
 
+var isObject = (a) => {
+    return (!!a) && (a.constructor === Object);
+};
+
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -42,13 +46,14 @@ var lang = {
     static: {
         execStatement: function(done, ctx) {
 
-            if(ctx.define){
+            if (ctx.define) {
                 lang.$.default[ctx.tokenName] = {
                     follow: ctx.tokenFollow,
                     method: ctx.tokenMethod
                 }
-            } else if(ctx.unDefine){
-                if(ctx.tokenName) if(lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
+            } else if (ctx.unDefine) {
+                if (ctx.tokenName)
+                    if (lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
             }
 
             if (ctx[ctx.importNamespace]) {
@@ -65,7 +70,7 @@ var lang = {
                 if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
                     global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
                 }
-                if(lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
+                if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
                 global.puzzle.output(ctx['unUseNamespace'], 'unused');
             }
 
@@ -171,14 +176,14 @@ var lang = {
                 }
             },
             define: {
-                manual: "Defines somethng",
+                manual: "Defines something",
                 follow: ["$syntax", "$token"],
                 method: function(ctx, data) {
                     ctx.define = true;
                 }
             },
             undefine: {
-                manual: "Undefines somethng",
+                manual: "Undefines something",
                 follow: ["$syntax", "$token"],
                 method: function(ctx, data) {
                     ctx.unDefine = true;
@@ -188,11 +193,11 @@ var lang = {
                 manual: "Defines a syntax",
                 follow: ["{data}"],
                 method: function(ctx, data) {
-                    if(ctx.define) {
-                        inlineSyntax = eval('('+data+')');
+                    if (ctx.define) {
+                        inlineSyntax = eval('(' + data + ')');
                         ctx.syntaxNamespace = Object.keys(inlineSyntax.$)[0];
                         ctx['useNamespace'] = 'var:inlineSyntax';
-                    } else if(ctx.unDefine){
+                    } else if (ctx.unDefine) {
                         ctx['unUseNamespace'] = 'inlineSyntax';
                     }
                 }
@@ -201,7 +206,7 @@ var lang = {
                 manual: "Defines a custom token for the active syntax",
                 follow: ["{name}", "$with"],
                 method: function(ctx, name) {
-                    if(ctx.define) {
+                    if (ctx.define) {
                         ctx.tokenName = name;
                     }
                 }
@@ -209,7 +214,7 @@ var lang = {
             with: {
                 follow: ["$follow", "$method"],
                 method: function(ctx, name) {
-                    if(ctx.define) {
+                    if (ctx.define) {
                         ctx.tokenName = name;
                     }
                 }
@@ -217,26 +222,24 @@ var lang = {
             follow: {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
-                    if(ctx.define) {
-                        console.log(global.puzzle.getRawStatement(follow))
-                        ctx.tokenFollow = JSON.parse('['+ global.puzzle.getRawStatement(follow) + ']');
+                    if (ctx.define) {
+                        ctx.tokenFollow = JSON.parse('[' + global.puzzle.getRawStatement(follow) + ']');
                     }
                 }
             },
             method: {
                 follow: ["{method}", "$and"],
                 method: function(ctx, method) {
-                    if(ctx.define) {
-                        console.log(global.puzzle.getRawStatement(method))
-                        ctx.tokenMethod = new Function('ctx','data', global.puzzle.getRawStatement(method))
+                    if (ctx.define) {
+                        ctx.tokenMethod = new Function('ctx', 'data', global.puzzle.getRawStatement(method))
                     }
                 }
             },
             and: {
                 follow: ["$follow", "$method"],
                 method: function(ctx, follow) {
-                    if(ctx.define) {
-                       
+                    if (ctx.define) {
+
                     }
                 }
             },
@@ -252,16 +255,90 @@ var lang = {
                 manual: "Sets a variable",
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
-                    global.puzzle.vars[data.key] = data.value;
+                    global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
+                }
+            },
+            add: {
+                manual: "adds an entry to an array or object",
+                follow: ["$to", "{data}"],
+                method: function(ctx, data) {
+                    ctx.addData = data
+                }
+            },
+            pop: {
+                manual: "removes an entry to an array or object",
+                follow: ["$from", "{data}"],
+                method: function(ctx, data) {
+                    if (data) ctx.popData = data
+                }
+            },
+            /*update: { @TODO !!!
+                manual: "updates an entry inside an array or object",
+                follow: ["$from", "{data}"],
+                method: function(ctx, data) {
+                    if (data) ctx.popData = data
+                }
+            },*/
+            to: {
+                manual: "adds an entry to an array or object",
+                follow: ["{varName}"],
+                method: function(ctx, varName) {
+                    varName = global.puzzle.getRawStatement(varName);
 
+                    if (ctx.addData) {
+                        if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
+                        var variable = global.puzzle.vars[varName];
+                        if (Array.isArray(variable)) {
+                            global.puzzle.vars[varName].push(global.puzzle.getRawStatement(ctx.addData));
+                        } else if (isObject(variable)) {
+                            try {
+                                var parsed = eval('(' + ctx.addData + ')');
+                                if (variable.hasOwnProperty(Object.keys(parsed)[0])) return global.puzzle.output(ctx.addData + 'already exists in this object');
+                                global.puzzle.vars[varName][Object.keys(parsed)[0]] = parsed[Object.keys(parsed)[0]];
+                            } catch (e) {
+                                //global.puzzle.output(e)
+                            }
+                        }
+                    }
+                }
+            },
+            from: {
+                manual: "removes an entry to an array or object",
+                follow: ["{varName}"],
+                method: function(ctx, varName) {
+                    varName = global.puzzle.getRawStatement(varName);
+                    if (ctx.popData) {
+                        if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
+                        var variable = global.puzzle.vars[varName];
+                        if (Array.isArray(variable)) {
+                            global.puzzle.vars[varName].splice(global.puzzle.vars[varName].indexOf(global.puzzle.getRawStatement(ctx.popData)), 1)
+                        } else if (isObject(variable)) {
+                            if (!global.puzzle.vars[varName].hasOwnProperty(global.puzzle.getRawStatement(ctx.popData))) return global.puzzle.output(global.puzzle.getRawStatement(ctx.popData) + 'does not exist in this object');
+                            delete global.puzzle.vars[varName][global.puzzle.getRawStatement(ctx.popData)];
+                        }
+                    }
+                }
+            },
+            set: {
+                manual: "Sets a variable",
+                follow: ["$local", "{key,value}"],
+                method: function(ctx, data) {
+                    if (!data) return;
+
+                    try {
+                        global.puzzle.vars[data.key] = JSON.parse(data.value);
+                    } catch (e) {
+                        global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
+                    }
                 }
             },
             local: {
                 manual: "Persists a variable",
                 follow: ["{key,value}"],
                 method: function(ctx, data) {
-                    localStorage.setItem('var:' + data.key, data.value);
-                    global.puzzle.vars[data.key] = data.value;
+                    var value = global.puzzle.evaluateRawStatement(data.value || '');
+                    localStorage.setItem('var:' + data.key, value);
+                    global.puzzle.vars[data.key] = value;
                 }
             },
             func: {
@@ -269,8 +346,6 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
-
-                    console.log('fs', global.puzzle.funcs);
                 }
             },
             if: {
@@ -427,7 +502,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.puzzle.output(global.puzzle.getRawStatement(text))
+                    global.puzzle.output(global.puzzle.evaluateRawStatement(text))
                 }
             },
             js: {
@@ -555,6 +630,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     localStorage = new dependencies.localStorage.LocalStorage('./localStorage');
 } else global = window;
 
+// Check if parameter is an object
+var isObject = (a) => {
+    return (!!a) && (a.constructor === Object);
+};
 
 var puzzle = {
 
@@ -625,6 +704,33 @@ var puzzle = {
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             return statement.substring(1, statement.length - 1)
         } else return statement;
+    },
+
+    // Rvaluates and returns a raw statement. this includes numeric and string operations
+    evaluateRawStatement: function(statement) {
+        var _statement;
+
+        if (!isNaN(statement)) return statement;
+
+        if (isObject(statement)) {
+            return statement;
+        } else {
+            try {
+                _statement = JSON.parse(statement)
+                return _statement;
+            } catch (e) { console.log(e) }
+        }
+        if (Array.isArray(statement)) return statement;
+
+        if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
+            _statement = statement.substring(1, statement.length - 1)
+        } else _statement = statement;
+
+        try {
+            return eval(_statement)
+        } catch (e) {
+            return _statement;
+        }
     },
 
     parse: function(code, vars, funcs) {
@@ -710,12 +816,6 @@ var puzzle = {
         Object.keys(finalParts).forEach(p => {
             _parts.push(finalParts[p]);
         });
-
-
-        // Check if parameter is an object
-        var isObject = (a) => {
-            return (!!a) && (a.constructor === Object);
-        };
 
         // Return the dynamic following tokens
         var getTokenSequence = (reference) => {
@@ -832,7 +932,7 @@ var puzzle = {
 
                     if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                        callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                         tokens.shift();
                     } else if (global.puzzle.funcs[bestMatching]) {
 

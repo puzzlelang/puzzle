@@ -174,14 +174,14 @@ var lang = {
                 }
             },
             define: {
-                manual: "Defines somethng",
+                manual: "Defines something",
                 follow: ["$syntax", "$token"],
                 method: function(ctx, data) {
                     ctx.define = true;
                 }
             },
             undefine: {
-                manual: "Undefines somethng",
+                manual: "Undefines something",
                 follow: ["$syntax", "$token"],
                 method: function(ctx, data) {
                     ctx.unDefine = true;
