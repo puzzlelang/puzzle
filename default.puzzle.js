@@ -221,7 +221,6 @@ var lang = {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
                     if (ctx.define) {
-                        console.log(global.puzzle.getRawStatement(follow))
                         ctx.tokenFollow = JSON.parse('[' + global.puzzle.getRawStatement(follow) + ']');
                     }
                 }
@@ -230,7 +229,6 @@ var lang = {
                 follow: ["{method}", "$and"],
                 method: function(ctx, method) {
                     if (ctx.define) {
-                        console.log(global.puzzle.getRawStatement(method))
                         ctx.tokenMethod = new Function('ctx', 'data', global.puzzle.getRawStatement(method))
                     }
                 }
@@ -286,17 +284,17 @@ var lang = {
                     varName = global.puzzle.getRawStatement(varName);
 
                     if (ctx.addData) {
-                        if (!global.puzzle.vars.hasOwnProperty(varName)) return console.log(varName + 'does not exist');
+                        if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
                         var variable = global.puzzle.vars[varName];
                         if (Array.isArray(variable)) {
                             global.puzzle.vars[varName].push(global.puzzle.getRawStatement(ctx.addData));
                         } else if (isObject(variable)) {
                             try {
                                 var parsed = eval('(' + ctx.addData + ')');
-                                if (variable.hasOwnProperty(Object.keys(parsed)[0])) return console.log(ctx.addData + 'already exists in this object');
+                                if (variable.hasOwnProperty(Object.keys(parsed)[0])) return global.puzzle.output(ctx.addData + 'already exists in this object');
                                 global.puzzle.vars[varName][Object.keys(parsed)[0]] = parsed[Object.keys(parsed)[0]];
                             } catch (e) {
-                                //console.log(e)
+                                //global.puzzle.output(e)
                             }
                         }
                     }
@@ -308,12 +306,12 @@ var lang = {
                 method: function(ctx, varName) {
                     varName = global.puzzle.getRawStatement(varName);
                     if (ctx.popData) {
-                        if (!global.puzzle.vars.hasOwnProperty(varName)) return console.log(varName + 'does not exist');
+                        if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
                         var variable = global.puzzle.vars[varName];
                         if (Array.isArray(variable)) {
                             global.puzzle.vars[varName].splice(global.puzzle.vars[varName].indexOf(global.puzzle.getRawStatement(ctx.popData)), 1)
                         } else if (isObject(variable)) {
-                            if (!global.puzzle.vars[varName].hasOwnProperty(global.puzzle.getRawStatement(ctx.popData))) return console.log(global.puzzle.getRawStatement(ctx.popData) + 'does not exist in this object');
+                            if (!global.puzzle.vars[varName].hasOwnProperty(global.puzzle.getRawStatement(ctx.popData))) return global.puzzle.output(global.puzzle.getRawStatement(ctx.popData) + 'does not exist in this object');
                             delete global.puzzle.vars[varName][global.puzzle.getRawStatement(ctx.popData)];
                         }
                     }
@@ -330,8 +328,6 @@ var lang = {
                     } catch (e) {
                         global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
                     }
-
-                    console.log(global.puzzle.vars[data.key])
                 }
             },
             local: {
@@ -348,8 +344,6 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
-
-                    console.log('fs', global.puzzle.funcs);
                 }
             },
             if: {
