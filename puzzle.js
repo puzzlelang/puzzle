@@ -92,7 +92,10 @@ var puzzle = {
             try {
                 _statement = JSON.parse(statement)
                 return _statement;
-            } catch (e) { console.log(e) }
+            } catch (e) { 
+               // console.log(e)
+                return statement;
+            }
         }
         if (Array.isArray(statement)) return statement;
 
