@@ -1,5 +1,7 @@
 # puzzle
 
+![Node.js Package](https://github.com/puzzlelang/puzzle/workflows/Node.js%20Package/badge.svg)
+
 ![puzzle](http://puzzlelang.org/puzzle-invert.png "Puzzle logo")
 
 puzzle as an abstract, extendable programming language and platform that allows custom syntax for domain specific solutions.
