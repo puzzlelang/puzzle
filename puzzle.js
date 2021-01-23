@@ -9,6 +9,20 @@ var isObject = (a) => {
     return (!!a) && (a.constructor === Object);
 };
 
+// Merge syntax
+var mergeSystaxWithDefault = (defaultSyntax, newSyntax) => {
+    var obj = {};
+    Object.keys(newSyntax || {}).forEach(k => {
+        obj[k] = newSyntax[k]
+    })
+
+    Object.keys(defaultSyntax).forEach(k => {
+        if (!obj.hasOwnProperty(k)) obj[k] = defaultSyntax[k];
+    })
+
+    return obj;
+}
+
 var puzzle = {
 
     // Default language definition
@@ -61,13 +75,11 @@ var puzzle = {
     useSyntax: function(jsObject) {
 
         var _defaultSyntax = this.lang['$'].default;
-
+       
         Object.assign(this.lang, jsObject)
         console.log(Object.keys(jsObject['$'])[0], 'can now be used');
 
         this.lang['$'].default = _defaultSyntax;
-
-        //console.log('lang', this.lang);
 
         this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
 
@@ -92,7 +104,10 @@ var puzzle = {
             try {
                 _statement = JSON.parse(statement)
                 return _statement;
-            } catch (e) { console.log(e) }
+            } catch (e) {
+                // console.log(e)
+                return statement;
+            }
         }
         if (Array.isArray(statement)) return statement;
 
@@ -213,7 +228,7 @@ var puzzle = {
                 }
             }*/
 
-            var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])
 
             if (definition[key]) {
                 if (isObject(definition[key])) {
@@ -279,7 +294,7 @@ var puzzle = {
                 return;
             }
 
-            var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
+            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]); 
 
             var nextInstructions = getTokenSequence(definition[instructionKey.substring(1)]);
 
@@ -408,8 +423,7 @@ var puzzle = {
 
                         tokens.shift();
 
-                        var definition = Object.assign(this.lang['$'][this.lang.currentNamespace] || {}, this.lang['$'].default)
-
+                        var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
 
                         if (definition[t]) {
 
@@ -486,7 +500,6 @@ var puzzle = {
             execSchedule(puzzle.schedule.shift())
 
         }
-
         splitInit(_parts);
     },
     init: function() {
