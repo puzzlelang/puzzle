@@ -93,11 +93,10 @@ var lang = {
 
                                     fs.writeFile(fileName, data, function(err, data) {
 
-                                        var file = require('./' + fileName);
+                                        var file = require(__dirname + '/' + fileName);
                                         global.puzzle.useSyntax(file);
 
-                                        fs.unlinkSync('./' + fileName);
-
+                                        fs.unlinkSync(__dirname + '/' + fileName);
                                     })
 
                                 } else {
@@ -110,7 +109,7 @@ var lang = {
                     } else if (extention.toLowerCase() == "js") {
                         if (environment != 'node') return global.puzzle.output('feature not available in this environment')
 
-                        if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                        if (!fileName.startsWith('../')) fileName = __dirname + fileName;
                         var file = require(fileName);
                         global.puzzle.useSyntax(file);
                         if (done) done();
