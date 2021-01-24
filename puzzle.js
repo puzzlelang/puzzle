@@ -57,6 +57,9 @@ var puzzle = {
         }
     },
 
+    // main repo url for the official modules github repo
+    mainRepo: 'https://cdn.jsdelivr.net/gh/puzzlelang/puzzle-catalog/modules/<module>',
+
     // for breaking code parts down into nested parts
     groupingOperators: ['"', "'", "(", ")", "{", "}"],
 
@@ -75,7 +78,7 @@ var puzzle = {
     useSyntax: function(jsObject) {
 
         var _defaultSyntax = this.lang['$'].default;
-       
+
         Object.assign(this.lang, jsObject)
         console.log(Object.keys(jsObject['$'])[0], 'can now be used');
 
@@ -294,7 +297,7 @@ var puzzle = {
                 return;
             }
 
-            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]); 
+            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
 
             var nextInstructions = getTokenSequence(definition[instructionKey.substring(1)]);
 

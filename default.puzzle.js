@@ -74,39 +74,52 @@ var lang = {
 
             if (ctx['useNamespace']) {
 
+                function downloadModule(fileName) {
+                    fetch(fileName)
+                        .then(res => res.text())
+                        .then(data => {
+
+                            if (data.includes("Couldn't find the requested file")) {
+                                global.puzzle.output('module not found');
+                                if (done) done();
+                                return;
+                            }
+
+                            if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
+                                if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
+                            }
+
+                            if (environment == 'node') {
+
+                                var fileName = Math.random() + ".js";
+
+                                fs.writeFile(fileName, data, function(err, data) {
+
+                                    var file = require(__dirname + '/' + fileName);
+                                    global.puzzle.useSyntax(file);
+
+                                    fs.unlinkSync(__dirname + '/' + fileName);
+                                })
+
+                            } else {
+                                var syntax = new Function("module = {}; " + data + " return syntax")();
+                                global.puzzle.useSyntax(syntax);
+                            }
+                            if (done) done();
+                        });
+                }
+
                 try {
                     var fileName = ctx['useNamespace'];
                     var extention = fileName.split(".")[fileName.split(".").length - 1];
+                    if (!fileName.includes('.')) extention = null;
 
                     if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
 
-                        fetch(fileName)
-                            .then(res => res.text())
-                            .then(data => {
-                                if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
-                                    if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
-                                }
+                        downloadModule(fileName)
 
-                                if (environment == 'node') {
+                    } else if (extention && extention.toLowerCase() == "js") {
 
-                                    var fileName = Math.random() + ".js";
-
-                                    fs.writeFile(fileName, data, function(err, data) {
-
-                                        var file = require(__dirname + '/' + fileName);
-                                        global.puzzle.useSyntax(file);
-
-                                        fs.unlinkSync(__dirname + '/' + fileName);
-                                    })
-
-                                } else {
-                                    var syntax = new Function("module = {}; " + data + " return syntax")();
-                                    global.puzzle.useSyntax(syntax);
-                                }
-                                if (done) done();
-                            });
-
-                    } else if (extention.toLowerCase() == "js") {
                         if (environment != 'node') return global.puzzle.output('feature not available in this environment')
 
                         if (!fileName.startsWith('../')) fileName = __dirname + fileName;
@@ -122,8 +135,14 @@ var lang = {
                         }
                         if (done) done();
                     } else {
-                        global.puzzle.output('unsupported file type');
-                        if (done) done();
+
+                        var moduleUrl = global.puzzle.mainRepo.replace('<module>', fileName);
+                        var moduleFileName = 'index.js';
+                        if (fileName.includes('.')) {
+                            moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
+                        }
+
+                        downloadModule(moduleUrl + '/' + moduleFileName)
                     }
 
                 } catch (e) {
