@@ -122,7 +122,7 @@ var lang = {
 
                         if (environment != 'node') return global.puzzle.output('feature not available in this environment')
 
-                        if (!fileName.startsWith('../')) fileName = __dirname + fileName;
+                        if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
                         var file = require(fileName);
                         global.puzzle.useSyntax(file);
                         if (done) done();
