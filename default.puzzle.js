@@ -41,149 +41,159 @@ var lang = {
     context: {},
     vars: {},
     currentNamespace: "default",
-    static: {
-        execStatement: function(done, ctx) {
-
-            if (ctx.define) {
-                lang.$.default[ctx.tokenName] = {
-                    follow: ctx.tokenFollow,
-                    method: ctx.tokenMethod
-                }
-            } else if (ctx.unDefine) {
-                if (ctx.tokenName)
-                    if (lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
-            }
-
-            if (ctx[ctx.importNamespace]) {
-                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-                try {
-                    ctx[ctx.importNamespace] = require(ctx.importUrl);
-                } catch (e) {
-                    global.puzzle.output('Import Error:', e)
-                }
-                if (done) done();
-            }
-
-            if (ctx['unUseNamespace']) {
-                if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
-                    global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
-                }
-                if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
-                global.puzzle.output(ctx['unUseNamespace'], 'unused');
-            }
-
-            if (ctx['useNamespace']) {
-
-                function downloadModule(fileName) {
-                    fetch(fileName)
-                        .then(res => res.text())
-                        .then(data => {
-
-                            if (data.includes("Couldn't find the requested file")) {
-                                global.puzzle.output('module not found');
-                                if (done) done();
-                                return;
-                            }
-
-                            if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
-                                if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
-                            }
-
-                            if (environment == 'node') {
-
-                                var fileName = Math.random() + ".js";
-
-                                fs.writeFile(fileName, data, function(err, data) {
-
-                                    var file = require(__dirname + '/' + fileName);
-                                    global.puzzle.useSyntax(file);
-
-                                    fs.unlinkSync(__dirname + '/' + fileName);
-                                })
-
-                            } else {
-                                var syntax = new Function("module = {}; " + data + " return syntax")();
-                                global.puzzle.useSyntax(syntax);
-                            }
-                            if (done) done();
-                        });
-                }
-
-                try {
-                    var fileName = ctx['useNamespace'];
-                    var extention = fileName.split(".")[fileName.split(".").length - 1];
-                    if (!fileName.includes('.')) extention = null;
-
-                    if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
-
-                        downloadModule(fileName)
-
-                    } else if (extention && extention.toLowerCase() == "js") {
-
-                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-
-                        if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
-                        var file = require(fileName);
-                        global.puzzle.useSyntax(file);
-                        if (done) done();
-                    } else if (fileName.indexOf('var:') == 0) {
-                        // 
-                        try {
-                            global.puzzle.useSyntax(window[fileName.substring(4)]);
-                        } catch (e) {
-                            global.puzzle.useSyntax(global[fileName.substring(4)]);
-                        }
-                        if (done) done();
-                    } else {
-
-                        var moduleUrl = global.puzzle.mainRepo.replace('<module>', fileName);
-                        var moduleFileName = 'index.js';
-                        if (fileName.includes('.')) {
-                            moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
-                        }
-
-                        downloadModule(moduleUrl + '/' + moduleFileName)
-                    }
-
-                } catch (e) {
-                    global.puzzle.output('Use Error', e);
-                    if (done) done();
-                }
-            } else if (ctx['includeNamespace']) {
-
-                function includeScript(code) {
-                    global.puzzle.parse(code);
-                }
-
-                var fileName = ctx['includeNamespace'];
-                var extention = fileName.split(".")[fileName.split(".").length - 1];
-
-                if (fileName.indexOf('https://') == 0) {
-
-                    fetch(fileName)
-                        .then(res => res.text())
-                        .then(data => {
-                            includeScript(data);
-                            if (done) done();
-                        });
-
-                } else if (extention.toLowerCase() == "puzzle") {
-                    if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                    fs.readFile(fileName, function(err, data) {
-                        if (err) return global.puzzle.output('Error reading file');
-                        file = data;
-                    });
-                    includeScript(file)
-                    if (done) done();
-                } else {
-                    global.puzzle.output('unsupported file type');
-                    if (done) done();
-                }
-            } else if (done) done();
-        }
-    },
     "$": {
         default: {
+            _static: {
+                execStatement: function(done, ctx) {
+
+                    var relevantNamespace = ctx.insideNamespace || 'default';
+
+                    if (ctx.define) {
+                        if (ctx.tokenName) {
+                            console.log('ctx.insideNamespace', ctx.insideNamespace)
+                            lang.$[relevantNamespace][ctx.tokenName] = {
+                                follow: ctx.tokenFollow,
+                                method: ctx.tokenMethod
+                            }
+                        } else {
+                            //lang.$[relevantNamespace] = global[relevantNamespace]
+                        }
+
+                    } else if (ctx.unDefine) {
+                        if (ctx.tokenName)
+                            if (lang.$[relevantNamespace][ctx.tokenName]) delete lang.$[relevantNamespace][ctx.tokenName];
+                    }
+                    console.log('rns', lang.$[relevantNamespace])
+
+                    if (ctx[ctx.importNamespace]) {
+                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
+                        try {
+                            ctx[ctx.importNamespace] = require(ctx.importUrl);
+                        } catch (e) {
+                            global.puzzle.output('Import Error:', e)
+                        }
+                        if (done) done();
+                    }
+
+                    if (ctx['unUseNamespace']) {
+                        if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
+                            global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
+                        }
+                        if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
+                        global.puzzle.output(ctx['unUseNamespace'], 'unused');
+                    }
+
+                    if (ctx['useNamespace']) {
+
+                        function downloadModule(fileName) {
+                            fetch(fileName)
+                                .then(res => res.text())
+                                .then(data => {
+
+                                    if (data.includes("Couldn't find the requested file")) {
+                                        global.puzzle.output('module not found');
+                                        if (done) done();
+                                        return;
+                                    }
+
+                                    if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
+                                        if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
+                                    }
+
+                                    if (environment == 'node') {
+
+                                        var fileName = Math.random() + ".js";
+
+                                        fs.writeFile(fileName, data, function(err, data) {
+
+                                            var file = require(__dirname + '/' + fileName);
+                                            global.puzzle.useSyntax(file);
+
+                                            fs.unlinkSync(__dirname + '/' + fileName);
+                                        })
+
+                                    } else {
+                                        var syntax = new Function("module = {}; " + data + " return syntax")();
+                                        global.puzzle.useSyntax(syntax);
+                                    }
+                                    if (done) done();
+                                });
+                        }
+
+                        try {
+                            var fileName = ctx['useNamespace'];
+                            var extention = fileName.split(".")[fileName.split(".").length - 1];
+                            if (!fileName.includes('.')) extention = null;
+
+                            if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
+
+                                downloadModule(fileName)
+
+                            } else if (extention && extention.toLowerCase() == "js") {
+
+                                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
+
+                                if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
+                                var file = require(fileName);
+                                global.puzzle.useSyntax(file);
+                                if (done) done();
+                            } else if (fileName.indexOf('var:') == 0) {
+                                // 
+                                
+                                if(ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true);
+                                else global.puzzle.useSyntax(global[fileName.substring(4)]);
+                               
+                                if (done) done();
+                            } else {
+
+                                var moduleUrl = global.puzzle.mainRepo.replace('<module>', fileName);
+                                var moduleFileName = 'index.js';
+                                if (fileName.includes('.')) {
+                                    moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
+                                }
+
+                                downloadModule(moduleUrl + '/' + moduleFileName)
+                            }
+
+                        } catch (e) {
+                            global.puzzle.output('Use Error', e);
+                            if (done) done();
+                        }
+                    } else if (ctx['includeNamespace']) {
+
+                        function includeScript(code) {
+                            global.puzzle.parse(code);
+                        }
+
+                        var fileName = ctx['includeNamespace'];
+                        var extention = fileName.split(".")[fileName.split(".").length - 1];
+
+                        if (fileName.indexOf('https://') == 0) {
+
+                            fetch(fileName)
+                                .then(res => res.text())
+                                .then(data => {
+                                    includeScript(data);
+                                    if (done) done();
+                                });
+
+                        } else if (extention.toLowerCase() == "puzzle") {
+                            if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                            fs.readFile(fileName, function(err, data) {
+                                if (err) return global.puzzle.output('Error reading file');
+                                file = data;
+                            });
+                            includeScript(file)
+                            if (done) done();
+                        } else {
+                            global.puzzle.output('unsupported file type');
+                            if (done) done();
+                        }
+                    } else if (done) done();
+
+                    console.log('lang', lang)
+                }
+            },
             include: {
                 manual: "include a puzzle file",
                 follow: ["{file}"],
@@ -193,7 +203,7 @@ var lang = {
             },
             define: {
                 manual: "Defines something",
-                follow: ["$syntax", "$token"],
+                follow: ["$syntax", "$livesyntax", "$token"],
                 method: function(ctx, data) {
                     ctx.define = true;
                 }
@@ -218,6 +228,25 @@ var lang = {
                     }
                 }
             },
+            livesyntax: {
+                manual: "Defines an instant-available live syntax",
+                follow: ["{name,func}"],
+                method: function(ctx, data) {
+                    ctx.syntaxNamespace = data.name;
+                    lang.$[data.name] = {
+                        $: {}
+                    };
+                    lang.$[data.name] = {
+                        _static: {
+                            execStatement: function(done, ctx) { return new Function(global.puzzle.getRawStatement(data.func)) }
+                        },
+                    };
+
+                    global[data.name] = {$: {}};
+                    global[data.name].$[data.name] = lang.$[data.name]
+                    //ctx['useNamespace'] = 'var:name';
+                }
+            },
             token: {
                 manual: "Defines a custom token for the active syntax",
                 follow: ["{name}", "$with"],
@@ -230,25 +259,31 @@ var lang = {
             with: {
                 follow: ["$follow", "$method"],
                 method: function(ctx, name) {
-                    if (ctx.define) {
-                        ctx.tokenName = name;
-                    }
+
                 }
             },
             follow: {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
                     if (ctx.define) {
+                        console.log(global.puzzle.getRawStatement(follow))
                         ctx.tokenFollow = JSON.parse('[' + global.puzzle.getRawStatement(follow) + ']');
                     }
                 }
             },
             method: {
-                follow: ["{method}", "$and"],
+                follow: ["{method}", "$and", "$inside"],
                 method: function(ctx, method) {
                     if (ctx.define) {
                         ctx.tokenMethod = new Function('ctx', 'data', global.puzzle.getRawStatement(method))
                     }
+                }
+            },
+            inside: {
+                follow: ["{namespace}"],
+                method: function(ctx, data) {
+                    ctx.insideNamespace = data;
+                    console.log('in', data)
                 }
             },
             and: {

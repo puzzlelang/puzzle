@@ -10,7 +10,7 @@ var isObject = (a) => {
 };
 
 // Merge syntax
-var mergeSystaxWithDefault = (defaultSyntax, newSyntax) => {
+var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
     var obj = {};
     Object.keys(newSyntax || {}).forEach(k => {
         obj[k] = newSyntax[k]
@@ -75,7 +75,7 @@ var puzzle = {
         }
     },
 
-    useSyntax: function(jsObject) {
+    useSyntax: function(jsObject, dontUse) {
 
         var _defaultSyntax = this.lang['$'].default;
 
@@ -84,7 +84,7 @@ var puzzle = {
 
         this.lang['$'].default = _defaultSyntax;
 
-        this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
+        if(!dontUse) this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
 
     },
 
@@ -211,6 +211,7 @@ var puzzle = {
 
         // Return the dynamic following tokens
         var getTokenSequence = (reference) => {
+            //console.log('sequence', reference)
             if (isObject(reference)) {
                 return reference.follow
             } else return reference;
@@ -218,7 +219,7 @@ var puzzle = {
 
 
         // Call the dynamic, corresponding api method that blongs to a single token
-        var callTokenFunction = (ctx, key, param, dslKey) => {
+        var callTokenFunction = (ctx, key, param, dslKey, innerDefinition) => {
 
             //console.log('args', key, param, dslKey)
             /*if (param) {
@@ -231,7 +232,7 @@ var puzzle = {
                 }
             }*/
 
-            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])
+            var definition = innerDefinition || mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])
 
             if (definition[key]) {
                 if (isObject(definition[key])) {
@@ -282,14 +283,14 @@ var puzzle = {
         }
 
         // Recoursively parse tokens
-        var sequence = (tokens, token, instructionKey, partId, done) => {
+        var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang.$[this.lang.currentNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             } else if (tokens.length == 0) {
-                this.lang.static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang.$[this.lang.currentNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             }
 
@@ -297,11 +298,23 @@ var puzzle = {
                 return;
             }
 
-            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
+            var innerDefinition;
+            var definition = mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
 
+            //console.log('lt', lastToken, definition[lastToken], definition[lastToken].innerSequence)
+
+            if (definition[lastToken]) {
+                if (definition[lastToken].innerSequence) {
+                    innerDefinition = definition[lastToken].innerSequence;
+                    definition = innerDefinition;
+                }
+            }
+
+            //console.log('def', definition)
             var nextInstructions = getTokenSequence(definition[instructionKey.substring(1)]);
 
             if (!nextInstructions) nextInstructions = getTokenSequence(definition[instructionKey]);
+
 
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
@@ -310,7 +323,7 @@ var puzzle = {
 
                 var nextBestInsturction = null;
 
-                tokens.shift();
+                var lastToken = tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                 var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
@@ -318,13 +331,13 @@ var puzzle = {
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
-                    callTokenFunction(token);
-                    sequence(tokens, tokens[0], bestMatching, partId, done);
+                    callTokenFunction(global.puzzle.ctx[partId], token, null, null, innerDefinition);
+                    sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 } else {
 
                     if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
                         tokens.shift();
                     } else if (global.puzzle.funcs[bestMatching]) {
 
@@ -342,19 +355,19 @@ var puzzle = {
                             tokens.shift();
                         })
 
-                        callTokenFunction(global.puzzle.ctx[partId], token, argList);
+                        callTokenFunction(global.puzzle.ctx[partId], token, argList, null, innerDefinition);
                         //tokens.shift();
 
                     } else {
                         // console.log('safasf', bestMatching, tokens)
-                        callTokenFunction(global.puzzle.ctx[partId], token, bestMatching)
+                        callTokenFunction(global.puzzle.ctx[partId], token, bestMatching, null, innerDefinition)
                         tokens.shift();
                     }
 
                     //console.log('a', tokens, bestMatching)
                     bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                     //console.log('b', tokens, bestMatching)
-                    sequence(tokens, tokens[0], bestMatching, partId, done);
+                    sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 }
 
             } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
@@ -424,9 +437,9 @@ var puzzle = {
 
                         var t = tokens[0].replace(/(\r\n|\n|\r)/gm, "");
 
-                        tokens.shift();
+                        var lastToken = tokens.shift();
 
-                        var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
+                        var definition = mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
 
                         if (definition[t]) {
 
@@ -435,7 +448,7 @@ var puzzle = {
 
                             if ((bestMatching || "").charAt(0) == "$") {
                                 callTokenFunction(global.puzzle.ctx[partId], t);
-                                sequence(tokens, tokens[0], bestMatching, partId, done);
+                                sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                                 global.puzzle.ctx[partId]._sequence.push(t)
                             } else {
 
@@ -473,7 +486,7 @@ var puzzle = {
                                 }
 
                                 bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                                sequence(tokens, tokens[0], bestMatching, partId, done);
+                                sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                             }
 
                         } else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
