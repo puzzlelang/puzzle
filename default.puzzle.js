@@ -50,7 +50,7 @@ var lang = {
 
                     if (ctx.define) {
                         if (ctx.tokenName) {
-                            console.log('ctx.insideNamespace', ctx.insideNamespace)
+                            // console.log('ctx.insideNamespace', ctx.insideNamespace)
                             lang.$[relevantNamespace][ctx.tokenName] = {
                                 follow: ctx.tokenFollow,
                                 method: ctx.tokenMethod
@@ -63,7 +63,7 @@ var lang = {
                         if (ctx.tokenName)
                             if (lang.$[relevantNamespace][ctx.tokenName]) delete lang.$[relevantNamespace][ctx.tokenName];
                     }
-                    console.log('rns', lang.$[relevantNamespace])
+                    //                    console.log('rns', lang.$[relevantNamespace])
 
                     if (ctx[ctx.importNamespace]) {
                         if (environment != 'node') return global.puzzle.output('feature not available in this environment')
@@ -139,10 +139,10 @@ var lang = {
                                 if (done) done();
                             } else if (fileName.indexOf('var:') == 0) {
                                 // 
-                                
-                                if(ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true);
+
+                                if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true);
                                 else global.puzzle.useSyntax(global[fileName.substring(4)]);
-                               
+
                                 if (done) done();
                             } else {
 
@@ -191,7 +191,7 @@ var lang = {
                         }
                     } else if (done) done();
 
-                    console.log('lang', lang)
+                    //console.log('lang', lang)
                 }
             },
             include: {
@@ -242,7 +242,7 @@ var lang = {
                         },
                     };
 
-                    global[data.name] = {$: {}};
+                    global[data.name] = { $: {} };
                     global[data.name].$[data.name] = lang.$[data.name]
                     //ctx['useNamespace'] = 'var:name';
                 }
@@ -266,8 +266,12 @@ var lang = {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
                     if (ctx.define) {
-                        console.log(global.puzzle.getRawStatement(follow))
-                        ctx.tokenFollow = JSON.parse('[' + global.puzzle.getRawStatement(follow) + ']');
+                        var raw = global.puzzle.getRawStatement(follow);
+                        var followTokens = [];
+                        raw.split(',').forEach(t => {
+                            followTokens.push(t.trim());
+                        })
+                        ctx.tokenFollow = followTokens
                     }
                 }
             },
@@ -283,7 +287,6 @@ var lang = {
                 follow: ["{namespace}"],
                 method: function(ctx, data) {
                     ctx.insideNamespace = data;
-                    console.log('in', data)
                 }
             },
             and: {
@@ -381,6 +384,14 @@ var lang = {
                     } catch (e) {
                         global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
                     }
+                }
+            },
+            unset: {
+                manual: "Unsets a variable",
+                follow: ["{key}"],
+                method: function(ctx, data) {
+                    delete global.puzzle.vars[global.puzzle.getRawStatement(data)];
+                    localStorage.removeItem('var:' + global.puzzle.getRawStatement(data));
                 }
             },
             local: {

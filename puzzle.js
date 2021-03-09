@@ -467,7 +467,6 @@ var puzzle = {
                                 } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
-
                                     var argList = {};
                                     var t2;
 
