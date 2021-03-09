@@ -203,9 +203,10 @@ var lang = {
             },
             define: {
                 manual: "Defines something",
-                follow: ["$syntax", "$livesyntax", "$token"],
+                follow: ["$syntax", "$livesyntax", "$token", "$runner"],
                 method: function(ctx, data) {
                     ctx.define = true;
+
                 }
             },
             undefine: {
@@ -258,7 +259,7 @@ var lang = {
             },
             with: {
                 follow: ["$follow", "$method"],
-                method: function(ctx, name) {
+                method: function(ctx, params) {
 
                 }
             },
@@ -408,6 +409,41 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
+
+                    console.log('funcs', global.puzzle.funcs)
+                }
+            },
+            runner: {
+                manual: "Sets a runner (subscript)",
+                follow: ["{key,body}"],
+                method: function(ctx, data) {
+                    global.puzzle.subscripts[data.key] = { body: data.body };
+                }
+            },
+            run: {
+                manual: "Runs a function",
+                follow: ["{subscript}"],
+                innerSequence: { in: {
+                        follow: ["{subscript}"],
+                        method: function(ctx, subscript) {
+                            var vars = {};
+                            ctx.params.split(',').forEach(p => {
+                                vars[p.split(':')[0]] = p.split(':')[1]
+                            })
+                            if (global.puzzle.subscripts[subscript]) {
+                                var func = global.puzzle.subscripts[subscript];
+                                global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), vars);
+                            }
+                        }
+                    }
+                },
+                method: function(ctx, subscript) {
+                    if (global.puzzle.subscripts[subscript]) {
+                        var func = global.puzzle.subscripts[subscript];
+                        global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')));
+                    } else {
+                        ctx.params = global.puzzle.getRawStatement(subscript);
+                    }
                 }
             },
             if: {

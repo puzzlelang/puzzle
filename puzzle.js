@@ -40,6 +40,9 @@ var puzzle = {
     // functions
     funcs: {},
 
+    // subscripts
+    subscripts: {},
+
     // statement context
     ctx: {},
 
@@ -339,11 +342,11 @@ var puzzle = {
 
                         callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
                         tokens.shift();
-                    } else if (global.puzzle.funcs[bestMatching]) {
-
+                    } /*else if (global.puzzle.funcs[bestMatching]) {
+                        console.log('func')
                         //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.vars[bestMatching]);
                         tokens.shift();
-                    } else if ((bestMatchingInstruction || "").includes(",")) {
+                    } */ else if ((bestMatchingInstruction || "").includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                         var argList = {};
@@ -370,10 +373,10 @@ var puzzle = {
                     sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 }
 
-            } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
+            } /*else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
                 execFunctionBody(token, vars, funcs)
 
-            } else {
+            }*/ else {
                 console.log('unequal', instructionKey, token);
             }
         }
@@ -388,13 +391,13 @@ var puzzle = {
 
                 var rawInputParams = bestMatching.substring(bestMatching.indexOf('(') + 1, bestMatching.indexOf(')'));
                 var inputParams = rawInputParams.split(",");
-                //console.log('params', inputParams);
+                console.log('params', inputParams);
 
                 bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
                 var rawDefinedParams = global.puzzle.funcs[bestMatching].params;
                 rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
                 var definedParams = rawDefinedParams.split(",");
-                //console.log('definedParams', definedParams);
+                console.log('definedParams', definedParams);
 
                 definedParams.forEach(function(param, i) {
                     scope.vars[param] = inputParams[i]
@@ -458,13 +461,13 @@ var puzzle = {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                                     tokens.shift();
-                                } else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
-
-                                    execFunctionBody(bestMatching, vars, funcs)
+                                } /*else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
+                                    console.log('funcsss22', bestMatching, global.puzzle.funcs)
+                                    execFunctionBody(bestMatching, global.puzzle.vars, global.puzzle.funcs)
 
                                     //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.funcs[bestMatching]);
                                     tokens.shift();
-                                } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                } */else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                                     var argList = {};
@@ -488,9 +491,9 @@ var puzzle = {
                                 sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                             }
 
-                        } else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
-                            execFunctionBody(t, vars, funcs)
-                        } else {
+                        } /*else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
+                            execFunctionBody(t, vars, funcs || global.puzzle.funcs)
+                        }*/ else {
                             console.log(t, 'is not defined');
                         }
 
@@ -540,7 +543,7 @@ try {
         window.addEventListener('DOMContentLoaded', (event) => {
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
-                if (s.getAttribute("type") == "text/x-puzzle") {
+                if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {
                     window.puzzle.parse(s.innerHTML);
                 }
             })
