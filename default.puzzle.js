@@ -442,7 +442,12 @@ var lang = {
                         var func = global.puzzle.subscripts[subscript];
                         global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')));
                     } else {
-                        ctx.params = global.puzzle.getRawStatement(subscript);
+                        try {
+                            global.puzzle.parse(global.puzzle.getRawStatement(subscript))
+                        } catch (e) {
+                            ctx.params = global.puzzle.getRawStatement(subscript);    
+                        }
+                        
                     }
                 }
             },
