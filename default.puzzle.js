@@ -432,7 +432,7 @@ var lang = {
                             })
                             if (global.puzzle.subscripts[subscript]) {
                                 var func = global.puzzle.subscripts[subscript];
-                                global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), vars);
+                                global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), Object.assign(global.puzzle.vars, vars));
                             }
                         }
                     }
@@ -440,10 +440,10 @@ var lang = {
                 method: function(ctx, subscript) {
                     if (global.puzzle.subscripts[subscript]) {
                         var func = global.puzzle.subscripts[subscript];
-                        global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')));
+                        global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
                     } else {
                         try {
-                            global.puzzle.parse(global.puzzle.getRawStatement(subscript))
+                            global.puzzle.parse(global.puzzle.getRawStatement(subscript), global.puzzle.vars)
                         } catch (e) {
                             ctx.params = global.puzzle.getRawStatement(subscript);    
                         }
