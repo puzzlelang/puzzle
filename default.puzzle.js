@@ -203,7 +203,7 @@ var lang = {
             },
             define: {
                 manual: "Defines something",
-                follow: ["$syntax", "$livesyntax", "$token", "$runner"],
+                follow: ["$syntax", "$livesyntax", "$token", "$function"],
                 method: function(ctx, data) {
                     ctx.define = true;
 
@@ -413,8 +413,8 @@ var lang = {
                     console.log('funcs', global.puzzle.funcs)
                 }
             },
-            runner: {
-                manual: "Sets a runner (subscript)",
+            function: {
+                manual: "Sets a function (subscript)",
                 follow: ["{key,body}"],
                 method: function(ctx, data) {
                     global.puzzle.subscripts[data.key] = { body: data.body };
