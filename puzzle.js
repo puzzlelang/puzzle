@@ -475,6 +475,8 @@ var puzzle = {
 
                         } else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
                             execFunctionBody(t, vars, funcs)
+                        } else if (t.includes('...')) {
+                            this.lang.currentNamespace = t.split('...')[0]; 
                         } else {
                             console.log(t, 'is not defined');
                         }
