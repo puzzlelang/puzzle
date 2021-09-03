@@ -444,12 +444,7 @@ var lang = {
                         var func = global.puzzle.subscripts[subscript];
                         global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
                     } else {
-                        try {
-                            global.puzzle.parse(global.puzzle.getRawStatement(subscript), global.puzzle.vars)
-                        } catch (e) {
-                            ctx.params = global.puzzle.getRawStatement(subscript);    
-                        }
-                        
+                        ctx.params = global.puzzle.getRawStatement(subscript);    
                     }
                 }
             },
@@ -694,7 +689,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.63",
+  "version": "0.0.64",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1020,12 +1015,14 @@ var puzzle = {
         // Recoursively parse tokens
         var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
+            var execNamespace = this.lang.currentNamespace;
+            if(!(this.lang.$[this.lang.currentNamespace]._static || {}).execStatement) execNamespace = 'default'
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.$[this.lang.currentNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang.$[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             } else if (tokens.length == 0) {
-                this.lang.$[this.lang.currentNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang.$[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             }
 

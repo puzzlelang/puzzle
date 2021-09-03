@@ -132,8 +132,8 @@ var lang = {
                             } else if (extention && extention.toLowerCase() == "js") {
 
                                 if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-
-                                if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
+                                console.log('ddgdg', fileName)
+                                //if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
                                 var file = require(fileName);
                                 global.puzzle.useSyntax(file);
                                 if (done) done();
@@ -442,12 +442,7 @@ var lang = {
                         var func = global.puzzle.subscripts[subscript];
                         global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
                     } else {
-                        try {
-                            global.puzzle.parse(global.puzzle.getRawStatement(subscript), global.puzzle.vars)
-                        } catch (e) {
-                            ctx.params = global.puzzle.getRawStatement(subscript);    
-                        }
-                        
+                        ctx.params = global.puzzle.getRawStatement(subscript);
                     }
                 }
             },
