@@ -43,130 +43,159 @@ var lang = {
     context: {},
     vars: {},
     currentNamespace: "default",
-    static: {
-        execStatement: function(done, ctx) {
+    "$": {
+        default: {
+            _static: {
+                execStatement: function(done, ctx) {
 
-            if (ctx.define) {
-                lang.$.default[ctx.tokenName] = {
-                    follow: ctx.tokenFollow,
-                    method: ctx.tokenMethod
-                }
-            } else if (ctx.unDefine) {
-                if (ctx.tokenName)
-                    if (lang.$.default[ctx.tokenName]) delete lang.$.default[ctx.tokenName];
-            }
+                    var relevantNamespace = ctx.insideNamespace || 'default';
 
-            if (ctx[ctx.importNamespace]) {
-                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-                try {
-                    ctx[ctx.importNamespace] = require(ctx.importUrl);
-                } catch (e) {
-                    global.puzzle.output('Import Error:', e)
-                }
-                if (done) done();
-            }
-
-            if (ctx['unUseNamespace']) {
-                if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
-                    global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
-                }
-                if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
-                global.puzzle.output(ctx['unUseNamespace'], 'unused');
-            }
-
-            if (ctx['useNamespace']) {
-
-                try {
-                    var fileName = ctx['useNamespace'];
-                    var extention = fileName.split(".")[fileName.split(".").length - 1];
-
-                    if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
-
-                        fetch(fileName)
-                            .then(res => res.text())
-                            .then(data => {
-                                if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
-                                    if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
-                                }
-
-                                if (environment == 'node') {
-
-                                    var fileName = Math.random() + ".js";
-
-                                    fs.writeFile(fileName, data, function(err, data) {
-
-                                        var file = require(__dirname + '/' + fileName);
-                                        global.puzzle.useSyntax(file);
-
-                                        fs.unlinkSync(__dirname + '/' + fileName);
-                                    })
-
-                                } else {
-                                    var syntax = new Function("module = {}; " + data + " return syntax")();
-                                    global.puzzle.useSyntax(syntax);
-                                }
-                                if (done) done();
-                            });
-
-                    } else if (extention.toLowerCase() == "js") {
-                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-
-                        if (!fileName.startsWith('../')) fileName = __dirname + fileName;
-                        var file = require(fileName);
-                        global.puzzle.useSyntax(file);
-                        if (done) done();
-                    } else if (fileName.indexOf('var:') == 0) {
-                        // 
-                        try {
-                            global.puzzle.useSyntax(window[fileName.substring(4)]);
-                        } catch (e) {
-                            global.puzzle.useSyntax(global[fileName.substring(4)]);
+                    if (ctx.define) {
+                        if (ctx.tokenName) {
+                            // console.log('ctx.insideNamespace', ctx.insideNamespace)
+                            lang.$[relevantNamespace][ctx.tokenName] = {
+                                follow: ctx.tokenFollow,
+                                method: ctx.tokenMethod
+                            }
+                        } else {
+                            //lang.$[relevantNamespace] = global[relevantNamespace]
                         }
-                        if (done) done();
-                    } else {
-                        global.puzzle.output('unsupported file type');
+
+                    } else if (ctx.unDefine) {
+                        if (ctx.tokenName)
+                            if (lang.$[relevantNamespace][ctx.tokenName]) delete lang.$[relevantNamespace][ctx.tokenName];
+                    }
+                    //                    console.log('rns', lang.$[relevantNamespace])
+
+                    if (ctx[ctx.importNamespace]) {
+                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
+                        try {
+                            ctx[ctx.importNamespace] = require(ctx.importUrl);
+                        } catch (e) {
+                            global.puzzle.output('Import Error:', e)
+                        }
                         if (done) done();
                     }
 
-                } catch (e) {
-                    global.puzzle.output('Use Error', e);
-                    if (done) done();
-                }
-            } else if (ctx['includeNamespace']) {
+                    if (ctx['unUseNamespace']) {
+                        if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
+                            global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
+                        }
+                        if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
+                        global.puzzle.output(ctx['unUseNamespace'], 'unused');
+                    }
 
-                function includeScript(code) {
-                    global.puzzle.parse(code);
-                }
+                    if (ctx['useNamespace']) {
 
-                var fileName = ctx['includeNamespace'];
-                var extention = fileName.split(".")[fileName.split(".").length - 1];
+                        function downloadModule(fileName) {
+                            fetch(fileName)
+                                .then(res => res.text())
+                                .then(data => {
 
-                if (fileName.indexOf('https://') == 0) {
+                                    if (data.includes("Couldn't find the requested file")) {
+                                        global.puzzle.output('module not found');
+                                        if (done) done();
+                                        return;
+                                    }
 
-                    fetch(fileName)
-                        .then(res => res.text())
-                        .then(data => {
-                            includeScript(data);
+                                    if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
+                                        if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
+                                    }
+
+                                    if (environment == 'node') {
+
+                                        var fileName = Math.random() + ".js";
+
+                                        fs.writeFile(fileName, data, function(err, data) {
+
+                                            var file = require(__dirname + '/' + fileName);
+                                            global.puzzle.useSyntax(file);
+
+                                            fs.unlinkSync(__dirname + '/' + fileName);
+                                        })
+
+                                    } else {
+                                        var syntax = new Function("module = {}; " + data + " return syntax")();
+                                        global.puzzle.useSyntax(syntax);
+                                    }
+                                    if (done) done();
+                                });
+                        }
+
+                        try {
+                            var fileName = ctx['useNamespace'];
+                            var extention = fileName.split(".")[fileName.split(".").length - 1];
+                            if (!fileName.includes('.')) extention = null;
+
+                            if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
+
+                                downloadModule(fileName)
+
+                            } else if (extention && extention.toLowerCase() == "js") {
+
+                                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
+                                console.log('ddgdg', fileName)
+                                //if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
+                                var file = require(fileName);
+                                global.puzzle.useSyntax(file);
+                                if (done) done();
+                            } else if (fileName.indexOf('var:') == 0) {
+                                // 
+
+                                if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true);
+                                else global.puzzle.useSyntax(global[fileName.substring(4)]);
+
+                                if (done) done();
+                            } else {
+
+                                var moduleUrl = global.puzzle.mainRepo.replace('<module>', fileName);
+                                var moduleFileName = 'index.js';
+                                if (fileName.includes('.')) {
+                                    moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
+                                }
+
+                                downloadModule(moduleUrl + '/' + moduleFileName)
+                            }
+
+                        } catch (e) {
+                            global.puzzle.output('Use Error', e);
                             if (done) done();
-                        });
+                        }
+                    } else if (ctx['includeNamespace']) {
 
-                } else if (extention.toLowerCase() == "puzzle") {
-                    if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                    fs.readFile(fileName, function(err, data) {
-                        if (err) return global.puzzle.output('Error reading file');
-                        file = data;
-                    });
-                    includeScript(file)
-                    if (done) done();
-                } else {
-                    global.puzzle.output('unsupported file type');
-                    if (done) done();
+                        function includeScript(code) {
+                            global.puzzle.parse(code);
+                        }
+
+                        var fileName = ctx['includeNamespace'];
+                        var extention = fileName.split(".")[fileName.split(".").length - 1];
+
+                        if (fileName.indexOf('https://') == 0) {
+
+                            fetch(fileName)
+                                .then(res => res.text())
+                                .then(data => {
+                                    includeScript(data);
+                                    if (done) done();
+                                });
+
+                        } else if (extention.toLowerCase() == "puzzle") {
+                            if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                            fs.readFile(fileName, function(err, data) {
+                                if (err) return global.puzzle.output('Error reading file');
+                                file = data;
+                            });
+                            includeScript(file)
+                            if (done) done();
+                        } else {
+                            global.puzzle.output('unsupported file type');
+                            if (done) done();
+                        }
+                    } else if (done) done();
+
+                    //console.log('lang', lang)
                 }
-            } else if (done) done();
-        }
-    },
-    "$": {
-        default: {
+            },
             include: {
                 manual: "include a puzzle file",
                 follow: ["{file}"],
@@ -176,9 +205,10 @@ var lang = {
             },
             define: {
                 manual: "Defines something",
-                follow: ["$syntax", "$token"],
+                follow: ["$syntax", "$livesyntax", "$token", "$function"],
                 method: function(ctx, data) {
                     ctx.define = true;
+
                 }
             },
             undefine: {
@@ -201,6 +231,25 @@ var lang = {
                     }
                 }
             },
+            livesyntax: {
+                manual: "Defines an instant-available live syntax",
+                follow: ["{name,func}"],
+                method: function(ctx, data) {
+                    ctx.syntaxNamespace = data.name;
+                    lang.$[data.name] = {
+                        $: {}
+                    };
+                    lang.$[data.name] = {
+                        _static: {
+                            execStatement: function(done, ctx) { return new Function(global.puzzle.getRawStatement(data.func)) }
+                        },
+                    };
+
+                    global[data.name] = { $: {} };
+                    global[data.name].$[data.name] = lang.$[data.name]
+                    //ctx['useNamespace'] = 'var:name';
+                }
+            },
             token: {
                 manual: "Defines a custom token for the active syntax",
                 follow: ["{name}", "$with"],
@@ -212,26 +261,35 @@ var lang = {
             },
             with: {
                 follow: ["$follow", "$method"],
-                method: function(ctx, name) {
-                    if (ctx.define) {
-                        ctx.tokenName = name;
-                    }
+                method: function(ctx, params) {
+
                 }
             },
             follow: {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
                     if (ctx.define) {
-                        ctx.tokenFollow = JSON.parse('[' + global.puzzle.getRawStatement(follow) + ']');
+                        var raw = global.puzzle.getRawStatement(follow);
+                        var followTokens = [];
+                        raw.split(',').forEach(t => {
+                            followTokens.push(t.trim());
+                        })
+                        ctx.tokenFollow = followTokens
                     }
                 }
             },
             method: {
-                follow: ["{method}", "$and"],
+                follow: ["{method}", "$and", "$inside"],
                 method: function(ctx, method) {
                     if (ctx.define) {
                         ctx.tokenMethod = new Function('ctx', 'data', global.puzzle.getRawStatement(method))
                     }
+                }
+            },
+            inside: {
+                follow: ["{namespace}"],
+                method: function(ctx, data) {
+                    ctx.insideNamespace = data;
                 }
             },
             and: {
@@ -331,6 +389,14 @@ var lang = {
                     }
                 }
             },
+            unset: {
+                manual: "Unsets a variable",
+                follow: ["{key}"],
+                method: function(ctx, data) {
+                    delete global.puzzle.vars[global.puzzle.getRawStatement(data)];
+                    localStorage.removeItem('var:' + global.puzzle.getRawStatement(data));
+                }
+            },
             local: {
                 manual: "Persists a variable",
                 follow: ["{key,value}"],
@@ -345,12 +411,50 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
+
+                    console.log('funcs', global.puzzle.funcs)
+                }
+            },
+            function: {
+                manual: "Sets a function (subscript)",
+                follow: ["{key,body}"],
+                method: function(ctx, data) {
+                    global.puzzle.subscripts[data.key] = { body: data.body };
+                }
+            },
+            run: {
+                manual: "Runs a function",
+                follow: ["{subscript}"],
+                innerSequence: { in: {
+                        follow: ["{subscript}"],
+                        method: function(ctx, subscript) {
+                            var vars = {};
+                            ctx.params.split(',').forEach(p => {
+                                vars[p.split(':')[0]] = p.split(':')[1]
+                            })
+                            if (global.puzzle.subscripts[subscript]) {
+                                var func = global.puzzle.subscripts[subscript];
+                                global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), Object.assign(global.puzzle.vars, vars));
+                            }
+                        }
+                    }
+                },
+                method: function(ctx, subscript) {
+                    if (global.puzzle.subscripts[subscript]) {
+                        var func = global.puzzle.subscripts[subscript];
+                        global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
+                    } else {
+                        ctx.params = global.puzzle.getRawStatement(subscript);
+                    }
                 }
             },
             if: {
                 follow: ["{condition}", "$then"],
                 method: function(ctx, condition) {
                     ctx.if = condition;
+                    Object.keys(global.puzzle.vars).forEach(v => {
+                        if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, global.puzzle.vars[v])
+                    })
                 }
             },
             then: {
@@ -588,7 +692,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.59",
+  "version": "0.0.66",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
@@ -636,7 +740,7 @@ var isObject = (a) => {
 };
 
 // Merge syntax
-var mergeSystaxWithDefault = (defaultSyntax, newSyntax) => {
+var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
     var obj = {};
     Object.keys(newSyntax || {}).forEach(k => {
         obj[k] = newSyntax[k]
@@ -666,6 +770,9 @@ var puzzle = {
     // functions
     funcs: {},
 
+    // subscripts
+    subscripts: {},
+
     // statement context
     ctx: {},
 
@@ -683,6 +790,9 @@ var puzzle = {
         }
     },
 
+    // main repo url for the official modules github repo
+    mainRepo: 'https://cdn.jsdelivr.net/gh/puzzlelang/puzzle-catalog/modules/<module>',
+
     // for breaking code parts down into nested parts
     groupingOperators: ['"', "'", "(", ")", "{", "}"],
 
@@ -698,16 +808,16 @@ var puzzle = {
         }
     },
 
-    useSyntax: function(jsObject) {
+    useSyntax: function(jsObject, dontUse) {
 
         var _defaultSyntax = this.lang['$'].default;
-       
+
         Object.assign(this.lang, jsObject)
         console.log(Object.keys(jsObject['$'])[0], 'can now be used');
 
         this.lang['$'].default = _defaultSyntax;
 
-        this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
+        if(!dontUse) this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
 
     },
 
@@ -834,6 +944,7 @@ var puzzle = {
 
         // Return the dynamic following tokens
         var getTokenSequence = (reference) => {
+            //console.log('sequence', reference)
             if (isObject(reference)) {
                 return reference.follow
             } else return reference;
@@ -841,7 +952,7 @@ var puzzle = {
 
 
         // Call the dynamic, corresponding api method that blongs to a single token
-        var callTokenFunction = (ctx, key, param, dslKey) => {
+        var callTokenFunction = (ctx, key, param, dslKey, innerDefinition) => {
 
             //console.log('args', key, param, dslKey)
             /*if (param) {
@@ -854,7 +965,7 @@ var puzzle = {
                 }
             }*/
 
-            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])
+            var definition = innerDefinition || mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])
 
             if (definition[key]) {
                 if (isObject(definition[key])) {
@@ -905,14 +1016,16 @@ var puzzle = {
         }
 
         // Recoursively parse tokens
-        var sequence = (tokens, token, instructionKey, partId, done) => {
+        var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
+            var execNamespace = this.lang.currentNamespace;
+            if(!(this.lang.$[this.lang.currentNamespace]._static || {}).execStatement) execNamespace = 'default'
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang.$[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             } else if (tokens.length == 0) {
-                this.lang.static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang.$[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             }
 
@@ -920,11 +1033,23 @@ var puzzle = {
                 return;
             }
 
-            var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]); 
+            var innerDefinition;
+            var definition = mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
 
+            //console.log('lt', lastToken, definition[lastToken], definition[lastToken].innerSequence)
+
+            if (definition[lastToken]) {
+                if (definition[lastToken].innerSequence) {
+                    innerDefinition = definition[lastToken].innerSequence;
+                    definition = innerDefinition;
+                }
+            }
+
+            //console.log('def', definition)
             var nextInstructions = getTokenSequence(definition[instructionKey.substring(1)]);
 
             if (!nextInstructions) nextInstructions = getTokenSequence(definition[instructionKey]);
+
 
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
@@ -933,7 +1058,7 @@ var puzzle = {
 
                 var nextBestInsturction = null;
 
-                tokens.shift();
+                var lastToken = tokens.shift();
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                 var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
@@ -941,19 +1066,19 @@ var puzzle = {
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
-                    callTokenFunction(token);
-                    sequence(tokens, tokens[0], bestMatching, partId, done);
+                    callTokenFunction(global.puzzle.ctx[partId], token, null, null, innerDefinition);
+                    sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 } else {
 
                     if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
 
-                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
                         tokens.shift();
-                    } else if (global.puzzle.funcs[bestMatching]) {
-
+                    } /*else if (global.puzzle.funcs[bestMatching]) {
+                        console.log('func')
                         //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.vars[bestMatching]);
                         tokens.shift();
-                    } else if ((bestMatchingInstruction || "").includes(",")) {
+                    } */ else if ((bestMatchingInstruction || "").includes(",")) {
                         var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                         var argList = {};
@@ -965,25 +1090,25 @@ var puzzle = {
                             tokens.shift();
                         })
 
-                        callTokenFunction(global.puzzle.ctx[partId], token, argList);
+                        callTokenFunction(global.puzzle.ctx[partId], token, argList, null, innerDefinition);
                         //tokens.shift();
 
                     } else {
                         // console.log('safasf', bestMatching, tokens)
-                        callTokenFunction(global.puzzle.ctx[partId], token, bestMatching)
+                        callTokenFunction(global.puzzle.ctx[partId], token, bestMatching, null, innerDefinition)
                         tokens.shift();
                     }
 
                     //console.log('a', tokens, bestMatching)
                     bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                     //console.log('b', tokens, bestMatching)
-                    sequence(tokens, tokens[0], bestMatching, partId, done);
+                    sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 }
 
-            } else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
+            } /*else if (token.includes('(') && funcs || global.puzzle.funcs[token.substring(0, token.indexOf('('))]) {
                 execFunctionBody(token, vars, funcs)
 
-            } else {
+            }*/ else {
                 console.log('unequal', instructionKey, token);
             }
         }
@@ -998,13 +1123,13 @@ var puzzle = {
 
                 var rawInputParams = bestMatching.substring(bestMatching.indexOf('(') + 1, bestMatching.indexOf(')'));
                 var inputParams = rawInputParams.split(",");
-                //console.log('params', inputParams);
+                console.log('params', inputParams);
 
                 bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
                 var rawDefinedParams = global.puzzle.funcs[bestMatching].params;
                 rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
                 var definedParams = rawDefinedParams.split(",");
-                //console.log('definedParams', definedParams);
+                console.log('definedParams', definedParams);
 
                 definedParams.forEach(function(param, i) {
                     scope.vars[param] = inputParams[i]
@@ -1047,9 +1172,9 @@ var puzzle = {
 
                         var t = tokens[0].replace(/(\r\n|\n|\r)/gm, "");
 
-                        tokens.shift();
+                        var lastToken = tokens.shift();
 
-                        var definition = mergeSystaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
+                        var definition = mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
 
                         if (definition[t]) {
 
@@ -1058,7 +1183,7 @@ var puzzle = {
 
                             if ((bestMatching || "").charAt(0) == "$") {
                                 callTokenFunction(global.puzzle.ctx[partId], t);
-                                sequence(tokens, tokens[0], bestMatching, partId, done);
+                                sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                                 global.puzzle.ctx[partId]._sequence.push(t)
                             } else {
 
@@ -1068,15 +1193,14 @@ var puzzle = {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                                     tokens.shift();
-                                } else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
-
-                                    execFunctionBody(bestMatching, vars, funcs)
+                                } /*else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
+                                    console.log('funcsss22', bestMatching, global.puzzle.funcs)
+                                    execFunctionBody(bestMatching, global.puzzle.vars, global.puzzle.funcs)
 
                                     //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.funcs[bestMatching]);
                                     tokens.shift();
-                                } else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                } */else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
-
 
                                     var argList = {};
                                     var t2;
@@ -1096,12 +1220,15 @@ var puzzle = {
                                 }
 
                                 bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
-                                sequence(tokens, tokens[0], bestMatching, partId, done);
+                                sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                             }
 
-                        } else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
-                            execFunctionBody(t, vars, funcs)
-                        } else {
+                        } /*else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
+                            execFunctionBody(t, vars, funcs || global.puzzle.funcs)
+                        }*/
+                        else if (t.includes('...')) {
+                            this.lang.currentNamespace = t.split('...')[0]; 
+                        }  else {
                             console.log(t, 'is not defined');
                         }
 
@@ -1151,7 +1278,7 @@ try {
         window.addEventListener('DOMContentLoaded', (event) => {
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
-                if (s.getAttribute("type") == "text/x-puzzle") {
+                if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {
                     window.puzzle.parse(s.innerHTML);
                 }
             })
