@@ -134,8 +134,8 @@ var lang = {
                             } else if (extention && extention.toLowerCase() == "js") {
 
                                 if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-
-                                if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
+                                console.log('ddgdg', fileName)
+                                //if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
                                 var file = require(fileName);
                                 global.puzzle.useSyntax(file);
                                 if (done) done();
@@ -444,7 +444,7 @@ var lang = {
                         var func = global.puzzle.subscripts[subscript];
                         global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
                     } else {
-                        ctx.params = global.puzzle.getRawStatement(subscript);    
+                        ctx.params = global.puzzle.getRawStatement(subscript);
                     }
                 }
             },
@@ -452,6 +452,9 @@ var lang = {
                 follow: ["{condition}", "$then"],
                 method: function(ctx, condition) {
                     ctx.if = condition;
+                    Object.keys(global.puzzle.vars).forEach(v => {
+                        if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, global.puzzle.vars[v])
+                    })
                 }
             },
             then: {
@@ -689,7 +692,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.64",
+  "version": "0.0.66",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1222,7 +1225,10 @@ var puzzle = {
 
                         } /*else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
                             execFunctionBody(t, vars, funcs || global.puzzle.funcs)
-                        }*/ else {
+                        }*/
+                        else if (t.includes('...')) {
+                            this.lang.currentNamespace = t.split('...')[0]; 
+                        }  else {
                             console.log(t, 'is not defined');
                         }
 

@@ -450,6 +450,9 @@ var lang = {
                 follow: ["{condition}", "$then"],
                 method: function(ctx, condition) {
                     ctx.if = condition;
+                    Object.keys(global.puzzle.vars).forEach(v => {
+                        if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, global.puzzle.vars[v])
+                    })
                 }
             },
             then: {
