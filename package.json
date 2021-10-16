@@ -1,6 +1,6 @@
 {
   "name": "puzzlelang",
-  "version": "0.0.70",
+  "version": "0.0.71",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
