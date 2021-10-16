@@ -413,7 +413,7 @@ var lang = {
                     console.log('funcs', global.puzzle.funcs)
                 }
             },
-            function: {
+            runner: {
                 manual: "Sets a function (subscript)",
                 follow: ["{key,body}"],
                 method: function(ctx, data) {
