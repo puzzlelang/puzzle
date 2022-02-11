@@ -134,7 +134,6 @@ var lang = {
                             } else if (extention && extention.toLowerCase() == "js") {
 
                                 if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-                                console.log('ddgdg', fileName)
                                 //if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
                                 var file = require(fileName);
                                 global.puzzle.useSyntax(file);
@@ -179,18 +178,17 @@ var lang = {
                                     if (done) done();
                                 });
 
-                        } else if (extention.toLowerCase() == "puzzle") {
-                            if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                            fs.readFile(fileName, function(err, data) {
-                                if (err) return global.puzzle.output('Error reading file');
-                                file = data;
-                            });
-                            includeScript(file)
-                            if (done) done();
                         } else {
-                            global.puzzle.output('unsupported file type');
-                            if (done) done();
-                        }
+                            //if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                            fs.readFile(fileName, function(err, data) {
+
+                                if (err) return global.puzzle.output('Error reading file');
+                                file = data.toString();
+                                includeScript(file)
+                                if (done) done();
+                            });
+                            
+                        } 
                     } else if (done) done();
 
                     //console.log('lang', lang)
@@ -558,7 +556,7 @@ var lang = {
             file: {
                 follow: ["{name,content}"],
                 method: function(ctx, file) {
-                    var content = file.content;
+                    var content = global.puzzle.getRawStatement(file.content);
                     if (environment == 'web') content = new TextEncoder("utf-8").encode(file.content);
 
                     switch (ctx.fileOperation) {
@@ -629,6 +627,7 @@ var lang = {
                             Object.keys(lang['$']).forEach((ns) => {
                                 global.puzzle.output('namespace:', ns, '\n');
                                 Object.keys(lang['$'][ns]).forEach(c => {
+                                    try {
                                     var man = "";
                                     if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
                                     var seq = "";
@@ -637,6 +636,7 @@ var lang = {
                                     })
                                     global.puzzle.output('  ', c, seq, '\t', man)
                                     global.puzzle.output('\n')
+} catch(e){}                                    
                                 })
                             })
                             break;
@@ -692,7 +692,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.66",
+  "version": "0.0.72",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
