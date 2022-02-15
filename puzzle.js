@@ -340,7 +340,7 @@ var puzzle = {
                     sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 } else {
 
-                    if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
+                    if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                         callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
                         tokens.shift();
@@ -459,9 +459,12 @@ var puzzle = {
 
                                 global.puzzle.ctx[partId]._sequence.push(t)
 
-                                if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
+                                if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                                    tokens.shift();
+                                } else if((bestMatching || "").startsWith('var:')){
+                                    callTokenFunction(global.puzzle.ctx[partId], t, global[bestMatching.substring(4)]);
                                     tokens.shift();
                                 } /*else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
                                     console.log('funcsss22', bestMatching, global.puzzle.funcs)
@@ -469,7 +472,8 @@ var puzzle = {
 
                                     //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.funcs[bestMatching]);
                                     tokens.shift();
-                                } */else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                } */
+                                else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                                     var argList = {};
