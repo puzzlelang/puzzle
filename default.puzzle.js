@@ -384,6 +384,7 @@ var lang = {
                     } catch (e) {
                         global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
                     }
+                    ctx.return = global.puzzle.vars[data.key];
                 }
             },
             unset: {
@@ -520,6 +521,13 @@ var lang = {
                             global.puzzle.parse(global.puzzle.getRawStatement(statement), varsObj)
                         })
                     }
+                }
+            },
+            '+': {
+                manual: "Add",
+                follow: [],
+                method: function(ctx, data) {
+                    global.puzzle.output('puzzle version: ', pjson.version)
                 }
             },
             version: {
@@ -709,13 +717,20 @@ var lang = {
             },
             "->": {
                 follow: ["{code}"],
-                method: function(ctx, text) {
-                    console.log(ctx)
-                    try {
-                        global.puzzle.output(eval(global.puzzle.getRawStatement(text)))
-                    } catch (e) {
-                        global.puzzle.output('JavaScript Error', e)
-                    }
+                method: function(ctx, code) {
+                    console.log('sss', ctx)
+
+                    var varsObj = {};
+                    varsObj['...'] = ctx.return;
+                    //global.puzzle.parse(global.puzzle.getRawStatement(code), varsObj)
+
+                }
+            },
+             "as": {
+                follow: ["{variableName}"],
+                method: function(ctx, variableName) {
+                    global.puzzle.vars[variableName]  = ctx.return;
+
                 }
             }
         }

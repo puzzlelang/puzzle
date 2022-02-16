@@ -332,7 +332,6 @@ var puzzle = {
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                 var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
-
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
@@ -340,7 +339,10 @@ var puzzle = {
                     sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 } else {
 
-                    if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                    if(bestMatching == '...') {
+                        console.log('its ...')
+                    }
+                    else if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                         callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
                         tokens.shift();
@@ -364,7 +366,6 @@ var puzzle = {
                         //tokens.shift();
 
                     } else {
-                        // console.log('safasf', bestMatching, tokens)
                         callTokenFunction(global.puzzle.ctx[partId], token, bestMatching, null, innerDefinition)
                         tokens.shift();
                     }
@@ -450,7 +451,7 @@ var puzzle = {
 
                             var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
                             var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
-
+                            
                             if ((bestMatching || "").charAt(0) == "$") {
                                 callTokenFunction(global.puzzle.ctx[partId], t);
                                 sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
@@ -459,7 +460,9 @@ var puzzle = {
 
                                 global.puzzle.ctx[partId]._sequence.push(t)
 
-                                if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                                if(bestMatching == '...') {
+                                    console.log('its ...')
+                                } else if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
                                     tokens.shift();
@@ -505,8 +508,6 @@ var puzzle = {
                         }  else {
                             console.log(t, 'is not defined');
                         }
-
-
                     }
                 })
 
