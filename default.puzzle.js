@@ -70,7 +70,7 @@ var lang = {
                         try {
                             ctx[ctx.importNamespace] = require(ctx.importUrl);
                         } catch (e) {
-                            global.puzzle.output('Import Error:', e)
+                            global.puzzle.error('Import Error:', e)
                         }
                         if (done) done();
                     }
@@ -155,7 +155,7 @@ var lang = {
                             }
 
                         } catch (e) {
-                            global.puzzle.output('Use Error', e);
+                            global.puzzle.error('Use error', e);
                             if (done) done();
                         }
                     } else if (ctx['includeNamespace']) {
@@ -180,7 +180,7 @@ var lang = {
                             //if (fileName.charAt(0) != '/') fileName = './' + fileName;
                             fs.readFile(fileName, function(err, data) {
 
-                                if (err) return global.puzzle.output('Error reading file');
+                                if (err) return global.puzzle.error('Error reading file');
                                 file = data.toString();
                                 includeScript(file)
                                 if (done) done();
@@ -511,7 +511,7 @@ var lang = {
                         new Function("for(" + global.puzzle.getRawStatement(ctx.for) + "){ puzzle.parse('var i '+i+'; " + global.puzzle.getRawStatement(statement) + "') };")()
                     } else if(ctx.loopData){
                         //console.log('ctx', ctx, global.puzzle.getRawStatement(statement))
-                        if(!Array.isArray(ctx.loopData)) return global.puzzle.output('Error. ' + ctx.loopData + ' is not iterable');
+                        if(!Array.isArray(ctx.loopData)) return global.puzzle.error('Error. ' + ctx.loopData + ' is not iterable');
                         ctx.loopData.forEach(item => {
                             var varsObj = {};
                             varsObj[ctx.withParam] = item;
@@ -645,7 +645,7 @@ var lang = {
                     try {
                         global.puzzle.output(eval(global.puzzle.getRawStatement(text)))
                     } catch (e) {
-                        global.puzzle.output('JavaScript Error', e)
+                        global.puzzle.error('JavaScript Error', e)
                     }
                 }
             },
