@@ -141,7 +141,7 @@ var lang = {
 
                                 if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true);
                                 else global.puzzle.useSyntax(global[fileName.substring(4)]);
-
+                                
                                 if (done) done();
                             } else {
 
