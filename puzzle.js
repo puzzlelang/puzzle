@@ -78,6 +78,12 @@ var puzzle = {
         }
     },
 
+    error: function() {
+        for (arg of arguments) {
+            console.error(arg);
+        }
+    },
+
     useSyntax: function(jsObject, dontUse) {
 
         var _defaultSyntax = this.lang['$'].default;
