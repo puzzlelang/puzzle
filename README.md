@@ -17,7 +17,7 @@ print 'Welcome future puzzle developer!';
 use 'https://url.com/module.js';
 
 // stora a variable
-var name 'Test';
+set name Test;
 ```
 
 # Get started
@@ -71,7 +71,7 @@ puzzle.parse('print "Hello, I am embedded"')
 > Browsers
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/puzzlelang/puzzle/puzzle.browser.js">
+<script src="https://cdn.jsdelivr.net/npm/puzzlelang@latest/puzzle.browser.js">
 ```
 
 ```javascript
@@ -92,8 +92,8 @@ You are welcome to contribute to the puzzle language and ecosystem. Make sure yo
 
 # License
 
-puzzle is open source and released under the MIT License.
+PUZZLE is open source and released under the MIT License.
 
 [ See the license ](https://github.com/puzzlelang/puzzle/blob/master/LICENSE)
 
-Copyright (c) 2020 - present, Marco Boelling
+Copyright (c) M. Boelling
