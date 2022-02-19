@@ -258,9 +258,9 @@ var lang = {
                 }
             },
             with: {
-                follow: ["$follow", "$method"],
-                method: function(ctx, params) {
-
+                follow: ["{param}", "$follow", "$method", "$do"],
+                method: function(ctx, param) {
+                    ctx.withParam = param;
                 }
             },
             follow: {
@@ -362,6 +362,7 @@ var lang = {
                 follow: ["{varName}"],
                 method: function(ctx, varName) {
                     varName = global.puzzle.getRawStatement(varName);
+
                     if (ctx.popData) {
                         if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
                         var variable = global.puzzle.vars[varName];
@@ -376,15 +377,15 @@ var lang = {
             },
             set: {
                 manual: "Sets a variable",
-                follow: ["$local", "{key,value}"],
+                follow: ["$from", "$local", "{key,value}"],
                 method: function(ctx, data) {
                     if (!data) return;
-
                     try {
                         global.puzzle.vars[data.key] = JSON.parse(data.value);
                     } catch (e) {
                         global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
                     }
+                    ctx.return = global.puzzle.vars[data.key];
                 }
             },
             unset: {
@@ -409,8 +410,6 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
-
-                    console.log('funcs', global.puzzle.funcs)
                 }
             },
             runner: {
@@ -482,6 +481,20 @@ var lang = {
                 }
 
             },
+            loop: {
+                follow: ["$over"],
+                method: function(ctx, statement) {
+                    
+                }
+
+            },
+            over: {
+                follow: ["{variable}", "$do"],
+                method: function(ctx, variable) {
+                    ctx.loopData = variable;
+                }
+
+            },
             for: {
                 follow: ["{condition}", "$do"],
                 method: function(ctx, condition) {
@@ -498,7 +511,22 @@ var lang = {
                     } else if (ctx.for) {
                         ctx.for = ctx.for.replace(/AND/g, '&&').replace(/OR/g, '||');
                         new Function("for(" + global.puzzle.getRawStatement(ctx.for) + "){ puzzle.parse('var i '+i+'; " + global.puzzle.getRawStatement(statement) + "') };")()
+                    } else if(ctx.loopData){
+                        //console.log('ctx', ctx, global.puzzle.getRawStatement(statement))
+                        if(!Array.isArray(ctx.loopData)) return global.puzzle.output('Error. ' + ctx.loopData + ' is not iterable');
+                        ctx.loopData.forEach(item => {
+                            var varsObj = {};
+                            varsObj[ctx.withParam] = item;
+                            global.puzzle.parse(global.puzzle.getRawStatement(statement), varsObj)
+                        })
                     }
+                }
+            },
+            '+': {
+                manual: "Add",
+                follow: [],
+                method: function(ctx, data) {
+                    global.puzzle.output('puzzle version: ', pjson.version)
                 }
             },
             version: {
@@ -535,20 +563,21 @@ var lang = {
                 }
             },
             read: {
-                follow: ["$file"],
+                follow: ["$file", "$directory"],
                 method: function(ctx) {
                     ctx.fileOperation = 'read';
+                    ctx.dirOperation = 'read';
                 }
             },
             remove: {
-                follow: ["$file", "$dir"],
+                follow: ["$file", "$directory"],
                 method: function(ctx) {
                     ctx.fileOperation = 'remove';
                     ctx.dirOperation = 'remove';
                 }
             },
             make: {
-                follow: ["$dir"],
+                follow: ["$directory"],
                 method: function(ctx) {
                     ctx.dirOperation = 'make';
                 }
@@ -581,7 +610,7 @@ var lang = {
                     }
                 }
             },
-            dir: {
+            directory: {
                 follow: ["{dir}"],
                 method: function(ctx, dir) {
                     switch (ctx.dirOperation) {
@@ -593,6 +622,12 @@ var lang = {
                             break;
                         case 'remove':
                             fs.rmdir(dir, function(err, data) {
+                                if (err) return global.puzzle.output(err);
+                                global.puzzle.output(data);
+                            })
+                            break;
+                        case 'read':
+                            fs.readdir(dir, function(err, data) {
                                 if (err) return global.puzzle.output(err);
                                 global.puzzle.output(data);
                             })
@@ -628,15 +663,15 @@ var lang = {
                                 global.puzzle.output('namespace:', ns, '\n');
                                 Object.keys(lang['$'][ns]).forEach(c => {
                                     try {
-                                    var man = "";
-                                    if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
-                                    var seq = "";
-                                    lang['$'][ns][c].follow.forEach(f => {
-                                        seq += f + " ";
-                                    })
-                                    global.puzzle.output('  ', c, seq, '\t', man)
-                                    global.puzzle.output('\n')
-} catch(e){}                                    
+                                        var man = "";
+                                        if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
+                                        var seq = "";
+                                        lang['$'][ns][c].follow.forEach(f => {
+                                            seq += f + " ";
+                                        })
+                                        global.puzzle.output('  ', c, seq, '\t', man)
+                                        global.puzzle.output('\n')
+                                    } catch(e){}                                    
                                 })
                             })
                             break;
@@ -679,6 +714,20 @@ var lang = {
                     });
                 }
             },
+            "->": {
+                follow: ["{code}"],
+                method: function(ctx, code) {
+                    global.puzzle.parse(global.puzzle.getRawStatement(code))
+
+                }
+            },
+             "as": {
+                follow: ["{variableName}"],
+                method: function(ctx, variableName) {
+                    global.puzzle.vars[variableName]  = ctx.return;
+
+                }
+            }
         }
 
     }
@@ -692,7 +741,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.72",
+  "version": "0.0.73",
   "description": "An abstract programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1062,7 +1111,6 @@ var puzzle = {
 
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                 var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
-
                 // execute exact method
 
                 if ((bestMatching || "").charAt(0) == "$") {
@@ -1070,7 +1118,10 @@ var puzzle = {
                     sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                 } else {
 
-                    if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
+                    if(bestMatching == '...') {
+                        console.log('its ...')
+                    }
+                    else if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                         callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
                         tokens.shift();
@@ -1094,7 +1145,6 @@ var puzzle = {
                         //tokens.shift();
 
                     } else {
-                        // console.log('safasf', bestMatching, tokens)
                         callTokenFunction(global.puzzle.ctx[partId], token, bestMatching, null, innerDefinition)
                         tokens.shift();
                     }
@@ -1180,7 +1230,7 @@ var puzzle = {
 
                             var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
                             var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
-
+                            
                             if ((bestMatching || "").charAt(0) == "$") {
                                 callTokenFunction(global.puzzle.ctx[partId], t);
                                 sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
@@ -1189,9 +1239,14 @@ var puzzle = {
 
                                 global.puzzle.ctx[partId]._sequence.push(t)
 
-                                if (vars[bestMatching] || global.puzzle.vars[bestMatching]) {
+                                if(bestMatching == '...') {
+                                    console.log('its ...')
+                                } else if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                                    tokens.shift();
+                                } else if((bestMatching || "").startsWith('var:')){
+                                    callTokenFunction(global.puzzle.ctx[partId], t, global[bestMatching.substring(4)]);
                                     tokens.shift();
                                 } /*else if (global.puzzle.funcs[bestMatching] || (bestMatching.includes('(') && global.puzzle.funcs[bestMatching.substring(0, bestMatching.indexOf('('))])) {
                                     console.log('funcsss22', bestMatching, global.puzzle.funcs)
@@ -1199,7 +1254,8 @@ var puzzle = {
 
                                     //callTokenFunction(global.puzzle.ctx[partId], t, global.puzzle.funcs[bestMatching]);
                                     tokens.shift();
-                                } */else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
+                                } */
+                                else if (bestMatchingInstruction && bestMatchingInstruction.includes(",")) {
                                     var rawSequence = bestMatchingInstruction.substring(1, bestMatchingInstruction.length - 1).split(",");
 
                                     var argList = {};
@@ -1231,8 +1287,6 @@ var puzzle = {
                         }  else {
                             console.log(t, 'is not defined');
                         }
-
-
                     }
                 })
 
