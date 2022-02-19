@@ -377,7 +377,6 @@ var lang = {
                 manual: "Sets a variable",
                 follow: ["$from", "$local", "{key,value}"],
                 method: function(ctx, data) {
-                    console.log('data', data)
                     if (!data) return;
                     try {
                         global.puzzle.vars[data.key] = JSON.parse(data.value);
@@ -409,8 +408,6 @@ var lang = {
                 follow: ["{key,params,body}"],
                 method: function(ctx, data) {
                     global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
-
-                    console.log('funcs', global.puzzle.funcs)
                 }
             },
             runner: {
@@ -718,11 +715,7 @@ var lang = {
             "->": {
                 follow: ["{code}"],
                 method: function(ctx, code) {
-                    console.log('sss', ctx)
-
-                    var varsObj = {};
-                    varsObj['...'] = ctx.return;
-                    //global.puzzle.parse(global.puzzle.getRawStatement(code), varsObj)
+                    global.puzzle.parse(global.puzzle.getRawStatement(code))
 
                 }
             },
