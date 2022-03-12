@@ -232,7 +232,13 @@ var puzzle = {
         // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (ctx, key, param, dslKey, innerDefinition) => {
 
-            //console.log('args', key, param)
+            if (isObject(param)) {
+                Object.keys(param).forEach(p => {
+                    if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
+                })
+            } else {
+                if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+            }
             /*if (param) {
                 if (isObject(param)) {
 
