@@ -25,6 +25,8 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 
 var puzzle = {
 
+    environment: environment,
+    
     // Default language definition
     lang: require('./default.puzzle.js'),
 

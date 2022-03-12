@@ -129,12 +129,24 @@ var lang = {
 
                                 downloadModule(fileName)
 
-                            } else if (extention && extention.toLowerCase() == "js") {
-
-                                if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-                                //if (!fileName.startsWith('../') && !fileName.startsWith('./')) fileName = __dirname + fileName;
+                            } else if (extention && environment == 'node') {
+                                console.log('fn', fileName)
                                 var file = require(fileName);
                                 global.puzzle.useSyntax(file);
+                                if (done) done();
+                            } else if (extention && environment != 'node') {
+                                
+                                fs.readFile(fileName, function(err, data) {
+
+                                    if (err) return global.puzzle.error('Error reading file');
+                                    var _file = data.toString();
+                                    
+                                    var syntax = new Function("module = {}; " + _file + " return syntax")();
+                                    global.puzzle.useSyntax(syntax);
+
+                                    if (done) done();
+                                });
+
                                 if (done) done();
                             } else if (fileName.indexOf('var:') == 0) {
                                 // 
