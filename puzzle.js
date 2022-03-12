@@ -230,7 +230,7 @@ var puzzle = {
         // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (ctx, key, param, dslKey, innerDefinition) => {
 
-            //console.log('args', key, param, dslKey)
+            //console.log('args', key, param)
             /*if (param) {
                 if (isObject(param)) {
 
@@ -280,14 +280,13 @@ var puzzle = {
             nextInstructions.forEach(next => {
                 //console.log('ft', next, followToken, match);
                 if (next.charAt(0) == "$" && followToken == next.substring(1) && !match) {
-                    // console.log('follow best:', followToken);
+                     //console.log('follow best:', followToken);
                     match = next;
                 } else if (next.charAt(0) == "{" && !match) {
                     //console.log('follow best2:', next,  followToken);
                     match = next;
                 }
             })
-
             return match;
         }
 
@@ -326,7 +325,6 @@ var puzzle = {
 
             if (!nextInstructions) nextInstructions = getTokenSequence(definition[instructionKey]);
 
-
             // eaual
             if (instructionKey.substring(1) == token || instructionKey == token) {
 
@@ -336,10 +334,13 @@ var puzzle = {
 
                 var lastToken = tokens.shift();
 
+              
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                 var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
                 // execute exact method
 
+                //console.log('bm', bestMatching, bestMatchingInstruction, nextInstructions)
+                
                 if ((bestMatching || "").charAt(0) == "$") {
                     callTokenFunction(global.puzzle.ctx[partId], token, null, null, innerDefinition);
                     sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
@@ -371,7 +372,10 @@ var puzzle = {
                         callTokenFunction(global.puzzle.ctx[partId], token, argList, null, innerDefinition);
                         //tokens.shift();
 
+                    } else if(definition[bestMatching]){
+                        //console.log('def', bestMatching, definition)
                     } else {
+                       // console.log('ffffff', token, bestMatching, bestMatchingInstruction)
                         callTokenFunction(global.puzzle.ctx[partId], token, bestMatching, null, innerDefinition)
                         tokens.shift();
                     }
