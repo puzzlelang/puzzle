@@ -598,6 +598,8 @@ var lang = {
                     var content = global.puzzle.getRawStatement(file.content);
                     if (environment == 'web') content = new TextEncoder("utf-8").encode(file.content);
 
+                    //if(global.puzzle.vars[content]) content = global.puzzle.vars[content];
+
                     switch (ctx.fileOperation) {
                         case 'write':
                             fs.writeFile(file.name, content, 'utf8', function(err, data) {
@@ -731,11 +733,10 @@ var lang = {
 
                 }
             },
-             "as": {
+            "as": {
                 follow: ["{variableName}"],
                 method: function(ctx, variableName) {
                     global.puzzle.vars[variableName]  = ctx.return;
-
                 }
             }
         }
