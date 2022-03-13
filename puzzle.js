@@ -2,7 +2,10 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     environment = "node";
     const dependencies = require('./dependencies.js');
     localStorage = new dependencies.localStorage.LocalStorage('./localStorage');
-} else global = window;
+} else {
+    global = window;
+    environment = 'browser';
+}
 
 // Check if parameter is an object
 var isObject = (a) => {
@@ -22,7 +25,7 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 
     return obj;
 }
-
+var environment = null;
 var puzzle = {
 
     environment: environment,
