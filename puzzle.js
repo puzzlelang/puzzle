@@ -540,7 +540,7 @@ var puzzle = {
                 if (!next) return;
                 next.fn(function() {
                     // console.log('callback called');
-                    global.puzzle.vars['_'] = (global.puzzle.ctx[next.partId] || {}).return;
+                    global.puzzle.vars['result'] = (global.puzzle.ctx[next.partId] || {}).return;
                     // puzzle.schedule
                     execSchedule(puzzle.schedule.shift());
                 });
