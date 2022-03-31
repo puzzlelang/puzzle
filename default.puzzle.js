@@ -733,10 +733,46 @@ var lang = {
 
                 }
             },
+            jsonify: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    try {
+                        ctx.return = JSON.parse(global.puzzle.getRawStatement(data));
+                    } catch (e){
+                        global.puzzle.error('error parsing json')
+                    }
+                }
+            },
+            stringify: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    try {
+                        ctx.return = JSON.stringify(data);
+                    } catch (e){
+                        global.puzzle.error('error parsing json')
+                    }
+                }
+            },
+            encode: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    var _data = global.puzzle.getRawStatement(data)
+                    if(environment == 'browser') ctx.return = atob(_data);
+                    else if(environment == 'node') ctx.return = Buffer.from(_data).toString('base64')
+                }
+            },
+            decode: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    var _data = global.puzzle.getRawStatement(data)
+                    if(environment == 'browser') ctx.return = btoa(_data);
+                    else if(environment == 'node') ctx.return = Buffer.from(_data, 'base64').toString()
+                }
+            },
             "as": {
                 follow: ["{variableName}"],
                 method: function(ctx, variableName) {
-                    global.puzzle.vars[variableName]  = ctx.return;
+                    ctx._asVariable  = variableName;
                 }
             }
         }
