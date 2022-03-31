@@ -1,8 +1,9 @@
-# puzzle
+# PUZZLE
 
 ![Node.js Package](https://github.com/puzzlelang/puzzle/workflows/Node.js%20Package/badge.svg)
 
-![puzzle](http://puzzlelang.org/puzzle-invert.png "Puzzle logo")
+![puzzle](https://github.com/puzzlelang/puzzlelang.github.io/blob/master/assets/puzzle.png?raw=true "Puzzle logo")
+
 
 PUZZLE as an abstract, extendable programming language.
 
