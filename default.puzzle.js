@@ -457,6 +457,8 @@ var lang = {
                             if (global.puzzle.subscripts[subscript]) {
                                 var func = global.puzzle.subscripts[subscript];
                                 global.puzzle.parse(func.body, Object.assign(global.puzzle.vars, vars));
+                            } else if(isLiteral(subscript)) {
+                                global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(global.puzzle.vars, vars));
                             }
                         }
                     }

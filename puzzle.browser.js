@@ -459,6 +459,8 @@ var lang = {
                             if (global.puzzle.subscripts[subscript]) {
                                 var func = global.puzzle.subscripts[subscript];
                                 global.puzzle.parse(func.body, Object.assign(global.puzzle.vars, vars));
+                            } else if(isLiteral(subscript)) {
+                                global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(global.puzzle.vars, vars));
                             }
                         }
                     }
@@ -807,7 +809,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.81",
+  "version": "0.0.83",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
