@@ -37,6 +37,13 @@ var isObject = (a) => {
     return (!!a) && (a.constructor === Object);
 };
 
+var isLiteral = (a) => {
+    if(!a) return false;
+    var literalParts = ['"', '(', '{', "'"];
+    if(literalParts.includes(a.charAt(0))) return true;
+    return false;
+}
+
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -215,7 +222,7 @@ var lang = {
             },
             define: {
                 manual: "Defines something",
-                follow: ["$syntax", "$livesyntax", "$token", "$function"],
+                follow: ["$syntax", "$livesyntax", "$token", "$function", "$script"],
                 method: function(ctx, data) {
                     ctx.define = true;
 
@@ -428,13 +435,21 @@ var lang = {
                 manual: "Sets a function (subscript)",
                 follow: ["{key,body}"],
                 method: function(ctx, data) {
-                    global.puzzle.subscripts[data.key] = { body: data.body };
+                    global.puzzle.subscripts[data.key] = { body: global.puzzle.getRawStatement(data.body) };
+                }
+            },
+            script: {
+                manual: "Sets a function (subscript)",
+                follow: ["{key,body}"],
+                method: function(ctx, data) {
+                    global.puzzle.subscripts[data.key] = { body: global.puzzle.getRawStatement(data.body) };
                 }
             },
             run: {
                 manual: "Runs a function",
                 follow: ["{subscript}"],
-                innerSequence: { in: {
+                innerSequence: { 
+                    in: {
                         follow: ["{subscript}"],
                         method: function(ctx, subscript) {
                             var vars = {};
@@ -443,7 +458,7 @@ var lang = {
                             })
                             if (global.puzzle.subscripts[subscript]) {
                                 var func = global.puzzle.subscripts[subscript];
-                                global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), Object.assign(global.puzzle.vars, vars));
+                                global.puzzle.parse(func.body, Object.assign(global.puzzle.vars, vars));
                             }
                         }
                     }
@@ -451,7 +466,9 @@ var lang = {
                 method: function(ctx, subscript) {
                     if (global.puzzle.subscripts[subscript]) {
                         var func = global.puzzle.subscripts[subscript];
-                        global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
+                        global.puzzle.parse(func.body, global.puzzle.vars);
+                    } else if(isLiteral(subscript)) {
+                        global.puzzle.parse(global.puzzle.getRawStatement(subscript));
                     } else {
                         ctx.params = global.puzzle.getRawStatement(subscript);
                     }
@@ -790,7 +807,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.80",
+  "version": "0.0.81",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
