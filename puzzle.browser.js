@@ -57,6 +57,13 @@ var lang = {
 
                     var relevantNamespace = ctx.insideNamespace || 'default';
 
+                    if(ctx.waitTime){
+                        setTimeout(()=>{
+                            done();
+                        }, parseInt(ctx.waitTime))
+                        return;
+                    }
+
                     if (ctx.define) {
                         if (ctx.tokenName) {
                             // console.log('ctx.insideNamespace', ctx.insideNamespace)
@@ -498,14 +505,44 @@ var lang = {
                     }
                 },
                 method: function(ctx, subscript) {
-                    if (global.puzzle.subscripts[subscript]) {
-                        var func = global.puzzle.subscripts[subscript];
-                        global.puzzle.parse(func.body, global.puzzle.vars);
-                    } else if(isLiteral(subscript)) {
-                        global.puzzle.parse(global.puzzle.getRawStatement(subscript));
-                    } else {
-                        ctx.params = global.puzzle.getRawStatement(subscript);
+                    function run(){
+                        if (global.puzzle.subscripts[subscript]) {
+                            var func = global.puzzle.subscripts[subscript];
+                            global.puzzle.parse(func.body, global.puzzle.vars);
+                        } else if(isLiteral(subscript)) {
+                            global.puzzle.parse(global.puzzle.getRawStatement(subscript));
+                        } else {
+                            ctx.params = global.puzzle.getRawStatement(subscript);
+                        } 
                     }
+
+                    if(ctx.intervalTime){
+                        setInterval(() => {
+                            run()
+                        }, parseInt(ctx.intervalTime))
+                    } else if(ctx.timeoutTime){
+                        setTimeout(() => {
+                            run()
+                        }, parseInt(ctx.timeoutTime))
+                    }
+                }
+            },
+            every: {
+                follow: ["{time}", "$run"],
+                method: function(ctx, data) {
+                    ctx.intervalTime = data;
+                }
+            },
+            after: {
+                follow: ["{time}", "$run"],
+                method: function(ctx, data) {
+                    ctx.timeoutTime = data;
+                }
+            },
+            wait: {
+                follow: ["{time}"],
+                method: function(ctx, data) {
+                    ctx.waitTime = data;
                 }
             },
             if: {
@@ -582,7 +619,7 @@ var lang = {
                             varsObj[ctx.withParam] = item;
                             global.puzzle.parse(global.puzzle.getRawStatement(statement), varsObj)
                         })
-                    }
+                    } 
                 }
             },
             '+': {
@@ -841,7 +878,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.84",
+  "version": "0.0.85",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
