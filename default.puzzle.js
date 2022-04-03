@@ -143,18 +143,39 @@ var lang = {
                                 if (done) done();
                             } else if (extention && environment != 'node') {
                                 
-                                fs.readFile(fileName, function(err, data) {
+                                if(location.protocol.includes('http') || location.hostname == 'localhost'){
+                                    // fetch can be used
+                                    fetch(fileName)
+                                        .then(res => res.text())
+                                        .then(data => {
+                                            
+                                            if (err) return global.puzzle.error('Error reading file');
+                                            var _file = data.toString();
+                                            
+                                            var syntax = new Function("module = {}; " + _file + " return syntax")();
+                                            global.puzzle.useSyntax(syntax);
 
-                                    if (err) return global.puzzle.error('Error reading file');
-                                    var _file = data.toString();
-                                    
-                                    var syntax = new Function("module = {}; " + _file + " return syntax")();
-                                    global.puzzle.useSyntax(syntax);
+                                            if (done) done();
 
-                                    if (done) done();
-                                });
+                                        });
 
-                                if (done) done();
+                                } else {
+
+                                    fs.readFile(fileName, function(err, data) {
+
+                                        if (err) return global.puzzle.error('Error reading file');
+                                        var _file = data.toString();
+                                        
+                                        var syntax = new Function("module = {}; " + _file + " return syntax")();
+                                        global.puzzle.useSyntax(syntax);
+
+                                        if (done) done();
+                                    });
+
+                                    //if (done) done();
+                                }
+
+                               
                             } else if (fileName.indexOf('var:') == 0) {
                                 // 
 
@@ -196,14 +217,25 @@ var lang = {
                                 });
 
                         } else {
-                            //if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                            fs.readFile(fileName, function(err, data) {
 
-                                if (err) return global.puzzle.error('Error reading file');
-                                file = data.toString();
-                                includeScript(file)
-                                if (done) done();
-                            });
+                            if(location.protocol.includes('http')  || location.hostname == 'localhost'){
+                                fetch(fileName)
+                                    .then(res => res.text())
+                                    .then(data => {
+                                        includeScript(data);
+                                        if (done) done();
+                                    });
+                            } else {
+                                fs.readFile(fileName, function(err, data) {
+
+                                    if (err) return global.puzzle.error('Error reading file');
+                                    file = data.toString();
+                                    includeScript(file)
+                                    if (done) done();
+                                });
+                            }
+                            //if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                            
                             
                         } 
                     } else if (done) done();
