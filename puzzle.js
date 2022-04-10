@@ -543,8 +543,11 @@ var puzzle = {
                 //console.log('next', next);
                 if (!next) return;
                 next.fn(function() {
-                    // console.log('callback called');
-                    global.puzzle.vars['_'] = (global.puzzle.ctx[next.partId] || {}).return;
+                    //console.log('callback called', global.puzzle.ctx[next.partId]);
+
+                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as'))
+                        global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                    
                     // puzzle.schedule
                     execSchedule(puzzle.schedule.shift());
                 });

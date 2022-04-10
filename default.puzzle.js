@@ -35,6 +35,13 @@ var isObject = (a) => {
     return (!!a) && (a.constructor === Object);
 };
 
+var isLiteral = (a) => {
+    if(!a) return false;
+    var literalParts = ['"', '(', '{', "'"];
+    if(literalParts.includes(a.charAt(0))) return true;
+    return false;
+}
+
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -47,6 +54,13 @@ var lang = {
                 execStatement: function(done, ctx) {
 
                     var relevantNamespace = ctx.insideNamespace || 'default';
+
+                    if(ctx.waitTime){
+                        setTimeout(()=>{
+                            done();
+                        }, parseInt(ctx.waitTime))
+                        return;
+                    }
 
                     if (ctx.define) {
                         if (ctx.tokenName) {
@@ -136,18 +150,39 @@ var lang = {
                                 if (done) done();
                             } else if (extention && environment != 'node') {
                                 
-                                fs.readFile(fileName, function(err, data) {
+                                if(location.protocol.includes('http') || location.hostname == 'localhost'){
+                                    // fetch can be used
+                                    fetch(fileName)
+                                        .then(res => res.text())
+                                        .then(data => {
+                                            
+                                            if (err) return global.puzzle.error('Error reading file');
+                                            var _file = data.toString();
+                                            
+                                            var syntax = new Function("module = {}; " + _file + " return syntax")();
+                                            global.puzzle.useSyntax(syntax);
 
-                                    if (err) return global.puzzle.error('Error reading file');
-                                    var _file = data.toString();
-                                    
-                                    var syntax = new Function("module = {}; " + _file + " return syntax")();
-                                    global.puzzle.useSyntax(syntax);
+                                            if (done) done();
 
-                                    if (done) done();
-                                });
+                                        });
 
-                                if (done) done();
+                                } else {
+
+                                    fs.readFile(fileName, function(err, data) {
+
+                                        if (err) return global.puzzle.error('Error reading file');
+                                        var _file = data.toString();
+                                        
+                                        var syntax = new Function("module = {}; " + _file + " return syntax")();
+                                        global.puzzle.useSyntax(syntax);
+
+                                        if (done) done();
+                                    });
+
+                                    //if (done) done();
+                                }
+
+                               
                             } else if (fileName.indexOf('var:') == 0) {
                                 // 
 
@@ -189,14 +224,25 @@ var lang = {
                                 });
 
                         } else {
-                            //if (fileName.charAt(0) != '/') fileName = './' + fileName;
-                            fs.readFile(fileName, function(err, data) {
 
-                                if (err) return global.puzzle.error('Error reading file');
-                                file = data.toString();
-                                includeScript(file)
-                                if (done) done();
-                            });
+                            if(location.protocol.includes('http')  || location.hostname == 'localhost'){
+                                fetch(fileName)
+                                    .then(res => res.text())
+                                    .then(data => {
+                                        includeScript(data);
+                                        if (done) done();
+                                    });
+                            } else {
+                                fs.readFile(fileName, function(err, data) {
+
+                                    if (err) return global.puzzle.error('Error reading file');
+                                    file = data.toString();
+                                    includeScript(file)
+                                    if (done) done();
+                                });
+                            }
+                            //if (fileName.charAt(0) != '/') fileName = './' + fileName;
+                            
                             
                         } 
                     } else if (done) done();
@@ -213,7 +259,7 @@ var lang = {
             },
             define: {
                 manual: "Defines something",
-                follow: ["$syntax", "$livesyntax", "$token", "$function"],
+                follow: ["$syntax", "$livesyntax", "$token", "$function", "$script"],
                 method: function(ctx, data) {
                     ctx.define = true;
 
@@ -426,13 +472,21 @@ var lang = {
                 manual: "Sets a function (subscript)",
                 follow: ["{key,body}"],
                 method: function(ctx, data) {
-                    global.puzzle.subscripts[data.key] = { body: data.body };
+                    global.puzzle.subscripts[data.key] = { body: global.puzzle.getRawStatement(data.body) };
+                }
+            },
+            script: {
+                manual: "Sets a function (subscript)",
+                follow: ["{key,body}"],
+                method: function(ctx, data) {
+                    global.puzzle.subscripts[data.key] = { body: global.puzzle.getRawStatement(data.body) };
                 }
             },
             run: {
                 manual: "Runs a function",
                 follow: ["{subscript}"],
-                innerSequence: { in: {
+                innerSequence: { 
+                    in: {
                         follow: ["{subscript}"],
                         method: function(ctx, subscript) {
                             var vars = {};
@@ -441,18 +495,52 @@ var lang = {
                             })
                             if (global.puzzle.subscripts[subscript]) {
                                 var func = global.puzzle.subscripts[subscript];
-                                global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), Object.assign(global.puzzle.vars, vars));
+                                global.puzzle.parse(func.body, Object.assign(global.puzzle.vars, vars));
+                            } else if(isLiteral(subscript)) {
+                                global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(global.puzzle.vars, vars));
                             }
                         }
                     }
                 },
                 method: function(ctx, subscript) {
-                    if (global.puzzle.subscripts[subscript]) {
-                        var func = global.puzzle.subscripts[subscript];
-                        global.puzzle.parse(func.body.substring(func.body.indexOf('{') + 1, func.body.indexOf('}')), global.puzzle.vars);
-                    } else {
-                        ctx.params = global.puzzle.getRawStatement(subscript);
+                    function run(){
+                        if (global.puzzle.subscripts[subscript]) {
+                            var func = global.puzzle.subscripts[subscript];
+                            global.puzzle.parse(func.body, global.puzzle.vars);
+                        } else if(isLiteral(subscript)) {
+                            global.puzzle.parse(global.puzzle.getRawStatement(subscript));
+                        } else {
+                            ctx.params = global.puzzle.getRawStatement(subscript);
+                        } 
                     }
+
+                    if(ctx.intervalTime){
+                        setInterval(() => {
+                            run()
+                        }, parseInt(ctx.intervalTime))
+                    } else if(ctx.timeoutTime){
+                        setTimeout(() => {
+                            run()
+                        }, parseInt(ctx.timeoutTime))
+                    }
+                }
+            },
+            every: {
+                follow: ["{time}", "$run"],
+                method: function(ctx, data) {
+                    ctx.intervalTime = data;
+                }
+            },
+            after: {
+                follow: ["{time}", "$run"],
+                method: function(ctx, data) {
+                    ctx.timeoutTime = data;
+                }
+            },
+            wait: {
+                follow: ["{time}"],
+                method: function(ctx, data) {
+                    ctx.waitTime = data;
                 }
             },
             if: {
@@ -529,7 +617,7 @@ var lang = {
                             varsObj[ctx.withParam] = item;
                             global.puzzle.parse(global.puzzle.getRawStatement(statement), varsObj)
                         })
-                    }
+                    } 
                 }
             },
             '+': {
@@ -733,10 +821,46 @@ var lang = {
 
                 }
             },
+            jsonify: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    try {
+                        ctx.return = JSON.parse(global.puzzle.getRawStatement(data));
+                    } catch (e){
+                        global.puzzle.error('error parsing json')
+                    }
+                }
+            },
+            stringify: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    try {
+                        ctx.return = JSON.stringify(data);
+                    } catch (e){
+                        global.puzzle.error('error parsing json')
+                    }
+                }
+            },
+            encode: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    var _data = global.puzzle.getRawStatement(data)
+                    if(environment == 'browser') ctx.return = atob(_data);
+                    else if(environment == 'node') ctx.return = Buffer.from(_data).toString('base64')
+                }
+            },
+            decode: {
+                follow: ["{data}"],
+                method: function(ctx, data) {
+                    var _data = global.puzzle.getRawStatement(data)
+                    if(environment == 'browser') ctx.return = btoa(_data);
+                    else if(environment == 'node') ctx.return = Buffer.from(_data, 'base64').toString()
+                }
+            },
             "as": {
                 follow: ["{variableName}"],
                 method: function(ctx, variableName) {
-                    global.puzzle.vars[variableName]  = ctx.return;
+                    ctx._asVariable  = variableName;
                 }
             }
         }
