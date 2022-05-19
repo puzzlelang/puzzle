@@ -878,7 +878,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.85",
+  "version": "0.0.87",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -916,7 +916,7 @@ module.exports={
 (function (process,global){
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
     environment = "node";
-    const dependencies = require('./dependencies.js');
+    dependencies = require('./dependencies.js');
     localStorage = new dependencies.localStorage.LocalStorage('./localStorage');
 } else {
     global = window;
@@ -948,6 +948,10 @@ var puzzle = {
     
     // Default language definition
     lang: require('./default.puzzle.js'),
+
+    run: (file) => {
+        puzzle.parse(dependencies.fs.readFileSync(file).toString())
+    },
 
     // Schedule map for statements
     schedule: [],
