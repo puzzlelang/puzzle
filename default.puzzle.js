@@ -42,6 +42,21 @@ var isLiteral = (a) => {
     return false;
 }
 
+Object.byString = function(o, s) {
+    s = s.replace(/\[(\w+)\]/g, '.$1');
+    s = s.replace(/^\./, '');
+    var a = s.split('.');
+    for (var i = 0, n = a.length; i < n; ++i) {
+        var k = a[i];
+        if (k in o) {
+            o = o[k];
+        } else {
+            return;
+        }
+    }
+    return o;
+}
+
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -143,7 +158,6 @@ var lang = {
                                 downloadModule(fileName, done)
 
                             } else if (extention && environment == 'node') {
-                                console.log('fn', fileName)
                                 var file = require(fileName);
                                 
                                 global.puzzle.useSyntax(file, false, done);
@@ -430,7 +444,7 @@ var lang = {
             set: {
                 manual: "Sets a variable",
                 follow: ["$from", "$local", "{key,value}"],
-                method: function(ctx, data) {
+                method: function(ctx, data) {   
                     if (!data) return;
                     try {
                         global.puzzle.vars[data.key] = JSON.parse(data.value);
@@ -821,7 +835,7 @@ var lang = {
                 follow: ["{data}"],
                 method: function(ctx, data) {
                     try {
-                        ctx.return = JSON.parse(global.puzzle.getRawStatement(data));
+                        ctx.return = JSON.parse(data);
                     } catch (e){
                         global.puzzle.error('error parsing json')
                     }
