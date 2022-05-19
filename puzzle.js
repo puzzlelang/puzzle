@@ -93,7 +93,7 @@ var puzzle = {
         }
     },
 
-    useSyntax: function(jsObject, dontUse) {
+    useSyntax: function(jsObject, dontUse, done) {
 
         var _defaultSyntax = this.lang['$'].default;
 
@@ -103,6 +103,8 @@ var puzzle = {
         this.lang['$'].default = _defaultSyntax;
 
         if(!dontUse) this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
+
+        if(done) done()
 
     },
 

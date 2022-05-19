@@ -99,7 +99,7 @@ var lang = {
 
                     if (ctx['useNamespace']) {
 
-                        function downloadModule(fileName) {
+                        function downloadModule(fileName, done) {
                             fetch(fileName)
                                 .then(res => res.text())
                                 .then(data => {
@@ -121,16 +121,15 @@ var lang = {
                                         fs.writeFile(fileName, data, function(err, data) {
 
                                             var file = require(__dirname + '/' + fileName);
-                                            global.puzzle.useSyntax(file);
+                                            global.puzzle.useSyntax(file, false, done);
 
                                             fs.unlinkSync(__dirname + '/' + fileName);
                                         })
 
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
-                                        global.puzzle.useSyntax(syntax);
+                                        global.puzzle.useSyntax(syntax, done);
                                     }
-                                    if (done) done();
                                 });
                         }
 
@@ -141,13 +140,14 @@ var lang = {
 
                             if (fileName.indexOf('https://') == 0 || fileName.indexOf('http://') == 0) {
 
-                                downloadModule(fileName)
+                                downloadModule(fileName, done)
 
                             } else if (extention && environment == 'node') {
                                 console.log('fn', fileName)
                                 var file = require(fileName);
-                                global.puzzle.useSyntax(file);
-                                if (done) done();
+                                
+                                global.puzzle.useSyntax(file, false, done);
+
                             } else if (extention && environment != 'node') {
                                 
                                 if(location.protocol.includes('http') || location.hostname == 'localhost'){
@@ -160,9 +160,8 @@ var lang = {
                                             var _file = data.toString();
                                             
                                             var syntax = new Function("module = {}; " + _file + " return syntax")();
-                                            global.puzzle.useSyntax(syntax);
+                                            global.puzzle.useSyntax(syntax, false, done);
 
-                                            if (done) done();
 
                                         });
 
@@ -174,9 +173,8 @@ var lang = {
                                         var _file = data.toString();
                                         
                                         var syntax = new Function("module = {}; " + _file + " return syntax")();
-                                        global.puzzle.useSyntax(syntax);
+                                        global.puzzle.useSyntax(syntax, false, done);
 
-                                        if (done) done();
                                     });
 
                                     //if (done) done();
@@ -186,10 +184,9 @@ var lang = {
                             } else if (fileName.indexOf('var:') == 0) {
                                 // 
 
-                                if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true);
-                                else global.puzzle.useSyntax(global[fileName.substring(4)]);
+                                if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true, done);
+                                else global.puzzle.useSyntax(global[fileName.substring(4)], false, done);
 
-                                if (done) done();
                             } else {
 
                                 var moduleUrl = global.puzzle.mainRepo.replace('<module>', fileName);
@@ -197,8 +194,7 @@ var lang = {
                                 if (fileName.includes('.')) {
                                     moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
                                 }
-
-                                downloadModule(moduleUrl + '/' + moduleFileName)
+                                downloadModule(moduleUrl + '/' + moduleFileName, done)
                             }
 
                         } catch (e) {
