@@ -44,6 +44,21 @@ var isLiteral = (a) => {
     return false;
 }
 
+Object.byString = function(o, s) {
+    s = s.replace(/\[(\w+)\]/g, '.$1');
+    s = s.replace(/^\./, '');
+    var a = s.split('.');
+    for (var i = 0, n = a.length; i < n; ++i) {
+        var k = a[i];
+        if (k in o) {
+            o = o[k];
+        } else {
+            return;
+        }
+    }
+    return o;
+}
+
 var lang = {
     delimeter: ";",
     assignmentOperator: "=",
@@ -145,7 +160,6 @@ var lang = {
                                 downloadModule(fileName, done)
 
                             } else if (extention && environment == 'node') {
-                                console.log('fn', fileName)
                                 var file = require(fileName);
                                 
                                 global.puzzle.useSyntax(file, false, done);
@@ -432,7 +446,7 @@ var lang = {
             set: {
                 manual: "Sets a variable",
                 follow: ["$from", "$local", "{key,value}"],
-                method: function(ctx, data) {
+                method: function(ctx, data) {   
                     if (!data) return;
                     try {
                         global.puzzle.vars[data.key] = JSON.parse(data.value);
@@ -823,7 +837,7 @@ var lang = {
                 follow: ["{data}"],
                 method: function(ctx, data) {
                     try {
-                        ctx.return = JSON.parse(global.puzzle.getRawStatement(data));
+                        ctx.return = JSON.parse(data);
                     } catch (e){
                         global.puzzle.error('error parsing json')
                     }
@@ -874,7 +888,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.88",
+  "version": "0.0.89",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1010,7 +1024,7 @@ var puzzle = {
         var _defaultSyntax = this.lang['$'].default;
 
         Object.assign(this.lang, jsObject)
-        console.log(Object.keys(jsObject['$'])[0], 'can now be used');
+        //console.log(Object.keys(jsObject['$'])[0], 'can now be used');
 
         this.lang['$'].default = _defaultSyntax;
 
@@ -1181,7 +1195,7 @@ var puzzle = {
             } else if (this.api[key]) {
                 this.api[key](ctx, param)
             } else if (key !== undefined) {
-                console.log(key, 'is not a function');
+                global.puzzle.error(key, 'is not a function');
             }
         }
 
@@ -1278,9 +1292,9 @@ var puzzle = {
                     if(bestMatching == '...') {
                         console.log('its ...')
                     }
-                    else if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                    else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
-                        callTokenFunction(global.puzzle.ctx[partId], token, vars[bestMatching] || global.puzzle.vars[bestMatching], null, innerDefinition);
+                        callTokenFunction(global.puzzle.ctx[partId], token, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching), null, innerDefinition);
                         tokens.shift();
                     } /*else if (global.puzzle.funcs[bestMatching]) {
                         console.log('func')
@@ -1319,7 +1333,6 @@ var puzzle = {
                 execFunctionBody(token, vars, funcs)
 
             }*/ else {
-                console.log('unequal', instructionKey, token);
             }
         }
 
@@ -1333,13 +1346,11 @@ var puzzle = {
 
                 var rawInputParams = bestMatching.substring(bestMatching.indexOf('(') + 1, bestMatching.indexOf(')'));
                 var inputParams = rawInputParams.split(",");
-                console.log('params', inputParams);
 
                 bestMatching = bestMatching.substring(0, bestMatching.indexOf('('));
                 var rawDefinedParams = global.puzzle.funcs[bestMatching].params;
                 rawDefinedParams = rawDefinedParams.substring(rawDefinedParams.indexOf('(') + 1, rawDefinedParams.indexOf(')'));
                 var definedParams = rawDefinedParams.split(",");
-                console.log('definedParams', definedParams);
 
                 definedParams.forEach(function(param, i) {
                     scope.vars[param] = inputParams[i]
@@ -1390,7 +1401,7 @@ var puzzle = {
 
                             var bestMatching = getMatchingFollow(definition[t].follow, tokens[0]);
                             var bestMatchingInstruction = getMatchingFollowInstruction(definition[t].follow, tokens[0]);
-                            
+
                             if ((bestMatching || "").charAt(0) == "$") {
                                 callTokenFunction(global.puzzle.ctx[partId], t);
                                 sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
@@ -1401,9 +1412,9 @@ var puzzle = {
 
                                 if(bestMatching == '...') {
                                     console.log('its ...')
-                                } else if (vars[bestMatching] || global.puzzle.vars[bestMatching] && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                                } else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
-                                    callTokenFunction(global.puzzle.ctx[partId], t, vars[bestMatching] || global.puzzle.vars[bestMatching]);
+                                    callTokenFunction(global.puzzle.ctx[partId], t, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching));
                                     tokens.shift();
                                 } else if((bestMatching || "").startsWith('var:')){
                                     callTokenFunction(global.puzzle.ctx[partId], t, global[bestMatching.substring(4)]);
@@ -1445,7 +1456,7 @@ var puzzle = {
                         else if (t.includes('...')) {
                             this.lang.currentNamespace = t.split('...')[0]; 
                         }  else {
-                            console.log(t, 'is not defined');
+                            global.puzzle.error(t, 'is not defined');
                         }
                     }
                 })
@@ -1459,9 +1470,10 @@ var puzzle = {
                 next.fn(function() {
                     //console.log('callback called', global.puzzle.ctx[next.partId]);
 
-                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as'))
+                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) 
                         global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
-                    
+
+                  
                     // puzzle.schedule
                     execSchedule(puzzle.schedule.shift());
                 });
