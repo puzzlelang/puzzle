@@ -14,8 +14,13 @@ program
     .description('Run your app')
     .action(function(type, args) {
         puzzle.init();
-        var code = fs.readFileSync(type, 'utf8');
-        puzzle.parse(code);
+        try {
+            var code = fs.readFileSync(type, 'utf8');
+            puzzle.parse(code);
+        } catch(e){
+            var code = type
+            puzzle.parse(code);
+        }
     });
 
 program
