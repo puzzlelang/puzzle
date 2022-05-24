@@ -597,6 +597,11 @@ try {
                     window.puzzle.parse(s.innerHTML);
                 }
             })
+
+            var puzzleTags = document.getElementsByTagName("puzzle");
+            Array.from(puzzleTags).forEach(function(s) {
+                window.puzzle.parse(s.innerHTML);
+            })
         });
     } catch (e) {}
 
