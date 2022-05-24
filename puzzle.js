@@ -150,6 +150,16 @@ var puzzle = {
 
         var parts = {}; //code.split(this.lang.delimeter);
 
+        /*Object.keys(this.lang.delays).forEach(k => {
+            clearTimeout(this.lang.delays[k])
+            delete this.lang.delays[k];
+        })
+
+        Object.keys(this.lang.intervals).forEach(k => {
+            clearInterval(this.lang.intervals[k])
+            delete this.lang.intervals[k];
+        })*/
+
         var litStart = ['(', '{', '"', "'"];
         var litEnd = [')', '}', '"', "'"];
 
