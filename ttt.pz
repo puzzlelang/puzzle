@@ -1,0 +1,6 @@
+use rest;
+get from https://registry.npmjs.org/-/package/puzzlelang/dist-tags as json;
+
+jsonify json as _json;
+
+print _json.latest;

@@ -1,2 +1,2 @@
 define token echo with follow "{param}" and method (global.puzzle.output(data));
-print hi
+echo hi
