@@ -62,6 +62,8 @@ var lang = {
     assignmentOperator: "=",
     context: {},
     vars: {},
+    intervals: {},
+    delays: {},
     currentNamespace: "default",
     "$": {
         default: {
@@ -71,7 +73,7 @@ var lang = {
                     var relevantNamespace = ctx.insideNamespace || 'default';
 
                     if(ctx.waitTime){
-                        setTimeout(()=>{
+                        lang.delays[Math.random()] = setTimeout(()=>{
                             done();
                         }, parseInt(ctx.waitTime))
                         return;
@@ -525,11 +527,11 @@ var lang = {
                     }
 
                     if(ctx.intervalTime){
-                        setInterval(() => {
+                        lang.intervals[Math.random()] = setInterval(() => {
                             run()
                         }, parseInt(ctx.intervalTime))
                     } else if(ctx.timeoutTime){
-                        setTimeout(() => {
+                        lang.delays[Math.random()] = setTimeout(() => {
                             run()
                         }, parseInt(ctx.timeoutTime))
                     }
