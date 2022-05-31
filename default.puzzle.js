@@ -145,7 +145,7 @@ var lang = {
 
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
-                                        global.puzzle.useSyntax(syntax, done);
+                                        global.puzzle.useSyntax(syntax, false, done);
                                     }
                                 });
                         }
