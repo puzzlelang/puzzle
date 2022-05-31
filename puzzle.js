@@ -110,6 +110,8 @@ var puzzle = {
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement) {
+        if(!statement) return;
+        if(typeof statement !== 'string') return statement;
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             return statement.substring(1, statement.length - 1)
         } else return statement;
@@ -598,10 +600,6 @@ try {
                 }
             })
 
-            var puzzleTags = document.getElementsByTagName("puzzle");
-            Array.from(puzzleTags).forEach(function(s) {
-                window.puzzle.parse(s.innerHTML);
-            })
         });
     } catch (e) {}
 

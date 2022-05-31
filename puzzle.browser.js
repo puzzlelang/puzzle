@@ -147,7 +147,7 @@ var lang = {
 
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
-                                        global.puzzle.useSyntax(syntax, done);
+                                        global.puzzle.useSyntax(syntax, false, done);
                                     }
                                 });
                         }
@@ -890,7 +890,7 @@ module.exports = lang;
 },{}],3:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.90",
+  "version": "0.0.91",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1038,6 +1038,8 @@ var puzzle = {
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement) {
+        if(!statement) return;
+        if(typeof statement !== 'string') return statement;
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             return statement.substring(1, statement.length - 1)
         } else return statement;
@@ -1526,10 +1528,6 @@ try {
                 }
             })
 
-            var puzzleTags = document.getElementsByTagName("puzzle");
-            Array.from(puzzleTags).forEach(function(s) {
-                window.puzzle.parse(s.innerHTML);
-            })
         });
     } catch (e) {}
 
