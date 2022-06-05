@@ -130,7 +130,7 @@ var lang = {
 
                                     if (environment == 'node') {
 
-                                        var tempDir = os.tmpdir();
+                                        var tempDir = __dirname;//os.tmpdir();
 
                                         var fileName = Math.random() + ".js";
 

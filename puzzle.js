@@ -8,7 +8,7 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     } else {
         environment = "node";
         dependencies = require('./dependencies.js');
-        localStorage = new dependencies.localStorage.LocalStorage(dependencies.os.tmpdir());
+        localStorage = new dependencies.localStorage.LocalStorage(/*dependencies.os.tmpdir()*/ "localStorage");
     }
     
 } else {
