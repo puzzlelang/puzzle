@@ -1,7 +1,16 @@
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
-    environment = "node";
-    dependencies = require('./dependencies.js');
-    localStorage = new dependencies.localStorage.LocalStorage(dependencies.os.tmpdir());
+
+    if(process.env.sandbox) {
+        environment = "sandbox";
+        dependencies = require('./dependencies_sandboxed.js');
+        localStorage = new dependencies.localStorage.LocalStorage();
+        console.log('SANDBOX MODE!')
+    } else {
+        environment = "node";
+        dependencies = require('./dependencies.js');
+        localStorage = new dependencies.localStorage.LocalStorage(dependencies.os.tmpdir());
+    }
+    
 } else {
     global = window;
     environment = 'browser';
