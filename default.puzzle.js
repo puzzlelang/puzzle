@@ -4,8 +4,8 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
     const dependencies = require('./dependencies.js');
     fs = dependencies.fs;
     fetch = dependencies.fetch;
-    npm = dependencies.npm;
     pjson = require('./package.json');
+    os = dependencies.os;
 } else {
     global = window;
 
@@ -133,14 +133,16 @@ var lang = {
 
                                     if (environment == 'node') {
 
+                                        var tempDir = os.tmpdir();
+
                                         var fileName = Math.random() + ".js";
 
-                                        fs.writeFile(fileName, data, function(err, data) {
+                                        fs.writeFile(tempDir + '/' + fileName, data, function(err, data) {
 
-                                            var file = require(__dirname + '/' + fileName);
+                                            var file = require(tempDir + '/' + fileName);
                                             global.puzzle.useSyntax(file, false, done);
 
-                                            fs.unlinkSync(__dirname + '/' + fileName);
+                                            fs.unlinkSync(tempDir + '/' +fileName);
                                         })
 
                                     } else {
@@ -702,7 +704,7 @@ var lang = {
 
                     switch (ctx.fileOperation) {
                         case 'write':
-                            fs.writeFile(file.name, content, 'utf8', function(err, data) {
+                            fs.writeFile(file.name, content, function(err, data) {
                                 if (err) return global.puzzle.output(err);
                                 global.puzzle.output(data);
                             })
@@ -806,24 +808,6 @@ var lang = {
                             })
                         });
 
-                }
-            },
-            install: {
-                follow: ["{param}"],
-                method: function(ctx, param) {
-
-                    if (!npm) return global.puzzle.output('npm not available in this environment');
-
-                    npm.load({
-                        loaded: false
-                    }, function(err) {
-                        npm.commands.install([param], function(er, data) {
-                            global.puzzle.output(er, data);
-                        });
-                        npm.on("log", function(message) {
-                            global.puzzle.output(message);
-                        });
-                    });
                 }
             },
             "->": {
