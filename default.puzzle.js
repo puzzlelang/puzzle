@@ -1,10 +1,18 @@
 var environment = 'browser';
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
-    environment = "node";
-    const dependencies = require('./dependencies.js');
+
+    if(process.env.sandbox) {
+        environment = "sandbox";
+        dependencies = require('./dependencies_sandboxed.js');
+        localStorage = new dependencies.localStorage.LocalStorage();
+    } else {
+        environment = "node";
+        const dependencies = require('./dependencies.js');
+        pjson = require('./package.json');
+    }
+
     fs = dependencies.fs;
     fetch = dependencies.fetch;
-    pjson = require('./package.json');
     os = dependencies.os;
 } else {
     global = window;
@@ -94,18 +102,7 @@ var lang = {
                         if (ctx.tokenName)
                             if (lang.$[relevantNamespace][ctx.tokenName]) delete lang.$[relevantNamespace][ctx.tokenName];
                     }
-                    //                    console.log('rns', lang.$[relevantNamespace])
-
-                    if (ctx[ctx.importNamespace]) {
-                        if (environment != 'node') return global.puzzle.output('feature not available in this environment')
-                        try {
-                            ctx[ctx.importNamespace] = require(ctx.importUrl);
-                        } catch (e) {
-                            global.puzzle.error('Import Error:', e)
-                        }
-                        if (done) done();
-                    }
-
+                    
                     if (ctx['unUseNamespace']) {
                         if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
                             global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
@@ -145,6 +142,9 @@ var lang = {
                                             fs.unlinkSync(tempDir + '/' +fileName);
                                         })
 
+                                    } else if(environment == 'sandbox') {
+                                        eval(data)
+                                        global.puzzle.useSyntax(syntax, false, done);
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
@@ -166,6 +166,11 @@ var lang = {
                                 
                                 global.puzzle.useSyntax(file, false, done);
 
+                            } else if (extention && environment == 'sandbox') { 
+                                fs.readFile(fileName, function(err, data) {
+                                    eval(data)
+                                    global.puzzle.useSyntax(syntax, false, done);
+                                })
                             } else if (extention && environment != 'node') {
                                 
                                 if(location.protocol.includes('http') || location.hostname == 'localhost'){
