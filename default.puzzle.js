@@ -544,6 +544,28 @@ var lang = {
                     }
                 }
             },
+            calc: {
+              follow: ["$min", "$max", "{param}"],
+              method: function(ctx, param){
+                ctx.return = eval(param)
+              },
+            },
+            min: {
+              follow: ["{params}"],
+              method: function(ctx, param){
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  ctx.return = Math.min(...params)
+              }
+            },
+            max: {
+              follow: ["{params}"],
+              method: function(ctx, param){
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  ctx.return = Math.max(...params)
+              }
+            },
             every: {
                 follow: ["{time}", "$run"],
                 method: function(ctx, data) {
