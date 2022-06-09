@@ -388,7 +388,6 @@ var puzzle = {
                         console.log('its ...')
                     }
                     else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
-
                         callTokenFunction(global.puzzle.ctx[partId], token, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching), null, innerDefinition);
                         tokens.shift();
                     } /*else if (global.puzzle.funcs[bestMatching]) {
