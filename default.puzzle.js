@@ -269,6 +269,13 @@ var lang = {
                     //console.log('lang', lang)
                 }
             },
+            "merge-vars": {
+                manual: "use all global vars",
+                follow: ["{value}"],
+                method: function(ctx, file) {
+                    global.puzzle.vars = global;
+                }
+            },
             include: {
                 manual: "include a puzzle file",
                 follow: ["{file}"],
@@ -544,6 +551,8 @@ var lang = {
                     }
                 }
             },
+
+            // Math
             calc: {
               follow: ["$min", "$max", "{param}"],
               method: function(ctx, param){
@@ -566,6 +575,32 @@ var lang = {
                   ctx.return = Math.max(...params)
               }
             },
+            add: {
+              follow: ["{params}"],
+              method: function(ctx, param){
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  var result = 0;
+                  params.forEach(p => {
+                    result += parseInt(p);
+                  })
+                  ctx.return = result
+              }
+            },
+            subtract: {
+              follow: ["{params}"],
+              method: function(ctx, param){
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  var result = params[0];
+                  params.pop();
+                  params.forEach(p => {
+                    result -= parseInt(p);
+                  })
+                  ctx.return = result
+              }
+            },
+
             every: {
                 follow: ["{time}", "$run"],
                 method: function(ctx, data) {
