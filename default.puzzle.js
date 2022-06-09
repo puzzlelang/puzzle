@@ -50,18 +50,19 @@ var isLiteral = (a) => {
     return false;
 }
 
-Object.byString = function(o, s) {
-    s = s.replace(/\[(\w+)\]/g, '.$1');
-    s = s.replace(/^\./, '');
-    var a = s.split('.');
-    for (var i = 0, n = a.length; i < n; ++i) {
-        var k = a[i];
-        if (k in o) {
-            o = o[k];
-        } else {
-            return;
-        }
+Object.setByString = function(o, k, v) {
+    let schema = o;
+    const pList = k.split('.');
+    const len = pList.length;
+    for (var i = 0; i < len - 1; i++) {
+      var elem = pList[i];
+      if (!schema[elem]) schema[elem] = {}
+      schema = schema[elem];
     }
+    if (!v) {
+      return schema[pList[len - 1]];
+    }
+    schema[pList[len - 1]] = v;
     return o;
 }
 
@@ -276,6 +277,13 @@ var lang = {
                     global.puzzle.vars = global;
                 }
             },
+            "isolate-vars": {
+                manual: "unuse all global vars",
+                follow: ["{value}"],
+                method: function(ctx, file) {
+                    global.puzzle.vars = {};
+                }
+            },
             include: {
                 manual: "include a puzzle file",
                 follow: ["{file}"],
@@ -463,11 +471,13 @@ var lang = {
                 method: function(ctx, data) {   
                     if (!data) return;
                     try {
-                        global.puzzle.vars[data.key] = JSON.parse(data.value);
+                        //global.puzzle.vars[data.key] = JSON.parse(data.value);
+                        Object.setByString(global.puzzle.vars, data.key, JSON.parse(data.value))
                     } catch (e) {
-                        global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
+                        //global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
+                        Object.setByString(global.puzzle.vars, data.key, global.puzzle.evaluateRawStatement(data.value || ''))
                     }
-                    ctx.return = global.puzzle.vars[data.key];
+                    ctx.return = data.value;
                 }
             },
             unset: {
@@ -582,6 +592,11 @@ var lang = {
                   params = params.split(',');
                   var result = 0;
                   params.forEach(p => {
+                    p = p.trim();
+                    if(Object.byString(global.puzzle.vars, p))
+                    {
+                        p = Object.byString(global.puzzle.vars, p);
+                    } 
                     result += parseInt(p);
                   })
                   ctx.return = result
