@@ -36,6 +36,7 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 }
 
 Object.byString = function(o, s) {
+    if(!s) return o;
     s = s.replace(/\[(\w+)\]/g, '.$1');
     s = s.replace(/^\./, '');
     var a = s.split('.');

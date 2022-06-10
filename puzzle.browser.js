@@ -405,13 +405,6 @@ var lang = {
                     global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
                 }
             },
-            add: {
-                manual: "adds an entry to an array or object",
-                follow: ["$to", "{data}"],
-                method: function(ctx, data) {
-                    ctx.addData = data
-                }
-            },
             pop: {
                 manual: "removes an entry to an array or object",
                 follow: ["$from", "{data}"],
@@ -1042,7 +1035,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.942",
+  "version": "0.0.944",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1114,6 +1107,7 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 }
 
 Object.byString = function(o, s) {
+    if(!s) return o;
     s = s.replace(/\[(\w+)\]/g, '.$1');
     s = s.replace(/^\./, '');
     var a = s.split('.');
