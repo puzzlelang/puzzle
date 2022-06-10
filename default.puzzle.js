@@ -403,13 +403,6 @@ var lang = {
                     global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
                 }
             },
-            add: {
-                manual: "adds an entry to an array or object",
-                follow: ["$to", "{data}"],
-                method: function(ctx, data) {
-                    ctx.addData = data
-                }
-            },
             pop: {
                 manual: "removes an entry to an array or object",
                 follow: ["$from", "{data}"],
