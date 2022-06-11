@@ -270,11 +270,11 @@ var lang = {
                     //console.log('lang', lang)
                 }
             },
-            "merge-vars": {
-                manual: "use all global vars",
+            "bind-vars": {
+                manual: "bind vars from parent javascript",
                 follow: ["{value}"],
-                method: function(ctx, file) {
-                    global.puzzle.vars = global;
+                method: function(ctx, value) {
+                    global.puzzle.vars = eval('('+value+')');
                 }
             },
             "isolate-vars": {
