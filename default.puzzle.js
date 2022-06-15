@@ -155,6 +155,11 @@ var lang = {
 
                         try {
                             var fileName = ctx['useNamespace'];
+
+                            if(typeof fileName === "object"){
+                                return global.puzzle.useSyntax(fileName, false, done);
+                            }
+
                             var extention = fileName.split(".")[fileName.split(".").length - 1];
                             if (!fileName.includes('.')) extention = null;
 

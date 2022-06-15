@@ -25,13 +25,16 @@ set name Test;
 
 # Get started
 
-puzzle runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
+PUZZLE runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
 
-## Interactive Shell (CLI)
+## Install
 
 ```shell
 $ npm i puzzlelang --global
 ```
+
+## Interactive Shell (CLI)
+
 
 ```shell
 $ puzzle
@@ -41,9 +44,6 @@ $ print "Hello World!"
 
 ## Run a File
 
-```shell
-$ npm i puzzlelang --global
-```
 
 ```javascript
 // hello.puzzle
@@ -62,10 +62,6 @@ $ puzzle run hello.puzzle
 puzzle scripts can also be run inside JavaScript
 
 > Node
-
-```javascript
-npm i puzzlelang --save
-```
 
 ```javascript
 puzzle.parse('print "Hello, I am embedded"')
