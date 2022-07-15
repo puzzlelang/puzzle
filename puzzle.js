@@ -121,14 +121,14 @@ var puzzle = {
 
     useSyntax: function(jsObject, dontUse, done) {
 
-        var _defaultSyntax = this.lang['$'].default;
+        var _defaultSyntax = this.lang.default;
 
         Object.assign(this.lang, jsObject)
-        //console.log(Object.keys(jsObject['$'])[0], 'can now be used');
+        console.log(Object.keys(jsObject)[0], 'can now be used');
 
-        this.lang['$'].default = _defaultSyntax;
+        this.lang.default = _defaultSyntax;
 
-        if(!dontUse) this.lang.currentNamespace = Object.keys(jsObject['$'])[0];
+        if(!dontUse) this.lang.currentNamespace = Object.keys(jsObject)[0];
 
         if(done) done()
 
@@ -296,7 +296,7 @@ var puzzle = {
                 }
             }*/
 
-            var definition = innerDefinition || mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace])
+            var definition = innerDefinition || mergeSyntaxWithDefault(this.lang.default, this.lang[this.lang.currentNamespace])
 
             if (definition[key]) {
                 if (isObject(definition[key])) {
@@ -349,13 +349,13 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
             var execNamespace = this.lang.currentNamespace;
-            if(!(this.lang.$[this.lang.currentNamespace]._static || {}).execStatement) execNamespace = 'default'
+            if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) execNamespace = 'default'
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
-                this.lang.$[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             } else if (tokens.length == 0) {
-                this.lang.$[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
+                this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             }
 
@@ -364,7 +364,7 @@ var puzzle = {
             }
 
             var innerDefinition;
-            var definition = mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
+            var definition = mergeSyntaxWithDefault(this.lang.default, this.lang[this.lang.currentNamespace]);
 
             //console.log('lt', lastToken, definition[lastToken], definition[lastToken].innerSequence)
 
@@ -506,7 +506,7 @@ var puzzle = {
 
                         var lastToken = tokens.shift();
 
-                        var definition = mergeSyntaxWithDefault(this.lang['$'].default, this.lang['$'][this.lang.currentNamespace]);
+                        var definition = mergeSyntaxWithDefault(this.lang.default, this.lang[this.lang.currentNamespace]);
 
                         if (definition[t]) {
 

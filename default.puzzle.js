@@ -74,8 +74,7 @@ var lang = {
     intervals: {},
     delays: {},
     currentNamespace: "default",
-    "$": {
-        default: {
+    default: {
             _static: {
                 execStatement: function(done, ctx) {
 
@@ -91,24 +90,24 @@ var lang = {
                     if (ctx.define) {
                         if (ctx.tokenName) {
                             // console.log('ctx.insideNamespace', ctx.insideNamespace)
-                            lang.$[relevantNamespace][ctx.tokenName] = {
+                            lang[relevantNamespace][ctx.tokenName] = {
                                 follow: ctx.tokenFollow,
                                 method: ctx.tokenMethod
                             }
                         } else {
-                            //lang.$[relevantNamespace] = global[relevantNamespace]
+                            //lang[relevantNamespace] = global[relevantNamespace]
                         }
 
                     } else if (ctx.unDefine) {
                         if (ctx.tokenName)
-                            if (lang.$[relevantNamespace][ctx.tokenName]) delete lang.$[relevantNamespace][ctx.tokenName];
+                            if (lang[relevantNamespace][ctx.tokenName]) delete lang[relevantNamespace][ctx.tokenName];
                     }
                     
                     if (ctx['unUseNamespace']) {
                         if (global.puzzle.moduleStorage.get('_' + ctx['unUseNamespace'])) {
                             global.puzzle.moduleStorage.remove('_' + ctx['unUseNamespace']);
                         }
-                        if (lang.$[ctx['unUseNamespace']]) delete lang.$[ctx['unUseNamespace']];
+                        if (lang[ctx['unUseNamespace']]) delete lang[ctx['unUseNamespace']];
                         global.puzzle.output(ctx['unUseNamespace'], 'unused');
                     }
 
@@ -227,6 +226,7 @@ var lang = {
                             }
 
                         } catch (e) {
+                            console.log(e)
                             global.puzzle.error('Use error', e);
                             if (done) done();
                         }
@@ -329,17 +329,17 @@ var lang = {
                 follow: ["{name,func}"],
                 method: function(ctx, data) {
                     ctx.syntaxNamespace = data.name;
-                    lang.$[data.name] = {
+                    lang[data.name] = {
                         $: {}
                     };
-                    lang.$[data.name] = {
+                    lang[data.name] = {
                         _static: {
                             execStatement: function(done, ctx) { return new Function(global.puzzle.getRawStatement(data.func)) }
                         },
                     };
 
                     global[data.name] = { $: {} };
-                    global[data.name].$[data.name] = lang.$[data.name]
+                    global[data.name].$[data.name] = lang[data.name]
                     //ctx['useNamespace'] = 'var:name';
                 }
             },
@@ -845,17 +845,17 @@ var lang = {
                 method: function(ctx, param) {
                     switch (param) {
                         case 'modules':
-                            global.puzzle.output(Object.keys(lang['$']).join(', '));
+                            global.puzzle.output(Object.keys(lang).join(', '));
                             break;
                         case 'commands':
-                            Object.keys(lang['$']).forEach((ns) => {
+                            Object.keys(lang).forEach((ns) => {
                                 global.puzzle.output('namespace:', ns, '\n');
-                                Object.keys(lang['$'][ns]).forEach(c => {
+                                Object.keys(lang[ns]).forEach(c => {
                                     try {
                                         var man = "";
-                                        if (lang['$'][ns][c].manual) man = ' (' + lang['$'][ns][c].manual + ')';
+                                        if (lang[ns][c].manual) man = ' (' + lang[ns][c].manual + ')';
                                         var seq = "";
-                                        lang['$'][ns][c].follow.forEach(f => {
+                                        lang[ns][c].follow.forEach(f => {
                                             seq += f + " ";
                                         })
                                         global.puzzle.output('  ', c, seq, '\t', man)
@@ -935,8 +935,6 @@ var lang = {
                 }
             }
         }
-
-    }
 
 }
 
