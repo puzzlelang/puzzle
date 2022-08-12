@@ -124,7 +124,7 @@ var puzzle = {
         var _defaultSyntax = this.lang.default;
 
         Object.assign(this.lang, jsObject)
-        console.log(Object.keys(jsObject)[0], 'can now be used');
+        //console.log(Object.keys(jsObject['$'])[0], 'can now be used');
 
         this.lang.default = _defaultSyntax;
 
@@ -349,7 +349,18 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
             var execNamespace = this.lang.currentNamespace;
-            if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) execNamespace = 'default'
+            if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) {
+                execNamespace = 'default'
+            } 
+
+            Object.keys(this.lang).forEach(l => {
+               if(isObject(this.lang[l])){
+                   if(this.lang[l]._static && Object.keys(this.lang[l]).includes(global.puzzle.ctx[partId]._sequence[0])){
+                       execNamespace = l;
+                   }
+               }
+            })
+
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
                 this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
