@@ -1,3 +1,4 @@
 node_modules
 localStorage
 playground
+.DS_Store
