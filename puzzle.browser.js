@@ -69,13 +69,6 @@ Object.setByString = function(o, k, v) {
 }
 
 var lang = {
-    delimeter: ";",
-    assignmentOperator: "=",
-    context: {},
-    vars: {},
-    intervals: {},
-    delays: {},
-    currentNamespace: "default",
     default: {
             _static: {
                 execStatement: function(done, ctx) {
@@ -936,8 +929,14 @@ var lang = {
                     ctx._asVariable  = variableName;
                 }
             }
-        }
-
+        },
+        delimeter: ";",
+        assignmentOperator: "=",
+        context: {},
+        vars: {},
+        intervals: {},
+        delays: {},
+        currentNamespace: "default",
 }
 
 module.exports = lang;
@@ -1036,7 +1035,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.947",
+  "version": "0.0.948",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1196,7 +1195,7 @@ var puzzle = {
         var _defaultSyntax = this.lang.default;
 
         Object.assign(this.lang, jsObject)
-        console.log(Object.keys(jsObject)[0], 'can now be used');
+        //console.log(Object.keys(jsObject['$'])[0], 'can now be used');
 
         this.lang.default = _defaultSyntax;
 
@@ -1209,10 +1208,13 @@ var puzzle = {
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement) {
         if(!statement) return;
-        if(typeof statement !== 'string') return statement;
+        var returnValue;
+        if(typeof statement !== 'string') returnValue = statement;
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
-            return statement.substring(1, statement.length - 1)
-        } else return statement;
+            returnValue = statement.substring(1, statement.length - 1)
+        } else returnValue = statement;
+        if(global.puzzle.vars[returnValue]) return global.puzzle.vars[returnValue];
+        return returnValue
     },
 
     // Rvaluates and returns a raw statement. this includes numeric and string operations
@@ -1421,7 +1423,18 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
             var execNamespace = this.lang.currentNamespace;
-            if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) execNamespace = 'default'
+            if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) {
+                execNamespace = 'default'
+            } 
+
+            Object.keys(this.lang).forEach(l => {
+               if(isObject(this.lang[l])){
+                   if(this.lang[l]._static && Object.keys(this.lang[l]).includes(global.puzzle.ctx[partId]._sequence[0])){
+                       execNamespace = l;
+                   }
+               }
+            })
+
             //console.log(tokens.length, tokens, this.lang.delimeter);
             if (tokens.length == 1 && token == this.lang.delimeter) {
                 this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])

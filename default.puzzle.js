@@ -67,13 +67,6 @@ Object.setByString = function(o, k, v) {
 }
 
 var lang = {
-    delimeter: ";",
-    assignmentOperator: "=",
-    context: {},
-    vars: {},
-    intervals: {},
-    delays: {},
-    currentNamespace: "default",
     default: {
             _static: {
                 execStatement: function(done, ctx) {
@@ -934,8 +927,14 @@ var lang = {
                     ctx._asVariable  = variableName;
                 }
             }
-        }
-
+        },
+        delimeter: ";",
+        assignmentOperator: "=",
+        context: {},
+        vars: {},
+        intervals: {},
+        delays: {},
+        currentNamespace: "default",
 }
 
 module.exports = lang;
