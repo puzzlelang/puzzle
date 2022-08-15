@@ -137,10 +137,13 @@ var puzzle = {
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement) {
         if(!statement) return;
-        if(typeof statement !== 'string') return statement;
+        var returnValue;
+        if(typeof statement !== 'string') returnValue = statement;
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
-            return statement.substring(1, statement.length - 1)
-        } else return statement;
+            returnValue = statement.substring(1, statement.length - 1)
+        } else returnValue = statement;
+        if(global.puzzle.vars[returnValue]) return global.puzzle.vars[returnValue];
+        return returnValue
     },
 
     // Rvaluates and returns a raw statement. this includes numeric and string operations
