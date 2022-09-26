@@ -565,6 +565,9 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  params.forEach(p => {
+                    p = parseInt(p)
+                  })
                   ctx.return = Math.min(...params)
               }
             },
@@ -573,6 +576,9 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  params.forEach(p => {
+                    p = parseInt(p)
+                  })
                   ctx.return = Math.max(...params)
               }
             },
