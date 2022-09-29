@@ -142,6 +142,8 @@ var puzzle = {
 
         if(typeof statement !== 'string') returnValue = statement;
 
+        if(isObject(statement)) return statement;
+
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
         } else returnValue = statement;
