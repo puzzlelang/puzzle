@@ -133,16 +133,23 @@ var puzzle = {
         if(done) done()
 
     },
+    
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement) {
         if(!statement) return;
         var returnValue;
+
         if(typeof statement !== 'string') returnValue = statement;
+
+        if(isObject(statement)) return statement;
+
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
         } else returnValue = statement;
-        if(global.puzzle.vars[returnValue]) return global.puzzle.vars[returnValue];
+
+        if(Object.byString(global.puzzle.vars, returnValue)) return Object.byString(global.puzzle.vars, returnValue);
+
         return returnValue
     },
 
