@@ -134,15 +134,37 @@ var puzzle = {
 
     },
 
+    // Returns var in global.puzzle.vars from an input.
+    getVarByValue: function(value){
+        var puzzleVar = null;
+        var valueParts = null;
+
+        if(value.includes('.')){
+            valueParts = value.split('.');
+
+            for(let i = 0; i < valueParts.length; i++){
+                if(!puzzleVar) puzzleVar = global.puzzle.vars[valueParts[i]]
+                else puzzleVar = puzzleVar[valueParts[i]]
+            }
+
+        } else if(global.puzzle.vars[value]) puzzleVar = global.puzzle.vars[value]
+
+        return puzzleVar;
+    },
+
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement) {
         if(!statement) return;
         var returnValue;
+
         if(typeof statement !== 'string') returnValue = statement;
+
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
         } else returnValue = statement;
-        if(global.puzzle.vars[returnValue]) return global.puzzle.vars[returnValue];
+
+        if(global.puzzle.getVarByValue(returnValue)) return global.puzzle.getVarByValue(returnValue)
+
         return returnValue
     },
 
