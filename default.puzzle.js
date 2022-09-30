@@ -553,11 +553,17 @@ var lang = {
                 }
             },
 
-            // Math
+                        // Math
             calc: {
-              follow: ["$min", "$max", "{param}"],
+              follow: ["$min", "$max", "$add", "$subtract", "{param}"],
               method: function(ctx, param){
-                ctx.return = eval(param)
+                var codeStr = "";
+                if(ctx.vars){
+                    Object.keys(ctx.vars).forEach(v => {
+                        codeStr+="var "+v+" = "+ctx.vars[v]+";";
+                    })
+                }
+                ctx.return = eval(codeStr + param)
               },
             },
             min: {
@@ -565,10 +571,16 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  var _params = [];
                   params.forEach(p => {
-                    p = parseInt(p)
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
+                    
+                    _params.push(parseInt(p))
                   })
-                  ctx.return = Math.min(...params)
+                  ctx.return = Math.min(..._params)
               }
             },
             max: {
@@ -576,10 +588,15 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  var _params = [];
                   params.forEach(p => {
-                    p = parseInt(p)
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
+                    _params.push(parseInt(p))
                   })
-                  ctx.return = Math.max(...params)
+                  ctx.return = Math.max(..._params)
               }
             },
             add: {
@@ -590,10 +607,10 @@ var lang = {
                   var result = 0;
                   params.forEach(p => {
                     p = p.trim();
-                    if(Object.byString(global.puzzle.vars, p))
-                    {
-                        p = Object.byString(global.puzzle.vars, p);
-                    } 
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
                     result += parseInt(p);
                   })
                   ctx.return = result
@@ -604,9 +621,14 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  var _params = [];
                   var result = params[0];
                   params.pop();
                   params.forEach(p => {
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
                     result -= parseInt(p);
                   })
                   ctx.return = result

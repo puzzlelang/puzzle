@@ -555,11 +555,17 @@ var lang = {
                 }
             },
 
-            // Math
+                        // Math
             calc: {
-              follow: ["$min", "$max", "{param}"],
+              follow: ["$min", "$max", "$add", "$subtract", "{param}"],
               method: function(ctx, param){
-                ctx.return = eval(param)
+                var codeStr = "";
+                if(ctx.vars){
+                    Object.keys(ctx.vars).forEach(v => {
+                        codeStr+="var "+v+" = "+ctx.vars[v]+";";
+                    })
+                }
+                ctx.return = eval(codeStr + param)
               },
             },
             min: {
@@ -567,10 +573,16 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  var _params = [];
                   params.forEach(p => {
-                    p = parseInt(p)
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
+                    
+                    _params.push(parseInt(p))
                   })
-                  ctx.return = Math.min(...params)
+                  ctx.return = Math.min(..._params)
               }
             },
             max: {
@@ -578,10 +590,15 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  var _params = [];
                   params.forEach(p => {
-                    p = parseInt(p)
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
+                    _params.push(parseInt(p))
                   })
-                  ctx.return = Math.max(...params)
+                  ctx.return = Math.max(..._params)
               }
             },
             add: {
@@ -592,10 +609,10 @@ var lang = {
                   var result = 0;
                   params.forEach(p => {
                     p = p.trim();
-                    if(Object.byString(global.puzzle.vars, p))
-                    {
-                        p = Object.byString(global.puzzle.vars, p);
-                    } 
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
                     result += parseInt(p);
                   })
                   ctx.return = result
@@ -606,9 +623,14 @@ var lang = {
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
                   params = params.split(',');
+                  var _params = [];
                   var result = params[0];
                   params.pop();
                   params.forEach(p => {
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
                     result -= parseInt(p);
                   })
                   ctx.return = result
@@ -1043,7 +1065,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.950",
+  "version": "0.0.951",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1215,7 +1237,7 @@ var puzzle = {
     
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
-    getRawStatement: function(statement) {
+    getRawStatement: function(statement, ctx) {
         if(!statement) return;
         var returnValue;
 
@@ -1504,7 +1526,7 @@ var puzzle = {
                     if(bestMatching == '...') {
                         console.log('its ...')
                     }
-                    else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                    else if ((Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching)) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set' && !(global.puzzle.ctx[partId]._sequence || []).includes('as')) {
                         callTokenFunction(global.puzzle.ctx[partId], token, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching), null, innerDefinition);
                         tokens.shift();
                     } /*else if (global.puzzle.funcs[bestMatching]) {
@@ -1594,6 +1616,7 @@ var puzzle = {
 
                         global.puzzle.ctx[partId] = {
                             _sequence: [],
+                            vars: vars
                         };
 
                         var tokens = p; //.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
@@ -1623,7 +1646,7 @@ var puzzle = {
 
                                 if(bestMatching == '...') {
                                     console.log('its ...')
-                                } else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                                } else if ((Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching)) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching));
                                     tokens.shift();
@@ -1681,8 +1704,10 @@ var puzzle = {
                 next.fn(function() {
                     //console.log('callback called', global.puzzle.ctx[next.partId]);
 
-                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) 
-                        global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) {
+                        if(Object.keys(vars).length) vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                        else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                    }
 
                   
                     // puzzle.schedule
