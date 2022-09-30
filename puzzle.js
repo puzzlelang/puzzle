@@ -136,7 +136,7 @@ var puzzle = {
     
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
-    getRawStatement: function(statement) {
+    getRawStatement: function(statement, ctx) {
         if(!statement) return;
         var returnValue;
 
@@ -425,7 +425,7 @@ var puzzle = {
                     if(bestMatching == '...') {
                         console.log('its ...')
                     }
-                    else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                    else if ((Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching)) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set' && !(global.puzzle.ctx[partId]._sequence || []).includes('as')) {
                         callTokenFunction(global.puzzle.ctx[partId], token, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching), null, innerDefinition);
                         tokens.shift();
                     } /*else if (global.puzzle.funcs[bestMatching]) {
@@ -515,6 +515,7 @@ var puzzle = {
 
                         global.puzzle.ctx[partId] = {
                             _sequence: [],
+                            vars: vars
                         };
 
                         var tokens = p; //.match(/\{[^\}]+?[\}]|\([^\)]+?[\)]|[\""].+?[\""]|[^ ]+/g);
@@ -544,7 +545,7 @@ var puzzle = {
 
                                 if(bestMatching == '...') {
                                     console.log('its ...')
-                                } else if (Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
+                                } else if ((Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching)) && (global.puzzle.ctx[partId]._sequence || [])[0] != 'set') {
 
                                     callTokenFunction(global.puzzle.ctx[partId], t, Object.byString(vars, bestMatching) || Object.byString(global.puzzle.vars, bestMatching));
                                     tokens.shift();
@@ -602,8 +603,10 @@ var puzzle = {
                 next.fn(function() {
                     //console.log('callback called', global.puzzle.ctx[next.partId]);
 
-                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) 
-                        global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) {
+                        if(Object.keys(vars).length) vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                        else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                    }
 
                   
                     // puzzle.schedule
