@@ -146,10 +146,9 @@ var puzzle = {
     
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
-    getRawStatement: function(statement, ctx) {
+    getRawStatement: function(statement, vars) {
         if(!statement) return;
         var returnValue;
-
         /*
             @TODO: evaluate raw inputs
             var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
@@ -163,13 +162,16 @@ var puzzle = {
             returnValue = statement.substring(1, statement.length - 1)
         } else returnValue = statement;
 
+        if(vars)
+            if(Object.byString(vars, returnValue)) return Object.byString(vars, returnValue);
+
         if(Object.byString(global.puzzle.vars, returnValue)) return Object.byString(global.puzzle.vars, returnValue);
 
         return returnValue
     },
 
     // Rvaluates and returns a raw statement. this includes numeric and string operations
-    evaluateRawStatement: function(statement) {
+    evaluateRawStatement: function(statement, ctx) {
         var _statement;
 
         if (!isNaN(statement)) return statement;
