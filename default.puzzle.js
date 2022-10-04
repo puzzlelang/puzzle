@@ -560,7 +560,8 @@ var lang = {
                 var codeStr = "";
                 if(ctx.vars){
                     Object.keys(ctx.vars).forEach(v => {
-                        codeStr+="var "+v+" = "+ctx.vars[v]+";";
+                        if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
+                        else codeStr+="var "+v+" = "+ctx.vars[v]+";";
                     })
                 }
                 ctx.return = eval(codeStr + param)
