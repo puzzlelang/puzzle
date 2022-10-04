@@ -71,6 +71,8 @@ Object.setByString = function(o, k, v) {
 var lang = {
     default: {
             _static: {
+                keyMappings: {38: 'up', 37:'left', 40:'down', 39:'right', 13:'enter', 46:'delete', 32:'space'},
+                registeredKeyEvents: {},
                 execStatement: function(done, ctx) {
 
                     var relevantNamespace = ctx.insideNamespace || 'default';
@@ -265,7 +267,9 @@ var lang = {
                             
                             
                         } 
-                    } else if (done) done();
+                    } else if (done) {
+                         done();
+                    }
 
                     //console.log('lang', lang)
                 }
@@ -375,9 +379,110 @@ var lang = {
                 }
             },
             inside: {
-                follow: ["{namespace}"],
+                follow: ["$render", "{namespace}"],
                 method: function(ctx, data) {
                     ctx.insideNamespace = data;
+                }
+            },
+            render: {
+                follow: ["{html}"],
+                method: function(ctx, html) {
+
+                    var element = document.createElement('div');
+                    element.innerHTML = window.puzzle.getRawStatement(html);
+                    
+                    if(ctx.insideNamespace) {
+                        var innerRoot = document.querySelector(ctx.insideNamespace);
+                        innerRoot.appendChild(element);
+                    } else document.body.appendChild(element); 
+                }
+            },
+            css: { 
+                follow: ["{css}"],
+                method: function(ctx, css) {
+                    var style = document.createElement('style');
+                    style.innerText = window.puzzle.getRawStatement(css);
+                    document.body.appendChild(style)
+                }
+            },
+            load: {
+                follow: ["{library}"],
+                method: function(ctx, library) {
+                    if(library.includes('.css'))
+                      {
+                          if(library.includes('http://') || library.includes('https://')){
+                              fetch(library).then(response => response.text()).then(response => {
+                                  var tag;
+                                  tag = document.createElement('link');
+                                  tag.rel = 'stylesheet';
+                                  tag.innerText = response;
+                                  document.head.appendChild(tag);
+                              })
+                              .catch(error => {
+                                  // handle the error...
+                              });
+                              return
+                          }
+                          /*var tag;
+                          tag = document.createElement('link');
+                          tag.rel = 'stylesheet';
+                          tag.href = context.library;
+                          document.head.appendChild(tag);*/
+                      } else if(context.library.includes('.js')){
+                          var tag;
+                          tag=document.createElement('script')
+                          tag.setAttribute("type","text/javascript")
+                          tag.setAttribute("src", library);
+                          document.getElementsByTagName("head")[0].appendChild(tag);
+                          done();
+                      } 
+                }
+            },
+            alert: {
+                follow: ["{message}"],
+                method: function(ctx, message) {
+                    alert(message)
+                }
+            },
+            confirm: {
+                follow: ["{message}"],
+                method: function(ctx, message) {
+                    ctx.return = confirm(message)
+                }
+            },
+            prompt: {
+                follow: ["{message}"],
+                method: function(ctx, message) {
+                    ctx.return = prompt(message)
+                }
+            },
+            on: {
+                follow: ["$key"],
+                innerSequence: {
+                    key: {
+                        follow: ["{type,code}"],
+                        method: function(ctx, data) {
+
+                            var keyCode;
+
+                            Object.keys(lang.default._static.keyMappings).forEach(_m => {
+                                if(lang.default._static.keyMappings[_m] == data.type){
+                                    keyCode = _m;
+                                }
+                            })
+
+                            lang.default._static.registeredKeyEvents[keyCode] = window.puzzle.getRawStatement(data.code)
+
+                            document.onkeydown = function(e) {
+                                if(lang.default._static.registeredKeyEvents[e.keyCode]){
+                                    window.puzzle.parse(lang.default._static.registeredKeyEvents[e.keyCode])
+                                }
+                            };
+                        }
+                    }
+                },
+                method: function(ctx, message) {
+
                 }
             },
             and: {
@@ -563,6 +668,7 @@ var lang = {
                 if(ctx.vars){
                     Object.keys(ctx.vars).forEach(v => {
                         if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
+                        else if(typeof ctx.vars[v] === "string") codeStr+="var "+v+" = '"+ctx.vars[v]+"';";
                         else codeStr+="var "+v+" = "+ctx.vars[v]+";";
                     })
                 }
@@ -1066,7 +1172,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.952",
+  "version": "0.0.954",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1248,10 +1354,9 @@ var puzzle = {
     
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
-    getRawStatement: function(statement, ctx) {
+    getRawStatement: function(statement, vars) {
         if(!statement) return;
         var returnValue;
-
         /*
             @TODO: evaluate raw inputs
             var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
@@ -1265,13 +1370,16 @@ var puzzle = {
             returnValue = statement.substring(1, statement.length - 1)
         } else returnValue = statement;
 
+        if(vars)
+            if(Object.byString(vars, returnValue)) return Object.byString(vars, returnValue);
+
         if(Object.byString(global.puzzle.vars, returnValue)) return Object.byString(global.puzzle.vars, returnValue);
 
         return returnValue
     },
 
     // Rvaluates and returns a raw statement. this includes numeric and string operations
-    evaluateRawStatement: function(statement) {
+    evaluateRawStatement: function(statement, ctx) {
         var _statement;
 
         if (!isNaN(statement)) return statement;
