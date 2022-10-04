@@ -21,6 +21,16 @@ var isObject = (a) => {
     return (!!a) && (a.constructor === Object);
 };
 
+// Split tokens for variable detection
+function splitMulti(str, tokens){
+    var tempChar = tokens[0]; // We can use the first token as a temporary join character
+    for(var i = 1; i < tokens.length; i++){
+        str = str.split(tokens[i]).join(tempChar);
+    }
+    str = str.split(tempChar);
+    return str;
+}
+
 // Merge syntax
 var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
     var obj = {};
@@ -139,6 +149,11 @@ var puzzle = {
     getRawStatement: function(statement, ctx) {
         if(!statement) return;
         var returnValue;
+
+        /*
+            @TODO: evaluate raw inputs
+            var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
+        */
 
         if(typeof statement !== 'string') returnValue = statement;
 

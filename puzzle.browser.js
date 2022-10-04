@@ -562,7 +562,8 @@ var lang = {
                 var codeStr = "";
                 if(ctx.vars){
                     Object.keys(ctx.vars).forEach(v => {
-                        codeStr+="var "+v+" = "+ctx.vars[v]+";";
+                        if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
+                        else codeStr+="var "+v+" = "+ctx.vars[v]+";";
                     })
                 }
                 ctx.return = eval(codeStr + param)
@@ -1065,7 +1066,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.951",
+  "version": "0.0.952",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1121,6 +1122,16 @@ if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node'
 var isObject = (a) => {
     return (!!a) && (a.constructor === Object);
 };
+
+// Split tokens for variable detection
+function splitMulti(str, tokens){
+    var tempChar = tokens[0]; // We can use the first token as a temporary join character
+    for(var i = 1; i < tokens.length; i++){
+        str = str.split(tokens[i]).join(tempChar);
+    }
+    str = str.split(tempChar);
+    return str;
+}
 
 // Merge syntax
 var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
@@ -1240,6 +1251,11 @@ var puzzle = {
     getRawStatement: function(statement, ctx) {
         if(!statement) return;
         var returnValue;
+
+        /*
+            @TODO: evaluate raw inputs
+            var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
+        */
 
         if(typeof statement !== 'string') returnValue = statement;
 
