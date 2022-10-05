@@ -308,10 +308,14 @@ var puzzle = {
 
             if (isObject(param)) {
                 Object.keys(param).forEach(p => {
-                    if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
+                    if(ctx.vars){
+                        if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
+                    } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
                 })
             } else {
-                if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                if(ctx.vars){
+                    if(ctx.vars[param]) param = ctx.vars[param];
+                } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
             }
             /*if (param) {
                 if (isObject(param)) {
@@ -621,7 +625,8 @@ var puzzle = {
                     //console.log('callback called', global.puzzle.ctx[next.partId]);
 
                     if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) {
-                        if(Object.keys(vars).length) vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                       
+                        if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length) (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                         else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                     }
 

@@ -955,7 +955,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.puzzle.output(global.puzzle.evaluateRawStatement(text))
+                    global.puzzle.output(global.puzzle.evaluateRawStatement(text, ctx))
                 }
             },
             js: {
