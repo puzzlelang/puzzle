@@ -1172,7 +1172,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.954",
+  "version": "0.0.955",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
