@@ -626,7 +626,10 @@ var puzzle = {
 
                     if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) {
                        
-                        if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length) (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                        if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length){
+                            // @TODO: check if var available in scope, then take global or local scope
+                            (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                        } 
                         else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                     }
 
