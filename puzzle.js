@@ -604,12 +604,9 @@ var puzzle = {
                                 sequence(tokens, tokens[0], bestMatching, lastToken, partId, done);
                             }
 
-                        } /*else if (t.includes('(') && funcs || global.puzzle.funcs[t.substring(0, t.indexOf('('))]) {
-                            execFunctionBody(t, vars, funcs || global.puzzle.funcs)
-                        }*/
-                        else if (t.includes('...')) {
+                        } else if (t.includes('...')) {
                             this.lang.currentNamespace = t.split('...')[0]; 
-                        }  else {
+                        } else {
                             global.puzzle.error(t, 'is not defined');
                         }
                     }
@@ -628,7 +625,9 @@ var puzzle = {
                        
                         if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length){
                             // @TODO: check if var available in scope, then take global or local scope
-                            (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                            if(Object.byString(global.puzzle.vars, (global.puzzle.ctx[next.partId] || {})._asVariable)){
+                                Object.setByString(global.puzzle.vars, (global.puzzle.ctx[next.partId] || {})._asVariable);
+                            } else (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                         } 
                         else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                     }
