@@ -380,6 +380,8 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
             var execNamespace = this.lang.currentNamespace;
+            if(!this.lang[this.lang.currentNamespace]) return;
+            
             if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) {
                 execNamespace = 'default'
             } 
