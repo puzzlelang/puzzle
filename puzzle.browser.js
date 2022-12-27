@@ -124,7 +124,6 @@ var lang = {
                                     if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
                                         if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
                                     }
-
                                     if (environment == 'node') {
 
                                         var tempDir = __dirname;//os.tmpdir();
@@ -135,6 +134,7 @@ var lang = {
 
                                             var file = require(tempDir + '/' + fileName);
                                             global.puzzle.useSyntax(file, false, done);
+                                            lang.currentNamespace = Object.keys(file)[0]
 
                                             fs.unlinkSync(tempDir + '/' +fileName);
                                         })
@@ -142,10 +142,14 @@ var lang = {
                                     } else if(environment == 'sandbox') {
                                         eval(data)
                                         global.puzzle.useSyntax(syntax, false, done);
+                                        lang.currentNamespace = Object.keys(syntax)[0]
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
+
+                                        lang.currentNamespace = Object.keys(syntax)[0]
                                     }
+
                                 });
                         }
 
@@ -219,7 +223,8 @@ var lang = {
                                 if (fileName.includes('.')) {
                                     moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
                                 }
-                                downloadModule(moduleUrl + '/' + moduleFileName, done)
+                                downloadModule(moduleUrl + '/' + moduleFileName, done);
+                                lang.currentNamespace = moduleFileName;
                             }
 
                         } catch (e) {
@@ -750,7 +755,6 @@ var lang = {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
                     ctx['useNamespace'] = global.puzzle.getRawStatement(ns);
-                    lang.currentNamespace = global.puzzle.getRawStatement(ns);
                 }
             },
             unuse: {
@@ -1063,7 +1067,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.957",
+  "version": "0.0.958",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1479,6 +1483,8 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, done) => {
 
             var execNamespace = this.lang.currentNamespace;
+            if(!this.lang[this.lang.currentNamespace]) return;
+            
             if(!(this.lang[this.lang.currentNamespace]._static || {}).execStatement) {
                 execNamespace = 'default'
             } 
