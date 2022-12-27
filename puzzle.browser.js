@@ -171,11 +171,13 @@ var lang = {
                                 var file = require(fileName);
                                 
                                 global.puzzle.useSyntax(file, false, done);
+                                lang.currentNamespace = Object.keys(file)[0]
 
                             } else if (extention && environment == 'sandbox') { 
                                 fs.readFile(fileName, function(err, data) {
                                     eval(data)
                                     global.puzzle.useSyntax(syntax, false, done);
+                                    lang.currentNamespace = Object.keys(syntax)[0]
                                 })
                             } else if (extention && environment != 'node') {
                                 
@@ -190,7 +192,7 @@ var lang = {
                                             
                                             var syntax = new Function("module = {}; " + _file + " return syntax")();
                                             global.puzzle.useSyntax(syntax, false, done);
-
+                                            lang.currentNamespace = Object.keys(syntax)[0]
 
                                         });
 
@@ -203,7 +205,7 @@ var lang = {
                                         
                                         var syntax = new Function("module = {}; " + _file + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
-
+                                        lang.currentNamespace = Object.keys(syntax)[0]
                                     });
 
                                     //if (done) done();
@@ -215,6 +217,8 @@ var lang = {
 
                                 if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true, done);
                                 else global.puzzle.useSyntax(global[fileName.substring(4)], false, done);
+
+                                lang.currentNamespace = Object.keys(global[fileName.substring(4)])[0]
 
                             } else {
 
