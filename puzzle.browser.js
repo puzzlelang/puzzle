@@ -808,7 +808,13 @@ var lang = {
             over: {
                 follow: ["{variable}", "$do"],
                 method: function(ctx, variable) {
-                    ctx.loopData = variable;
+                    variable = global.puzzle.getRawStatement(variable);
+                    console.log(global.puzzle.vars)
+                    if(Object.byString(ctx.vars || {}, variable)) ctx.loopData = Object.byString(ctx.vars || {}, variable);
+                    else if(Object.byString(global.puzzle.vars || {}, variable)) ctx.loopData = Object.byString(global.puzzle.vars || {}, variable)
+                    else ctx.loopData = variable;
+
+                    console.log(ctx.loopData)
                 }
 
             },
@@ -1834,7 +1840,10 @@ var puzzle = {
 
                     if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) {
                        
-                        if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length) (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                        if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length){
+                            // @TODO: check if var available in scope, then take global or local scope
+                            (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
+                        } 
                         else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                     }
 
