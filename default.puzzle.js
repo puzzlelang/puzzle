@@ -122,7 +122,6 @@ var lang = {
                                     if (ctx['_' + ctx['useNamespace'] + 'permanent']) {
                                         if (!localStorage.getItem('_' + ctx['useNamespace'])) localStorage.setItem('_' + ctx['useNamespace'], data)
                                     }
-
                                     if (environment == 'node') {
 
                                         var tempDir = __dirname;//os.tmpdir();
@@ -133,6 +132,7 @@ var lang = {
 
                                             var file = require(tempDir + '/' + fileName);
                                             global.puzzle.useSyntax(file, false, done);
+                                            lang.currentNamespace = Object.keys(file)[0]
 
                                             fs.unlinkSync(tempDir + '/' +fileName);
                                         })
@@ -140,10 +140,14 @@ var lang = {
                                     } else if(environment == 'sandbox') {
                                         eval(data)
                                         global.puzzle.useSyntax(syntax, false, done);
+                                        lang.currentNamespace = Object.keys(syntax)[0]
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
+
+                                        lang.currentNamespace = Object.keys(syntax)[0]
                                     }
+
                                 });
                         }
 
@@ -165,11 +169,13 @@ var lang = {
                                 var file = require(fileName);
                                 
                                 global.puzzle.useSyntax(file, false, done);
+                                lang.currentNamespace = Object.keys(file)[0]
 
                             } else if (extention && environment == 'sandbox') { 
                                 fs.readFile(fileName, function(err, data) {
                                     eval(data)
                                     global.puzzle.useSyntax(syntax, false, done);
+                                    lang.currentNamespace = Object.keys(syntax)[0]
                                 })
                             } else if (extention && environment != 'node') {
                                 
@@ -184,7 +190,7 @@ var lang = {
                                             
                                             var syntax = new Function("module = {}; " + _file + " return syntax")();
                                             global.puzzle.useSyntax(syntax, false, done);
-
+                                            lang.currentNamespace = Object.keys(syntax)[0]
 
                                         });
 
@@ -197,7 +203,7 @@ var lang = {
                                         
                                         var syntax = new Function("module = {}; " + _file + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
-
+                                        lang.currentNamespace = Object.keys(syntax)[0]
                                     });
 
                                     //if (done) done();
@@ -210,6 +216,8 @@ var lang = {
                                 if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true, done);
                                 else global.puzzle.useSyntax(global[fileName.substring(4)], false, done);
 
+                                lang.currentNamespace = Object.keys(global[fileName.substring(4)])[0]
+
                             } else {
 
                                 var moduleUrl = global.puzzle.mainRepo.replace('<module>', fileName);
@@ -217,7 +225,8 @@ var lang = {
                                 if (fileName.includes('.')) {
                                     moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
                                 }
-                                downloadModule(moduleUrl + '/' + moduleFileName, done)
+                                downloadModule(moduleUrl + '/' + moduleFileName, done);
+                                lang.currentNamespace = moduleFileName;
                             }
 
                         } catch (e) {
@@ -374,113 +383,6 @@ var lang = {
                     if (ctx.define) {
                         ctx.tokenMethod = new Function('ctx', 'data', global.puzzle.getRawStatement(method))
                     }
-                }
-            },
-            inside: {
-                follow: ["$render", "{namespace}"],
-                method: function(ctx, data) {
-                    ctx.insideNamespace = data;
-                }
-            },
-            render: {
-                follow: ["{html}"],
-                method: function(ctx, html) {
-
-                    var element = document.createElement('div');
-                    element.innerHTML = window.puzzle.getRawStatement(html);
-                    
-                    if(ctx.insideNamespace) {
-                        var innerRoot = document.querySelector(ctx.insideNamespace);
-                        innerRoot.appendChild(element);
-                    } else document.body.appendChild(element); 
-                }
-            },
-            css: { 
-                follow: ["{css}"],
-                method: function(ctx, css) {
-                    var style = document.createElement('style');
-                    style.innerText = window.puzzle.getRawStatement(css);
-                    document.body.appendChild(style)
-                }
-            },
-            load: {
-                follow: ["{library}"],
-                method: function(ctx, library) {
-                    if(library.includes('.css'))
-                      {
-                          if(library.includes('http://') || library.includes('https://')){
-                              fetch(library).then(response => response.text()).then(response => {
-                                  var tag;
-                                  tag = document.createElement('link');
-                                  tag.rel = 'stylesheet';
-                                  tag.innerText = response;
-                                  document.head.appendChild(tag);
-                              })
-                              .catch(error => {
-                                  // handle the error...
-                              });
-                              return
-                          }
-                          /*var tag;
-                          tag = document.createElement('link');
-                          tag.rel = 'stylesheet';
-                          tag.href = context.library;
-                          document.head.appendChild(tag);*/
-                      } else if(context.library.includes('.js')){
-                          var tag;
-                          tag=document.createElement('script')
-                          tag.setAttribute("type","text/javascript")
-                          tag.setAttribute("src", library);
-                          document.getElementsByTagName("head")[0].appendChild(tag);
-                          done();
-                      } 
-                }
-            },
-            alert: {
-                follow: ["{message}"],
-                method: function(ctx, message) {
-                    alert(message)
-                }
-            },
-            confirm: {
-                follow: ["{message}"],
-                method: function(ctx, message) {
-                    ctx.return = confirm(message)
-                }
-            },
-            prompt: {
-                follow: ["{message}"],
-                method: function(ctx, message) {
-                    ctx.return = prompt(message)
-                }
-            },
-            on: {
-                follow: ["$key"],
-                innerSequence: {
-                    key: {
-                        follow: ["{type,code}"],
-                        method: function(ctx, data) {
-
-                            var keyCode;
-
-                            Object.keys(lang.default._static.keyMappings).forEach(_m => {
-                                if(lang.default._static.keyMappings[_m] == data.type){
-                                    keyCode = _m;
-                                }
-                            })
-
-                            lang.default._static.registeredKeyEvents[keyCode] = window.puzzle.getRawStatement(data.code)
-
-                            document.onkeydown = function(e) {
-                                if(lang.default._static.registeredKeyEvents[e.keyCode]){
-                                    window.puzzle.parse(lang.default._static.registeredKeyEvents[e.keyCode])
-                                }
-                            };
-                        }
-                    }
-                },
-                method: function(ctx, message) {
-
                 }
             },
             and: {
@@ -861,7 +763,6 @@ var lang = {
                 follow: ["$permanent", "{file}"],
                 method: function(ctx, ns) {
                     ctx['useNamespace'] = global.puzzle.getRawStatement(ns);
-
                 }
             },
             unuse: {
