@@ -69,9 +69,7 @@ Object.setByString = function(o, k, v) {
 var lang = {
     default: {
             _static: {
-                keyMappings: {38: 'up', 37:'left', 40:'down', 39:'right', 13:'enter', 46:'delete', 32:'space'},
-                registeredKeyEvents: {},
-                execStatement: function(done, ctx) {
+               execStatement: function(done, ctx) {
 
                     var relevantNamespace = ctx.insideNamespace || 'default';
 
@@ -470,6 +468,9 @@ var lang = {
                     if (!data) return;
                     try {
                         //global.puzzle.vars[data.key] = JSON.parse(data.value);
+                        if(Object.byString(global.puzzle.vars, data.value)){
+                            Object.setByString(global.puzzle.vars, data.key, Object.byString(global.puzzle.vars, data.value))
+                        } else
                         Object.setByString(global.puzzle.vars, data.key, JSON.parse(data.value))
                     } catch (e) {
                         //global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
@@ -708,7 +709,13 @@ var lang = {
             over: {
                 follow: ["{variable}", "$do"],
                 method: function(ctx, variable) {
-                    ctx.loopData = variable;
+                    variable = global.puzzle.getRawStatement(variable);
+                    console.log(global.puzzle.vars)
+                    if(Object.byString(ctx.vars || {}, variable)) ctx.loopData = Object.byString(ctx.vars || {}, variable);
+                    else if(Object.byString(global.puzzle.vars || {}, variable)) ctx.loopData = Object.byString(global.puzzle.vars || {}, variable)
+                    else ctx.loopData = variable;
+
+                    console.log(ctx.loopData)
                 }
 
             },
