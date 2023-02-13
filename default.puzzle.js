@@ -69,9 +69,7 @@ Object.setByString = function(o, k, v) {
 var lang = {
     default: {
             _static: {
-                keyMappings: {38: 'up', 37:'left', 40:'down', 39:'right', 13:'enter', 46:'delete', 32:'space'},
-                registeredKeyEvents: {},
-                execStatement: function(done, ctx) {
+               execStatement: function(done, ctx) {
 
                     var relevantNamespace = ctx.insideNamespace || 'default';
 
@@ -470,6 +468,9 @@ var lang = {
                     if (!data) return;
                     try {
                         //global.puzzle.vars[data.key] = JSON.parse(data.value);
+                        if(Object.byString(global.puzzle.vars, data.value)){
+                            Object.setByString(global.puzzle.vars, data.key, Object.byString(global.puzzle.vars, data.value))
+                        } else
                         Object.setByString(global.puzzle.vars, data.key, JSON.parse(data.value))
                     } catch (e) {
                         //global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
