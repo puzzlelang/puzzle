@@ -561,7 +561,7 @@ var lang = {
                 }
             },
 
-                        // Math
+            // Math
             calc: {
               follow: ["$min", "$max", "$add", "$subtract", "{param}"],
               method: function(ctx, param){
@@ -705,6 +705,24 @@ var lang = {
                     
                 }
 
+            },
+            repeat: {
+                follow: ["{param}", "$times"],
+                method: function(ctx, param) {
+                    ctx.repeatCount = param;
+                },
+                innerSequence: {
+                    times: {
+                        follow: ["{script}"],
+                        method: function(ctx, script) {
+                           var c = 0;
+                           while(c < ctx.repeatCount){
+                            c++;
+                            puzzle.parse(global.puzzle.getRawStatement(script));
+                           }
+                        }
+                    }
+                }
             },
             over: {
                 follow: ["{variable}", "$do"],
