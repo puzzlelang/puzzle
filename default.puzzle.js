@@ -728,12 +728,9 @@ var lang = {
                 follow: ["{variable}", "$do"],
                 method: function(ctx, variable) {
                     variable = global.puzzle.getRawStatement(variable);
-                    console.log(global.puzzle.vars)
                     if(Object.byString(ctx.vars || {}, variable)) ctx.loopData = Object.byString(ctx.vars || {}, variable);
                     else if(Object.byString(global.puzzle.vars || {}, variable)) ctx.loopData = Object.byString(global.puzzle.vars || {}, variable)
                     else ctx.loopData = variable;
-
-                    console.log(ctx.loopData)
                 }
 
             },

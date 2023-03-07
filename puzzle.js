@@ -46,6 +46,7 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 }
 
 Object.byString = function(o, s) {
+    if(typeof s !== 'string') return s; // in case var has already been resolved
     if(!s) return o;
     s = s.replace(/\[(\w+)\]/g, '.$1');
     s = s.replace(/^\./, '');
@@ -157,6 +158,8 @@ var puzzle = {
         if(typeof statement !== 'string') returnValue = statement;
 
         if(isObject(statement)) return statement;
+
+        if(Array.isArray(statement)) return statement;
 
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
