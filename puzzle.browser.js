@@ -563,7 +563,7 @@ var lang = {
                 }
             },
 
-                        // Math
+            // Math
             calc: {
               follow: ["$min", "$max", "$add", "$subtract", "{param}"],
               method: function(ctx, param){
@@ -708,16 +708,31 @@ var lang = {
                 }
 
             },
+            repeat: {
+                follow: ["{param}", "$times"],
+                method: function(ctx, param) {
+                    ctx.repeatCount = param;
+                },
+                innerSequence: {
+                    times: {
+                        follow: ["{script}"],
+                        method: function(ctx, script) {
+                           var c = 0;
+                           while(c < ctx.repeatCount){
+                            c++;
+                            puzzle.parse(global.puzzle.getRawStatement(script));
+                           }
+                        }
+                    }
+                }
+            },
             over: {
                 follow: ["{variable}", "$do"],
                 method: function(ctx, variable) {
                     variable = global.puzzle.getRawStatement(variable);
-                    console.log(global.puzzle.vars)
                     if(Object.byString(ctx.vars || {}, variable)) ctx.loopData = Object.byString(ctx.vars || {}, variable);
                     else if(Object.byString(global.puzzle.vars || {}, variable)) ctx.loopData = Object.byString(global.puzzle.vars || {}, variable)
                     else ctx.loopData = variable;
-
-                    console.log(ctx.loopData)
                 }
 
             },
@@ -1080,7 +1095,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.959",
+  "version": "0.0.961",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1162,6 +1177,7 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 }
 
 Object.byString = function(o, s) {
+    if(typeof s !== 'string') return s; // in case var has already been resolved
     if(!s) return o;
     s = s.replace(/\[(\w+)\]/g, '.$1');
     s = s.replace(/^\./, '');
@@ -1273,6 +1289,8 @@ var puzzle = {
         if(typeof statement !== 'string') returnValue = statement;
 
         if(isObject(statement)) return statement;
+
+        if(Array.isArray(statement)) return statement;
 
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
