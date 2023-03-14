@@ -885,7 +885,9 @@ var lang = {
                 follow: ["{code}"],
                 method: function(ctx, text) {
                     try {
-                        global.puzzle.output(eval(global.puzzle.getRawStatement(text)))
+                        var result = eval(global.puzzle.getRawStatement(text));
+                        global.puzzle.output(result);
+                        ctx.return = result;
                     } catch (e) {
                         global.puzzle.error('JavaScript Error', e)
                     }
