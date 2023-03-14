@@ -886,7 +886,6 @@ var lang = {
                 method: function(ctx, text) {
                     try {
                         var result = eval(global.puzzle.getRawStatement(text));
-                        global.puzzle.output(result);
                         ctx.return = result;
                     } catch (e) {
                         global.puzzle.error('JavaScript Error', e)

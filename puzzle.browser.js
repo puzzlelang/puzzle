@@ -887,7 +887,8 @@ var lang = {
                 follow: ["{code}"],
                 method: function(ctx, text) {
                     try {
-                        global.puzzle.output(eval(global.puzzle.getRawStatement(text)))
+                        var result = eval(global.puzzle.getRawStatement(text));
+                        ctx.return = result;
                     } catch (e) {
                         global.puzzle.error('JavaScript Error', e)
                     }
@@ -1095,7 +1096,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.961",
+  "version": "0.0.962",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
