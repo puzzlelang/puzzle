@@ -1096,7 +1096,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.962",
+  "version": "0.0.963",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -1115,7 +1115,7 @@ module.exports={
   "bugs": {
     "url": "https://github.com/puzzlelang/puzzle/issues"
   },
-  "homepage": "https://github.com/puzzlelang/puzzle#readme",
+  "homepage": "https://puzzlelang.org",
   "dependencies": {
     "commander": "^5.1.0",
     "inquirer": "^7.3.0",
@@ -1127,7 +1127,6 @@ module.exports={
   },
   "devDependencies": {}
 }
-
 },{}],8:[function(require,module,exports){
 (function (process,global){(function (){
 if ((typeof process !== 'undefined') && ((process.release || {}).name === 'node')) {
