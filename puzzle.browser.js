@@ -1568,7 +1568,6 @@ var puzzle = {
 
                 var lastToken = tokens.shift();
 
-              
                 var bestMatching = getMatchingFollow(nextInstructions, tokens[0]);
                 var bestMatchingInstruction = getMatchingFollowInstruction(nextInstructions, tokens[0]);
                 // execute exact method
@@ -1662,6 +1661,16 @@ var puzzle = {
 
                 // Ignore comments for parsing
                 if ((p[0] || "").indexOf('//') == 0) return;
+
+                // get namespace from dot notation
+                p.forEach((t, i) => {
+                    if(t.includes('.')){
+                        if(this.lang[t.split('.')[0]]){
+                            this.lang.currentNamespace = t.split('.')[0];
+                            p[i] = t.split('.')[1]
+                        }
+                    }
+                })
 
                 var partId = Math.random();
 
