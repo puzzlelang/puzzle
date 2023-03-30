@@ -130,7 +130,7 @@ var lang = {
 
                                             var file = require(tempDir + '/' + fileName);
                                             global.puzzle.useSyntax(file, false, done);
-                                            lang.currentNamespace = Object.keys(file)[0]
+                                            //lang.currentNamespace = Object.keys(file)[0]
 
                                             fs.unlinkSync(tempDir + '/' +fileName);
                                         })
@@ -138,12 +138,12 @@ var lang = {
                                     } else if(environment == 'sandbox') {
                                         eval(data)
                                         global.puzzle.useSyntax(syntax, false, done);
-                                        lang.currentNamespace = Object.keys(syntax)[0]
+                                        //lang.currentNamespace = Object.keys(syntax)[0]
                                     } else {
                                         var syntax = new Function("module = {}; " + data + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
 
-                                        lang.currentNamespace = Object.keys(syntax)[0]
+                                        //lang.currentNamespace = Object.keys(syntax)[0]
                                     }
 
                                 });
@@ -154,6 +154,7 @@ var lang = {
 
                             if(typeof fileName === "object"){
                                 return global.puzzle.useSyntax(fileName, false, done);
+
                             }
 
                             var extention = fileName.split(".")[fileName.split(".").length - 1];
@@ -167,13 +168,13 @@ var lang = {
                                 var file = require(fileName);
                                 
                                 global.puzzle.useSyntax(file, false, done);
-                                lang.currentNamespace = Object.keys(file)[0]
+                                //lang.currentNamespace = Object.keys(file)[0]
 
                             } else if (extention && environment == 'sandbox') { 
                                 fs.readFile(fileName, function(err, data) {
                                     eval(data)
                                     global.puzzle.useSyntax(syntax, false, done);
-                                    lang.currentNamespace = Object.keys(syntax)[0]
+                                    //lang.currentNamespace = Object.keys(syntax)[0]
                                 })
                             } else if (extention && environment != 'node') {
                                 
@@ -188,7 +189,7 @@ var lang = {
                                             
                                             var syntax = new Function("module = {}; " + _file + " return syntax")();
                                             global.puzzle.useSyntax(syntax, false, done);
-                                            lang.currentNamespace = Object.keys(syntax)[0]
+                                            //lang.currentNamespace = Object.keys(syntax)[0]
 
                                         });
 
@@ -201,7 +202,7 @@ var lang = {
                                         
                                         var syntax = new Function("module = {}; " + _file + " return syntax")();
                                         global.puzzle.useSyntax(syntax, false, done);
-                                        lang.currentNamespace = Object.keys(syntax)[0]
+                                        //lang.currentNamespace = Object.keys(syntax)[0]
                                     });
 
                                     //if (done) done();
@@ -214,7 +215,7 @@ var lang = {
                                 if (ctx.define) global.puzzle.useSyntax(global[fileName.substring(4)], true, done);
                                 else global.puzzle.useSyntax(global[fileName.substring(4)], false, done);
 
-                                lang.currentNamespace = Object.keys(global[fileName.substring(4)])[0]
+                               // lang.currentNamespace = Object.keys(global[fileName.substring(4)])[0]
 
                             } else {
 
@@ -224,7 +225,7 @@ var lang = {
                                     moduleFileName = 'index.' + fileName.split('.')[1] + '.js';
                                 }
                                 downloadModule(moduleUrl + '/' + moduleFileName, done);
-                                lang.currentNamespace = moduleFileName;
+                                //lang.currentNamespace = moduleFileName;
                             }
 
                         } catch (e) {
@@ -878,7 +879,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.puzzle.output(global.puzzle.evaluateRawStatement(text, ctx))
+                    global.puzzle.output(global.puzzle.evaluateRawStatement(text))
                 }
             },
             js: {
@@ -985,7 +986,8 @@ var lang = {
                 method: function(ctx, variableName) {
                     ctx._asVariable  = variableName;
                 }
-            }
+            },
+            // UI:
         },
         delimeter: ";",
         assignmentOperator: "=",
