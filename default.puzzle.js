@@ -497,6 +497,18 @@ var lang = {
                     global.puzzle.vars[data.key] = value;
                 }
             },
+            as: {
+                    manual: "",
+                    follow: ["{asVariable}"],
+                    method: function(ctx, asVariable) {
+                        if(Object.keys((ctx || {}).vars).length){
+                            // @TODO: check if var available in scope, then take global or local scope
+                            (ctx || {}).vars[asVariable] = (ctx || {}).return;
+                        } 
+                        else window.puzzle.vars[asVariable] = (ctx || {}).return;
+
+                    }
+                },
             func: {
                 manual: "Sets a function",
                 follow: ["{key,params,body}"],
@@ -980,13 +992,7 @@ var lang = {
                     if(environment == 'browser') ctx.return = btoa(_data);
                     else if(environment == 'node') ctx.return = Buffer.from(_data, 'base64').toString()
                 }
-            },
-            "as": {
-                follow: ["{variableName}"],
-                method: function(ctx, variableName) {
-                    ctx._asVariable  = variableName;
-                }
-            },
+            }
             // UI:
         },
         delimeter: ";",

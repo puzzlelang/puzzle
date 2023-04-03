@@ -499,6 +499,18 @@ var lang = {
                     global.puzzle.vars[data.key] = value;
                 }
             },
+            as: {
+                    manual: "",
+                    follow: ["{asVariable}"],
+                    method: function(ctx, asVariable) {
+                        if(Object.keys((ctx || {}).vars).length){
+                            // @TODO: check if var available in scope, then take global or local scope
+                            (ctx || {}).vars[asVariable] = (ctx || {}).return;
+                        } 
+                        else window.puzzle.vars[asVariable] = (ctx || {}).return;
+
+                    }
+                },
             func: {
                 manual: "Sets a function",
                 follow: ["{key,params,body}"],
@@ -982,13 +994,7 @@ var lang = {
                     if(environment == 'browser') ctx.return = btoa(_data);
                     else if(environment == 'node') ctx.return = Buffer.from(_data, 'base64').toString()
                 }
-            },
-            "as": {
-                follow: ["{variableName}"],
-                method: function(ctx, variableName) {
-                    ctx._asVariable  = variableName;
-                }
-            },
+            }
             // UI:
         },
         delimeter: ";",
@@ -1266,6 +1272,13 @@ var puzzle = {
     useSyntax: function(jsObject, dontUse, done) {
 
         var _defaultSyntax = this.lang.default;
+        var syntaxName = Object.keys(jsObject)[0];
+
+        var combinedLang = Object.assign({}, this.lang.default, jsObject[syntaxName])
+
+        //Object.assign(jsObject[syntaxName], combinedLang);
+
+        jsObject[syntaxName].as = this.lang.default.as;
 
         Object.assign(this.lang, jsObject)
         //console.log(Object.keys(jsObject['$'])[0], 'can now be used');
@@ -1554,7 +1567,7 @@ var puzzle = {
             if (definition[lastToken]) {
 
                 if (definition[lastToken].innerSequence) {
-                    console.log(definition, lastToken)
+
                     innerDefinition = definition[lastToken].innerSequence;
                     definition = innerDefinition;
                 }
@@ -1789,7 +1802,12 @@ var puzzle = {
                 next.fn(function() {
                     //console.log('callback called', global.puzzle.ctx[next.partId]);
 
-                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as')) {
+                    /*var hasAnyAs = false;
+                    ((global.puzzle.ctx[next.partId] || {})._sequence || []).forEach(t => {
+                        if(t.includes('.as')) hasAnyAs = true;
+                    });
+
+                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as') || hasAnyAs) {
                        
                         if(Object.keys((global.puzzle.ctx[next.partId] || {}).vars).length){
                             // @TODO: check if var available in scope, then take global or local scope
@@ -1798,7 +1816,7 @@ var puzzle = {
                             } else (global.puzzle.ctx[next.partId] || {}).vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                         } 
                         else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
-                    }
+                    }*/
 
                   
                     // puzzle.schedule
