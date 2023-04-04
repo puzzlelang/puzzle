@@ -397,7 +397,6 @@ var lang = {
                 follow: ["{namespace}"],
                 method: function(ctx, ns) {
                     lang.currentNamespace = ns;
-
                 }
             },
             var: {
