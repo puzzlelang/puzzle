@@ -772,7 +772,7 @@ var lang = {
                         ctx.loopData.forEach(item => {
                             var varsObj = {};
                             varsObj[ctx.withParam] = item;
-                            global.puzzle.parse(global.puzzle.getRawStatement(statement), varsObj)
+                            global.puzzle.parse(global.puzzle.getRawStatement(statement), Object.assign(varsObj, ctx.vars))
                         })
                     } 
                 }
@@ -894,7 +894,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.puzzle.output(global.puzzle.evaluateRawStatement(text))
+                    global.puzzle.output(global.puzzle.evaluateRawStatement(text, ctx))
                 }
             },
             js: {
