@@ -167,13 +167,15 @@ var puzzle = {
     
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
-    getRawStatement: function(statement, vars) {
+    getRawStatement: function(statement, ctx) {
         if(!statement) return;
         var returnValue;
+        var vars = (ctx || {}).vars;
         /*
             @TODO: evaluate raw inputs
             var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
         */
+
 
         if(typeof statement !== 'string') returnValue = statement;
 
@@ -181,15 +183,34 @@ var puzzle = {
 
         if(Array.isArray(statement)) return statement;
 
+        if(!isNaN(statement)) return statement;
+
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
+        } else if(statement.includes('+')) {
+
+            var parts = statement.split('+');
+            var newStatement = "";
+            parts.forEach(part => {
+
+                if(vars){
+                    if(Object.byString(vars, part)) newStatement += Object.byString(vars, part);
+                    else newStatement += part;
+                } else if(Object.byString(global.puzzle.vars, part)) newStatement += Object.byString(global.puzzle.vars, part);
+                else newStatement += part;
+
+            })
+
+            return newStatement;
+
         } else returnValue = statement;
 
         if(vars)
-            if(Object.byString(vars, returnValue)) return Object.byString(vars, returnValue);
+            if(Object.byString(vars, returnValue)) returnValue = Object.byString(vars, returnValue);
 
-        if(Object.byString(global.puzzle.vars, returnValue)) return Object.byString(global.puzzle.vars, returnValue);
-
+        if(Object.byString(global.puzzle.vars, returnValue)) {
+            returnValue = Object.byString(global.puzzle.vars, returnValue);
+        }
         return returnValue
     },
 
@@ -202,15 +223,31 @@ var puzzle = {
         if (isObject(statement)) {
             return statement;
         } else {
+
             try {
                 _statement = JSON.parse(statement)
                 return _statement;
             } catch (e) {
-                if(vars){
-                    if(Object.byString(vars, statement)) return Object.byString(vars, statement);
+               
+                if(statement.includes('+') && !this.groupingOperators.includes(statement.charAt(0)) && !this.groupingOperators.includes(statement.charAt(statement.length - 1))){
+                    var parts = statement.split('+');
+                    var newStatement = "";
+                    parts.forEach(part => {
+
+                        if(vars){
+                            if(Object.byString(vars, part)) newStatement += Object.byString(vars, part);
+                            else newStatement += part;
+                        } else if(Object.byString(global.puzzle.vars, part)) newStatement += Object.byString(global.puzzle.vars, part);
+                        else newStatement += part;
+
+                    })
+
+                    return newStatement;
                 }
 
-                if(Object.byString(global.puzzle.vars, statement)) return Object.byString(global.puzzle.vars, statement);
+                if(vars){
+                    if(Object.byString(vars, statement)) statement = Object.byString(vars, statement);
+                } else if(Object.byString(global.puzzle.vars, statement)) statement = Object.byString(global.puzzle.vars, statement);
 
                 return statement;
             }
