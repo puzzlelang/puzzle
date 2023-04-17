@@ -58,10 +58,10 @@ Object.setByString = function(o, k, v) {
     const len = pList.length;
     for (var i = 0; i < len - 1; i++) {
       var elem = pList[i];
-      if (!schema[elem]) schema[elem] = {}
+      if (schema[elem] === undefined) schema[elem] = {}
       schema = schema[elem];
     }
-    if (!v) {
+    if (v === undefined) {
       return schema[pList[len - 1]];
     }
     schema[pList[len - 1]] = v;
@@ -401,13 +401,6 @@ var lang = {
                     lang.currentNamespace = ns;
                 }
             },
-            var: {
-                manual: "Sets a variable",
-                follow: ["{key,value}"],
-                method: function(ctx, data) {
-                    global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value);
-                }
-            },
             pop: {
                 manual: "removes an entry to an array or object",
                 follow: ["$from", "{data}"],
@@ -467,8 +460,63 @@ var lang = {
                 manual: "Sets a variable",
                 follow: ["$from", "$local", "{key,value}"],
                 method: function(ctx, data) {   
-                    if (!data) return;
+
+                    if (data === undefined) return;
+                    if(!isNaN(data.value)) data.value = +data.value
                     data.value = global.puzzle.getRawStatement(data.value, ctx);
+
+                    // TODO CHECK SCOPES!!!
+
+                    /*
+                    
+                    // set global value
+                    set one 1;
+    
+                    // set global global
+                    set eins one;
+                    
+
+                    set one 11;
+
+                    loop over something with dome so (
+                        set uno 1;
+
+                        set one eins;
+                        set one 111;
+                        set one uno;
+                        set uno 111;
+                    )
+
+
+                    */
+
+                    try {
+                        data.value = JSON.parse(data.value);
+                    } catch(e){
+
+                    }
+
+                  
+                    if(Object.keys(ctx.vars).length){
+                        if(Object.byString(global.puzzle.vars, data.key) !== undefined)
+                        {
+                            if(Object.byString(global.puzzle.vars, data.value) !== undefined){
+                                Object.setByString(global.puzzle.vars, data.key, Object.byString(global.puzzle.vars, data.value))
+                            } else if(Object.byString(ctx.vars, data.value) !== undefined){
+                                Object.setByString(global.puzzle.vars, data.key, Object.byString(ctx.vars, data.value))
+                            } else Object.setByString(global.puzzle.vars, data.key, data.value);
+                        } else if(Object.byString(ctx.vars, data.value) !== undefined){
+                            Object.setByString(ctx.vars, data.key, Object.byString(ctx.vars, data.value))
+                        } else Object.setByString(ctx.vars, data.key, data.value)
+                    } else {
+                         if(Object.byString(global.puzzle.vars, data.value) !== undefined){
+                                Object.setByString(global.puzzle.vars, data.key, Object.byString(global.puzzle.vars, data.value))
+                            } else {
+                                Object.setByString(global.puzzle.vars, data.key,data.value)
+                            }
+                    }
+
+/*
                     try {
                         //global.puzzle.vars[data.key] = JSON.parse(data.value);
                         if(Object.byString(global.puzzle.vars, data.value)){
@@ -480,8 +528,96 @@ var lang = {
                     } catch (e) {
                         //global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
                         Object.setByString(global.puzzle.vars, data.key, global.puzzle.evaluateRawStatement(data.value || ''))
-                    }
+                    }*/
+
+
+
+
                     ctx.return = data.value;
+
+
+                    /*if (!data) return;
+                    data.value = global.puzzle.getRawStatement(data.value, ctx);
+                    if(!isNaN(data.value)) data.value = +data.value
+                    // SWAP!!!!!
+                        console.log(data.key, data.value)
+
+                        function trySet (obj, key, val){
+                            try{
+                                Object.setByString(obj, key, JSON.parse(val))
+                            } catch (e) { 
+                                Object.setByString(obj, key, val)
+                            }
+                        }
+
+                        if(Object.keys(ctx.vars).length){
+                            
+                            // set localVar globalVar
+                            // set globalVar localVar
+                            // set localVar localVar
+                            // set localVar val
+                            // set globalVar val
+
+                            var value;
+                            if(Object.byString(global.puzzle.vars, data.value)) value = Object.byString(global.puzzle.vars, data.value);
+                            else if(Object.byString(ctx.vars, data.value)) value = Object.byString(ctx.vars, data.value);
+                            else value = data.value;
+
+                            var obj;
+                            var key = data.key;
+                            if(Object.byString(global.puzzle.vars, data.key)){
+                                obj = global.puzzle.vars
+                            } 
+                            else obj = ctx.vars;
+
+
+                            trySet(Object.setByString(obj, key, val))
+                            
+
+                        } else {
+                             if(Object.byString(global.puzzle.vars, data.value))
+                             {
+                                trySet(Object.setByString(global.puzzle.vars, data.key, Object.byString(global.puzzle.vars, data.value)))
+                             } else {
+                                console.log('dk', data.key, 'dv', data.value)
+                                trySet(Object.setByString(global.puzzle.vars, data.key, data.value));
+                            }
+                        }
+
+
+
+                        // 3. check if value is local
+
+
+                       /* var isGlobal = false;
+                        if(Object.byString(global.puzzle.vars, data.key)){
+                            console.log('ss', Object.byString(global.puzzle.vars, data.key))
+                            Object.setByString(global.puzzle.vars, data.key, Object.byString(global.puzzle.vars, data.value))
+                            isGlobal = true;
+                            console.log('global')
+                        } else {
+                            var arr = JSON.parse(data.value);
+                            Object.setByString(global.puzzle.vars, data.key, JSON.parse(data.value));
+                            isGlobal = true;
+                        }
+
+
+                        if(Object.keys(ctx.vars).length && !isGlobal){
+
+                            if(Object.byString(gctx.vars, data.value)){
+                                Object.setByString(ctx.vars, data.key, Object.byString(ctx.vars, data.value))
+                            } else {
+                                var arr = JSON.parse(data.value);
+                                Object.setByString(ctx.vars, data.key, JSON.parse(data.value))
+                            }
+                        
+                        } */
+                  /*  } catch (e) {
+                        //global.puzzle.vars[data.key] = global.puzzle.evaluateRawStatement(data.value || '');
+                        if(Object.keys(ctx.vars).length) Object.setByString(ctx.vars, data.key, global.puzzle.evaluateRawStatement(data.value || ''))
+                        else Object.setByString(global.puzzle.vars, data.key, global.puzzle.evaluateRawStatement(data.value || ''))
+                    }*/
+                   /* ctx.return = data.value;*/
                 }
             },
             unset: {
@@ -490,6 +626,22 @@ var lang = {
                 method: function(ctx, data) {
                     delete global.puzzle.vars[global.puzzle.getRawStatement(data)];
                     localStorage.removeItem('var:' + global.puzzle.getRawStatement(data));
+                }
+            },
+            get: {
+                manual: "",
+                follow: ["{arr}", "$at"],
+                method: function(ctx, arr) {
+                    ctx.arr = global.puzzle.getRawStatement(arr, ctx);
+                },
+                innerSequence: {
+                    at: {
+                        manual: "",
+                        follow: ["{pos}"],
+                        method: function(ctx, pos) {
+                            ctx.return = ctx.arr[global.puzzle.getRawStatement(pos, ctx)]
+                        }
+                    },
                 }
             },
             local: {
@@ -502,22 +654,45 @@ var lang = {
                 }
             },
             as: {
-                    manual: "",
-                    follow: ["{asVariable}"],
-                    method: function(ctx, asVariable) {
-                        if(Object.keys((ctx || {}).vars).length){
-                            // @TODO: check if var available in scope, then take global or local scope
-                            (ctx || {}).vars[asVariable] = (ctx || {}).return;
-                        } 
-                        else window.puzzle.vars[asVariable] = (ctx || {}).return;
+                manual: "",
+                follow: ["{asVariable}"],
+                method: function(ctx, asVariable) {
+
+                    try {
+                        data.value = JSON.parse(data.value);
+                    } catch(e){
 
                     }
-                },
-            func: {
-                manual: "Sets a function",
-                follow: ["{key,params,body}"],
-                method: function(ctx, data) {
-                    global.puzzle.funcs[data.key] = { params: data.params, body: data.body };
+
+                    ctx.vars = ctx.vars || {};
+                    var ret = (ctx || {}).return;
+
+                    if(Object.keys(ctx.vars).length){
+                        if(Object.byString(global.puzzle.vars, asVariable) !== undefined)
+                        {
+                            if(Object.byString(global.puzzle.vars, ret) !== undefined){
+                                Object.setByString(global.puzzle.vars, asVariable, Object.byString(global.puzzle.vars, ret))
+                            } else if(Object.byString(ctx.vars, ret) !== undefined){
+                                Object.setByString(global.puzzle.vars, asVariable, Object.byString(ctx.vars, ret))
+                            } 
+                        } else if(Object.byString(ctx.vars, ret) !== undefined){
+                            Object.setByString(ctx.vars, asVariable, Object.byString(ctx.vars, ret))
+                        } else Object.setByString(ctx.vars, asVariable, ret)
+                    } else {
+                         if(Object.byString(global.puzzle.vars, ret) !== undefined){
+                                Object.setByString(global.puzzle.vars, asVariable, Object.byString(global.puzzle.vars, ret))
+                            } else {
+                                Object.setByString(global.puzzle.vars, asVariable, ret)
+                            }
+                    }
+
+                    /*
+                    if(Object.keys((ctx || {}).vars).length){
+                        // @TODO: check if var available in scope, then take global or local scope
+                        (ctx || {}).vars[asVariable] = (ctx || {}).return;
+                    } 
+                    else window.puzzle.vars[asVariable] = (ctx || {}).return;
+                    */
                 }
             },
             runner: {
@@ -583,14 +758,23 @@ var lang = {
               follow: ["$min", "$max", "$add", "$subtract", "{param}"],
               method: function(ctx, param){
                 var codeStr = "";
+
+                Object.keys(global.puzzle.vars).forEach(v => {
+                        if(Array.isArray(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
+                        else if(isObject(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
+                        else if(typeof global.puzzle.vars[v] === "string") codeStr+="var "+v+" = '"+global.puzzle.vars[v]+"';";
+                        else codeStr+="var "+v+" = "+global.puzzle.vars[v]+";";
+                    })
+
                 if(ctx.vars){
                     Object.keys(ctx.vars).forEach(v => {
-                        if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
+                        if(Array.isArray(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
+                        else if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
                         else if(typeof ctx.vars[v] === "string") codeStr+="var "+v+" = '"+ctx.vars[v]+"';";
                         else codeStr+="var "+v+" = "+ctx.vars[v]+";";
                     })
-                }
-                ctx.return = eval(codeStr + param)
+                } 
+                ctx.return = eval(codeStr + global.puzzle.getRawStatement(param))
               },
             },
             min: {
@@ -600,9 +784,9 @@ var lang = {
                   params = params.split(',');
                   var _params = [];
                   params.forEach(p => {
-                    if(Object.byString(ctx.vars, p))
+                    if(Object.byString(ctx.vars, p) !== undefined)
                         p = Object.byString(ctx.vars, p);
-                    else if(Object.byString(global.puzzle.vars, p))
+                    else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
                     
                     _params.push(parseInt(p))
@@ -617,9 +801,9 @@ var lang = {
                   params = params.split(',');
                   var _params = [];
                   params.forEach(p => {
-                    if(Object.byString(ctx.vars, p))
+                    if(Object.byString(ctx.vars, p) !== undefined)
                         p = Object.byString(ctx.vars, p);
-                    else if(Object.byString(global.puzzle.vars, p))
+                    else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
                     _params.push(parseInt(p))
                   })
@@ -634,9 +818,9 @@ var lang = {
                   var result = 0;
                   params.forEach(p => {
                     p = p.trim();
-                    if(Object.byString(ctx.vars, p))
+                    if(Object.byString(ctx.vars, p) !== undefined)
                         p = Object.byString(ctx.vars, p);
-                    else if(Object.byString(global.puzzle.vars, p))
+                    else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
                     result += parseInt(p);
                   })
@@ -652,9 +836,9 @@ var lang = {
                   var result = params[0];
                   params.pop();
                   params.forEach(p => {
-                    if(Object.byString(ctx.vars, p))
+                    if(Object.byString(ctx.vars, p) !== undefined)
                         p = Object.byString(ctx.vars, p);
-                    else if(Object.byString(global.puzzle.vars, p))
+                    else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
                     result -= parseInt(p);
                   })
@@ -696,7 +880,7 @@ var lang = {
                         ctx.if = ctx.if.replace(/AND/g, '&&').replace(/OR/g, '||')
                         if (eval(ctx.if)) {
                             ctx.conditionMet = true;
-                            global.puzzle.parse(global.puzzle.getRawStatement(statement));
+                            global.puzzle.parse(global.puzzle.getRawStatement(statement, ctx));
                         }
                     }
                 }
@@ -746,8 +930,8 @@ var lang = {
                 method: function(ctx, variable) {
                     var variable = global.puzzle.getRawStatement(variable);
                     if(typeof variable !== 'string') ctx.loopData = variable;
-                    else if(Object.byString(ctx.vars || {}, variable)) ctx.loopData = Object.byString(ctx.vars || {}, variable);
-                    else if(Object.byString(global.puzzle.vars || {}, variable)) ctx.loopData = Object.byString(global.puzzle.vars || {}, variable)
+                    else if(Object.byString(ctx.vars || {}, variable) !== undefined) ctx.loopData = Object.byString(ctx.vars || {}, variable);
+                    else if(Object.byString(global.puzzle.vars || {}, variable) !== undefined) ctx.loopData = Object.byString(global.puzzle.vars || {}, variable)
                     else ctx.loopData = variable;
                 }
 
@@ -896,7 +1080,7 @@ var lang = {
             print: {
                 follow: ["{text}"],
                 method: function(ctx, text) {
-                    global.puzzle.output(global.puzzle.evaluateRawStatement(text, ctx))
+                    global.puzzle.output(global.puzzle.getRawStatement(text, ctx))
                 }
             },
             js: {
@@ -1310,7 +1494,7 @@ var puzzle = {
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement, ctx) {
-        if(!statement) return;
+        if(statement === undefined) return;
         var returnValue;
         var vars = (ctx || {}).vars;
         /*
@@ -1330,29 +1514,29 @@ var puzzle = {
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
         } else if(statement.includes('+')) {
-
             var parts = statement.split('+');
             var newStatement = "";
             parts.forEach(part => {
-
                 if(vars){
-                    if(Object.byString(vars, part)) newStatement += Object.byString(vars, part);
+                    if(Object.byString(vars, part) !== undefined) newStatement += Object.byString(vars, part);
+                    else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
                     else newStatement += part;
-                } else if(Object.byString(global.puzzle.vars, part)) newStatement += Object.byString(global.puzzle.vars, part);
+                } else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
                 else newStatement += part;
-
             })
 
             return newStatement;
 
         } else returnValue = statement;
 
-        if(vars)
-            if(Object.byString(vars, returnValue)) returnValue = Object.byString(vars, returnValue);
+       
 
-        if(Object.byString(global.puzzle.vars, returnValue)) {
+        if(Object.byString(vars || {}, returnValue) !== undefined) returnValue = Object.byString(vars, returnValue);
+        else if(Object.byString(global.puzzle.vars, returnValue) !== undefined) {
             returnValue = Object.byString(global.puzzle.vars, returnValue);
         }
+
+       
         return returnValue
     },
 
@@ -1377,9 +1561,9 @@ var puzzle = {
                     parts.forEach(part => {
 
                         if(vars){
-                            if(Object.byString(vars, part)) newStatement += Object.byString(vars, part);
+                            if(Object.byString(vars, part) !== undefined) newStatement += Object.byString(vars, part);
                             else newStatement += part;
-                        } else if(Object.byString(global.puzzle.vars, part)) newStatement += Object.byString(global.puzzle.vars, part);
+                        } else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
                         else newStatement += part;
 
                     })
@@ -1387,9 +1571,8 @@ var puzzle = {
                     return newStatement;
                 }
 
-                if(vars){
-                    if(Object.byString(vars, statement)) statement = Object.byString(vars, statement);
-                } else if(Object.byString(global.puzzle.vars, statement)) statement = Object.byString(global.puzzle.vars, statement);
+                if(Object.byString(vars || {}, statement) !== undefined) statement = Object.byString(vars, statement);
+                else if(Object.byString(global.puzzle.vars, statement) !== undefined) statement = Object.byString(global.puzzle.vars, statement);
 
                 return statement;
             }
@@ -1513,16 +1696,18 @@ var puzzle = {
         // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (ctx, key, param, namespace, dslKey, innerDefinition) => {
 
-            if (isObject(param)) {
-                Object.keys(param).forEach(p => {
+            if(!ctx._sequence.includes('as')){
+                if (isObject(param)) {
+                    Object.keys(param).forEach(p => {
+                        if(ctx.vars){
+                            if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
+                        } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
+                    })
+                } else {
                     if(ctx.vars){
-                        if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
-                    } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
-                })
-            } else {
-                if(ctx.vars){
-                    if(ctx.vars[param]) param = ctx.vars[param];
-                } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                        if(ctx.vars[param]) param = ctx.vars[param];
+                    } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                }
             }
             /*if (param) {
                 if (isObject(param)) {

@@ -168,7 +168,7 @@ var puzzle = {
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
     getRawStatement: function(statement, ctx) {
-        if(!statement) return;
+        if(statement === undefined) return;
         var returnValue;
         var vars = (ctx || {}).vars;
         /*
@@ -188,29 +188,29 @@ var puzzle = {
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
         } else if(statement.includes('+')) {
-
             var parts = statement.split('+');
             var newStatement = "";
             parts.forEach(part => {
-
                 if(vars){
-                    if(Object.byString(vars, part)) newStatement += Object.byString(vars, part);
+                    if(Object.byString(vars, part) !== undefined) newStatement += Object.byString(vars, part);
+                    else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
                     else newStatement += part;
-                } else if(Object.byString(global.puzzle.vars, part)) newStatement += Object.byString(global.puzzle.vars, part);
+                } else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
                 else newStatement += part;
-
             })
 
             return newStatement;
 
         } else returnValue = statement;
 
-        if(vars)
-            if(Object.byString(vars, returnValue)) returnValue = Object.byString(vars, returnValue);
+       
 
-        if(Object.byString(global.puzzle.vars, returnValue)) {
+        if(Object.byString(vars || {}, returnValue) !== undefined) returnValue = Object.byString(vars, returnValue);
+        else if(Object.byString(global.puzzle.vars, returnValue) !== undefined) {
             returnValue = Object.byString(global.puzzle.vars, returnValue);
         }
+
+       
         return returnValue
     },
 
@@ -235,9 +235,9 @@ var puzzle = {
                     parts.forEach(part => {
 
                         if(vars){
-                            if(Object.byString(vars, part)) newStatement += Object.byString(vars, part);
+                            if(Object.byString(vars, part) !== undefined) newStatement += Object.byString(vars, part);
                             else newStatement += part;
-                        } else if(Object.byString(global.puzzle.vars, part)) newStatement += Object.byString(global.puzzle.vars, part);
+                        } else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
                         else newStatement += part;
 
                     })
@@ -245,9 +245,8 @@ var puzzle = {
                     return newStatement;
                 }
 
-                if(vars){
-                    if(Object.byString(vars, statement)) statement = Object.byString(vars, statement);
-                } else if(Object.byString(global.puzzle.vars, statement)) statement = Object.byString(global.puzzle.vars, statement);
+                if(Object.byString(vars || {}, statement) !== undefined) statement = Object.byString(vars, statement);
+                else if(Object.byString(global.puzzle.vars, statement) !== undefined) statement = Object.byString(global.puzzle.vars, statement);
 
                 return statement;
             }
@@ -371,16 +370,18 @@ var puzzle = {
         // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (ctx, key, param, namespace, dslKey, innerDefinition) => {
 
-            if (isObject(param)) {
-                Object.keys(param).forEach(p => {
+            if(!ctx._sequence.includes('as')){
+                if (isObject(param)) {
+                    Object.keys(param).forEach(p => {
+                        if(ctx.vars){
+                            if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
+                        } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
+                    })
+                } else {
                     if(ctx.vars){
-                        if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
-                    } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
-                })
-            } else {
-                if(ctx.vars){
-                    if(ctx.vars[param]) param = ctx.vars[param];
-                } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                        if(ctx.vars[param]) param = ctx.vars[param];
+                    } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                }
             }
             /*if (param) {
                 if (isObject(param)) {
