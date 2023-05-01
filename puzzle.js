@@ -46,7 +46,9 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 }
 
 Object.byString = function(o, s) {
+    if(o[s] !== undefined) return o[s];
     if(typeof s !== 'string') return s; // in case var has already been resolved
+    
     if(!s) return o;
     s = s.replace(/\[(\w+)\]/g, '.$1');
     s = s.replace(/^\./, '');
@@ -71,7 +73,7 @@ var puzzle = {
     lang: require('./default.puzzle.js'),
 
     run: (file) => {
-        puzzle.parse(dependencies.fs.readFileSync(file).toString())
+        puzzle.parse(dependencies.fs.readFileSync(file).toString(), {}, {}, true)
     },
 
     // Schedule map for statements
@@ -167,13 +169,15 @@ var puzzle = {
     
 
     // Returns the raw statement from an input. e.g. (print hello) will return print hello
-    getRawStatement: function(statement, vars) {
-        if(!statement) return;
+    getRawStatement: function(statement, ctx) {
+        if(statement === undefined) return;
         var returnValue;
+        var vars = (ctx || {}).vars;
         /*
             @TODO: evaluate raw inputs
             var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
         */
+
 
         if(typeof statement !== 'string') returnValue = statement;
 
@@ -181,15 +185,34 @@ var puzzle = {
 
         if(Array.isArray(statement)) return statement;
 
+        if(!isNaN(statement)) return statement;
+
         if (this.groupingOperators.includes(statement.charAt(0)) && this.groupingOperators.includes(statement.charAt(statement.length - 1))) {
             returnValue = statement.substring(1, statement.length - 1)
+        } else if(statement.includes('+')) {
+            var parts = statement.split('+');
+            var newStatement = "";
+            parts.forEach(part => {
+                if(vars){
+                    if(Object.byString(vars, part) !== undefined) newStatement += Object.byString(vars, part);
+                    else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
+                    else newStatement += part;
+                } else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
+                else newStatement += part;
+            })
+
+            return newStatement;
+
         } else returnValue = statement;
 
-        if(vars)
-            if(Object.byString(vars, returnValue)) return Object.byString(vars, returnValue);
+       
 
-        if(Object.byString(global.puzzle.vars, returnValue)) return Object.byString(global.puzzle.vars, returnValue);
+        if(Object.byString(vars || {}, returnValue) !== undefined) returnValue = Object.byString(vars, returnValue);
+        else if(Object.byString(global.puzzle.vars, returnValue) !== undefined) {
+            returnValue = Object.byString(global.puzzle.vars, returnValue);
+        }
 
+       
         return returnValue
     },
 
@@ -202,15 +225,30 @@ var puzzle = {
         if (isObject(statement)) {
             return statement;
         } else {
+
             try {
                 _statement = JSON.parse(statement)
                 return _statement;
             } catch (e) {
-                if(vars){
-                    if(Object.byString(vars, statement)) return Object.byString(vars, statement);
+               
+                if(statement.includes('+') && !this.groupingOperators.includes(statement.charAt(0)) && !this.groupingOperators.includes(statement.charAt(statement.length - 1))){
+                    var parts = statement.split('+');
+                    var newStatement = "";
+                    parts.forEach(part => {
+
+                        if(vars){
+                            if(Object.byString(vars, part) !== undefined) newStatement += Object.byString(vars, part);
+                            else newStatement += part;
+                        } else if(Object.byString(global.puzzle.vars, part) !== undefined) newStatement += Object.byString(global.puzzle.vars, part);
+                        else newStatement += part;
+
+                    })
+
+                    return newStatement;
                 }
 
-                if(Object.byString(global.puzzle.vars, statement)) return Object.byString(global.puzzle.vars, statement);
+                if(Object.byString(vars || {}, statement) !== undefined) statement = Object.byString(vars, statement);
+                else if(Object.byString(global.puzzle.vars, statement) !== undefined) statement = Object.byString(global.puzzle.vars, statement);
 
                 return statement;
             }
@@ -228,7 +266,7 @@ var puzzle = {
         }
     },
 
-    parse: function(code, vars, funcs) {
+    parse: function(code, vars, funcs, isRoot) {
 
         if (!vars) vars = {};
         if (!funcs) funcs = {};
@@ -334,16 +372,18 @@ var puzzle = {
         // Call the dynamic, corresponding api method that blongs to a single token
         var callTokenFunction = (ctx, key, param, namespace, dslKey, innerDefinition) => {
 
-            if (isObject(param)) {
-                Object.keys(param).forEach(p => {
+            if(!ctx._sequence.includes('as')){
+                if (isObject(param)) {
+                    Object.keys(param).forEach(p => {
+                        if(ctx.vars){
+                            if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
+                        } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
+                    })
+                } else {
                     if(ctx.vars){
-                        if(ctx.vars[param[p]]) param[p] = ctx.vars[param[p]];
-                    } else if(global.puzzle.vars[param[p]]) param[p] = global.puzzle.vars[param[p]];
-                })
-            } else {
-                if(ctx.vars){
-                    if(ctx.vars[param]) param = ctx.vars[param];
-                } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                        if(ctx.vars[param]) param = ctx.vars[param];
+                    } else if(global.puzzle.vars[param]) param = global.puzzle.vars[param];
+                }
             }
             /*if (param) {
                 if (isObject(param)) {
@@ -408,6 +448,8 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, namespace, done) => {
 
             var execNamespace = namespace;
+
+
             if(!this.lang[namespace]) return;
             
             
@@ -429,8 +471,9 @@ var puzzle = {
                 execNamespace = this.lang.default[global.puzzle.ctx[partId]._sequence[0]].ns || 'default';
             }
 
-            //console.log(tokens.length, tokens, this.lang.delimeter);
 
+            //console.log(tokens.length, tokens, this.lang.delimeter);
+ //console.log('execNamespace', token, tokens, execNamespace, global.puzzle.ctx[partId]._sequence[0])
             // Statement end
             if (tokens.length == 1 && token == this.lang.delimeter) {
 
@@ -600,6 +643,7 @@ var puzzle = {
                         global.puzzle.ctx[partId] = {
                             _sequence: [],
                             vars: vars,
+                            isRoot: isRoot,
                             done: () => {
                                 global.puzzle.ctx[partId].execStatement = true;
                             }
@@ -755,7 +799,7 @@ try {
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
                 if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {
-                    window.puzzle.parse(s.innerHTML);
+                    window.puzzle.parse(s.innerHTML, {}, {}, true);
                 }
             })
 
