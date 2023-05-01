@@ -51,6 +51,7 @@ var isLiteral = (a) => {
 }
 
 Object.setByString = function(o, k, v) {
+    if(!isNaN(k)) return;
     let schema = o;
     const pList = k.split('.');
     const len = pList.length;
@@ -358,7 +359,7 @@ var lang = {
                 }
             },
             with: {
-                follow: ["{param}", "$follow", "$method", "$do"],
+                follow: ["{param}", "$follow", "$method", "$do", "$run"],
                 method: function(ctx, param) {
                     ctx.withParam = param;
                 }
@@ -399,6 +400,20 @@ var lang = {
                     lang.currentNamespace = ns;
                 }
             },
+            random: {
+                follow: ["$number"],
+                method: function(ctx, ns) {
+                    
+                },
+                innerSequence: {
+                    number: {
+                        follow: ["$as"],
+                        method: function(ctx, ns) {
+                            ctx.return = Math.floor(Math.random() * 999) + 1;
+                        }
+                    },
+                }
+            },
             pop: {
                 manual: "removes an entry to an array or object",
                 follow: ["$from", "{data}"],
@@ -417,12 +432,12 @@ var lang = {
                 manual: "adds an entry to an array or object",
                 follow: ["{varName}"],
                 method: function(ctx, varName) {
-                    varName = global.puzzle.getRawStatement(varName);
 
                     if (ctx.addData) {
                         if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
                         var variable = global.puzzle.vars[varName];
                         if (Array.isArray(variable)) {
+                            console.log('adding to array', global.puzzle.getRawStatement(ctx.addData, ctx))
                             global.puzzle.vars[varName].push(global.puzzle.getRawStatement(ctx.addData));
                         } else if (isObject(variable)) {
                             try {
@@ -463,6 +478,8 @@ var lang = {
                     if(!isNaN(data.value)) data.value = +data.value
                     data.value = global.puzzle.getRawStatement(data.value, ctx);
 
+
+
                     // TODO CHECK SCOPES!!!
 
                     /*
@@ -494,8 +511,10 @@ var lang = {
 
                     }
 
-                  
-                    if(Object.keys(ctx.vars).length){
+                    Object.setByString(global.puzzle.vars, data.key,data.value)
+
+                  /*
+                    if(/*Object.keys(ctx.vars).length* !ctx.isRoot){
                         if(Object.byString(global.puzzle.vars, data.key) !== undefined)
                         {
                             if(Object.byString(global.puzzle.vars, data.value) !== undefined){
@@ -512,7 +531,8 @@ var lang = {
                             } else {
                                 Object.setByString(global.puzzle.vars, data.key,data.value)
                             }
-                    }
+                    }*/
+
 
 /*
                     try {
@@ -637,7 +657,11 @@ var lang = {
                         manual: "",
                         follow: ["{pos}"],
                         method: function(ctx, pos) {
-                            ctx.return = ctx.arr[global.puzzle.getRawStatement(pos, ctx)]
+                            if(Array.isArray(ctx.arr))
+                                ctx.return = ctx.arr[global.puzzle.getRawStatement(pos, ctx)];
+                            else {
+                                ctx.return = Object.byString(ctx.arr, global.puzzle.getRawStatement(pos, ctx));
+                            }
                         }
                     },
                 }
@@ -665,24 +689,31 @@ var lang = {
                     ctx.vars = ctx.vars || {};
                     var ret = (ctx || {}).return;
 
-                    if(Object.keys(ctx.vars).length){
+                    Object.setByString(global.puzzle.vars, asVariable, ret)
+
+                    /*if(/*Object.keys(ctx.vars).length* !ctx.isRoot){
+
                         if(Object.byString(global.puzzle.vars, asVariable) !== undefined)
                         {
                             if(Object.byString(global.puzzle.vars, ret) !== undefined){
-                                Object.setByString(global.puzzle.vars, asVariable, Object.byString(global.puzzle.vars, ret))
+                                Object.setByString(global.puzzle.vars, asVariable, ret)
                             } else if(Object.byString(ctx.vars, ret) !== undefined){
                                 Object.setByString(global.puzzle.vars, asVariable, Object.byString(ctx.vars, ret))
                             } 
                         } else if(Object.byString(ctx.vars, ret) !== undefined){
+
                             Object.setByString(ctx.vars, asVariable, Object.byString(ctx.vars, ret))
-                        } else Object.setByString(ctx.vars, asVariable, ret)
+                        } else {
+                            
+                            Object.setByString(ctx.vars, asVariable, ret)
+                        }
                     } else {
                          if(Object.byString(global.puzzle.vars, ret) !== undefined){
                                 Object.setByString(global.puzzle.vars, asVariable, Object.byString(global.puzzle.vars, ret))
                             } else {
                                 Object.setByString(global.puzzle.vars, asVariable, ret)
                             }
-                    }
+                    }*/
 
                     /*
                     if(Object.keys((ctx || {}).vars).length){
@@ -710,32 +741,26 @@ var lang = {
             run: {
                 manual: "Runs a function",
                 follow: ["{subscript}"],
-                innerSequence: { 
-                    in: {
-                        follow: ["{subscript}"],
-                        method: function(ctx, subscript) {
-                            var vars = {};
-                            ctx.params.split(',').forEach(p => {
-                                vars[p.split(':')[0]] = p.split(':')[1]
-                            })
-                            if (global.puzzle.subscripts[subscript]) {
-                                var func = global.puzzle.subscripts[subscript];
-                                global.puzzle.parse(func.body, Object.assign(global.puzzle.vars, vars));
-                            } else if(isLiteral(subscript)) {
-                                global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(global.puzzle.vars, vars));
-                            }
-                        }
-                    }
-                },
                 method: function(ctx, subscript) {
                     function run(){
+
+                        var vars = {};
+
+                        if(ctx.withParam){
+                            ctx.withParam.split(',').forEach(p => {
+                                var val = global.puzzle.getRawStatement(p.split(':')[1], ctx);
+                                if(!isNaN(val)) val = +val;
+                                vars[p.split(':')[0]] = val;
+                            })
+                        }
+
                         if (global.puzzle.subscripts[subscript]) {
                             var func = global.puzzle.subscripts[subscript];
-                            global.puzzle.parse(func.body, global.puzzle.vars);
+                            global.puzzle.parse(func.body, Object.assign(ctx.vars, vars));
+                        } else if(Object.byString(global.puzzle.vars, subscript)) {
+                            global.puzzle.parse(Object.byString(global.puzzle.vars, subscript), Object.assign(ctx.vars, vars));
                         } else if(isLiteral(subscript)) {
-                            global.puzzle.parse(global.puzzle.getRawStatement(subscript));
-                        } else {
-                            ctx.params = global.puzzle.getRawStatement(subscript);
+                            global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(ctx.vars, vars));
                         } 
                     }
 
@@ -747,7 +772,7 @@ var lang = {
                         lang.delays[Math.random()] = setTimeout(() => {
                             run()
                         }, parseInt(ctx.timeoutTime))
-                    }
+                    } else run();
                 }
             },
 
@@ -760,7 +785,7 @@ var lang = {
                 Object.keys(global.puzzle.vars).forEach(v => {
                         if(Array.isArray(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
                         else if(isObject(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
-                        else if(typeof global.puzzle.vars[v] === "string") codeStr+="var "+v+" = '"+global.puzzle.vars[v]+"';";
+                        else if(typeof global.puzzle.vars[v] === "string") codeStr+="var "+v+" = "+(+global.puzzle.vars[v])+";";
                         else codeStr+="var "+v+" = "+global.puzzle.vars[v]+";";
                     })
 
@@ -768,10 +793,11 @@ var lang = {
                     Object.keys(ctx.vars).forEach(v => {
                         if(Array.isArray(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
                         else if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
-                        else if(typeof ctx.vars[v] === "string") codeStr+="var "+v+" = '"+ctx.vars[v]+"';";
+                        else if(typeof ctx.vars[v] === "string") codeStr+="var "+v+" = "+(+ctx.vars[v])+";";
                         else codeStr+="var "+v+" = "+ctx.vars[v]+";";
                     })
                 } 
+                codeStr = codeStr.replace(/(\r\n|\n|\r)/gm,"");
                 ctx.return = eval(codeStr + global.puzzle.getRawStatement(param))
               },
             },
@@ -809,20 +835,14 @@ var lang = {
               }
             },
             add: {
-              follow: ["{params}"],
+              follow: ["{params}", "$to"],
               method: function(ctx, param){
-                  var params = global.puzzle.getRawStatement(param);
-                  params = params.split(',');
-                  var result = 0;
-                  params.forEach(p => {
-                    p = p.trim();
-                    if(Object.byString(ctx.vars, p) !== undefined)
-                        p = Object.byString(ctx.vars, p);
-                    else if(Object.byString(global.puzzle.vars, p) !== undefined)
-                        p = Object.byString(global.puzzle.vars, p)
-                    result += parseInt(p);
-                  })
-                  ctx.return = result
+                try {
+                  ctx.addData = JSON.parse(global.puzzle.getRawStatement(param));
+                 } catch(e) {
+                    ctx.addData = global.puzzle.getRawStatement(param);
+                 }
+                  
               }
             },
             subtract: {
@@ -866,6 +886,11 @@ var lang = {
                 follow: ["{condition}", "$then"],
                 method: function(ctx, condition) {
                     ctx.if = condition;
+                    if(!ctx.isRoot){
+                        Object.keys(ctx.vars).forEach(v => {
+                            if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, ctx.vars[v])
+                        })
+                    }
                     Object.keys(global.puzzle.vars).forEach(v => {
                         if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, global.puzzle.vars[v])
                     })
@@ -878,7 +903,7 @@ var lang = {
                         ctx.if = ctx.if.replace(/AND/g, '&&').replace(/OR/g, '||')
                         if (eval(ctx.if)) {
                             ctx.conditionMet = true;
-                            global.puzzle.parse(global.puzzle.getRawStatement(statement, ctx));
+                            global.puzzle.parse(global.puzzle.getRawStatement(statement, ctx), ctx.vars);
                         }
                     }
                 }
@@ -908,7 +933,7 @@ var lang = {
             repeat: {
                 follow: ["{param}", "$times"],
                 method: function(ctx, param) {
-                    ctx.repeatCount = param;
+                    ctx.repeatCount = global.puzzle.getRawStatement(param, ctx);
                 },
                 innerSequence: {
                     times: {
@@ -916,7 +941,7 @@ var lang = {
                         method: function(ctx, script) {
                            var c = 0;
                            while(c < ctx.repeatCount){
-                            puzzle.parse(global.puzzle.getRawStatement(script), Object.assign(ctx.vars, {idx: c}));
+                            puzzle.parse(global.puzzle.getRawStatement(script), {idx: c});
                             c++;
                            }
                         }

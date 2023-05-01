@@ -46,7 +46,9 @@ var mergeSyntaxWithDefault = (defaultSyntax, newSyntax) => {
 }
 
 Object.byString = function(o, s) {
+    if(o[s] !== undefined) return o[s];
     if(typeof s !== 'string') return s; // in case var has already been resolved
+    
     if(!s) return o;
     s = s.replace(/\[(\w+)\]/g, '.$1');
     s = s.replace(/^\./, '');
@@ -71,7 +73,7 @@ var puzzle = {
     lang: require('./default.puzzle.js'),
 
     run: (file) => {
-        puzzle.parse(dependencies.fs.readFileSync(file).toString())
+        puzzle.parse(dependencies.fs.readFileSync(file).toString(), {}, {}, true)
     },
 
     // Schedule map for statements
@@ -264,7 +266,7 @@ var puzzle = {
         }
     },
 
-    parse: function(code, vars, funcs) {
+    parse: function(code, vars, funcs, isRoot) {
 
         if (!vars) vars = {};
         if (!funcs) funcs = {};
@@ -446,6 +448,8 @@ var puzzle = {
         var sequence = (tokens, token, instructionKey, lastToken, partId, namespace, done) => {
 
             var execNamespace = namespace;
+
+
             if(!this.lang[namespace]) return;
             
             
@@ -467,8 +471,9 @@ var puzzle = {
                 execNamespace = this.lang.default[global.puzzle.ctx[partId]._sequence[0]].ns || 'default';
             }
 
-            //console.log(tokens.length, tokens, this.lang.delimeter);
 
+            //console.log(tokens.length, tokens, this.lang.delimeter);
+ //console.log('execNamespace', token, tokens, execNamespace, global.puzzle.ctx[partId]._sequence[0])
             // Statement end
             if (tokens.length == 1 && token == this.lang.delimeter) {
 
@@ -638,6 +643,7 @@ var puzzle = {
                         global.puzzle.ctx[partId] = {
                             _sequence: [],
                             vars: vars,
+                            isRoot: isRoot,
                             done: () => {
                                 global.puzzle.ctx[partId].execStatement = true;
                             }
@@ -793,7 +799,7 @@ try {
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
                 if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {
-                    window.puzzle.parse(s.innerHTML);
+                    window.puzzle.parse(s.innerHTML, {}, {}, true);
                 }
             })
 
