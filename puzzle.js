@@ -121,13 +121,13 @@ var puzzle = {
     context: {},
 
     output: function() {
-        for (arg of arguments) {
+        for (var arg of arguments) {
             console.info(arg);
         }
     },
 
     error: function() {
-        for (arg of arguments) {
+        for (var arg of arguments) {
             console.error(arg);
         }
     },
