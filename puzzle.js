@@ -669,7 +669,8 @@ var puzzle = {
                                 t = t.split('.')[1]
                             }
                         } else {
-                            namespace = this.lang.default[t].ns || 'default';
+                            if(this.lang.default[t]) namespace = this.lang.default[t].ns || 'default';
+                            else namespace = 'default';
                         }
 
                         var lastToken = tokens.shift();

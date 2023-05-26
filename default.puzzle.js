@@ -285,7 +285,7 @@ var lang = {
                 manual: "bind vars from parent javascript",
                 follow: ["{value}"],
                 method: function(ctx, value) {
-                    global.puzzle.vars = eval('('+value+')');
+                    global.puzzle.vars = eval('('+value+');');
                 }
             },
             "isolate-vars": {
@@ -364,6 +364,12 @@ var lang = {
                     ctx.withParam = param;
                 }
             },
+            stop: {
+                follow: [],
+                method: function(ctx, param) {
+                    
+                }
+            },
             follow: {
                 follow: ["{follow}", "$and"],
                 method: function(ctx, follow) {
@@ -437,7 +443,6 @@ var lang = {
                         if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
                         var variable = global.puzzle.vars[varName];
                         if (Array.isArray(variable)) {
-                            console.log('adding to array', global.puzzle.getRawStatement(ctx.addData, ctx))
                             global.puzzle.vars[varName].push(global.puzzle.getRawStatement(ctx.addData));
                         } else if (isObject(variable)) {
                             try {
@@ -689,7 +694,10 @@ var lang = {
                     ctx.vars = ctx.vars || {};
                     var ret = (ctx || {}).return;
 
+
                     Object.setByString(global.puzzle.vars, asVariable, ret)
+
+                    ctx.done();
 
                     /*if(/*Object.keys(ctx.vars).length* !ctx.isRoot){
 
@@ -783,7 +791,8 @@ var lang = {
                 var codeStr = "";
 
                 Object.keys(global.puzzle.vars).forEach(v => {
-                        if(Array.isArray(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
+                        if(global.puzzle.vars[v] instanceof HTMLElement) {}
+                        else if(Array.isArray(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
                         else if(isObject(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
                         else if(typeof global.puzzle.vars[v] === "string") codeStr+="var "+v+" = "+(+global.puzzle.vars[v])+";";
                         else codeStr+="var "+v+" = "+global.puzzle.vars[v]+";";
@@ -791,13 +800,15 @@ var lang = {
 
                 if(ctx.vars){
                     Object.keys(ctx.vars).forEach(v => {
-                        if(Array.isArray(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
+                        if(ctx.vars[v] instanceof HTMLElement) {}
+                        else if(Array.isArray(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
                         else if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
                         else if(typeof ctx.vars[v] === "string") codeStr+="var "+v+" = "+(+ctx.vars[v])+";";
                         else codeStr+="var "+v+" = "+ctx.vars[v]+";";
                     })
                 } 
                 codeStr = codeStr.replace(/(\r\n|\n|\r)/gm,"");
+
                 ctx.return = eval(codeStr + global.puzzle.getRawStatement(param))
               },
             },
@@ -834,15 +845,21 @@ var lang = {
                   ctx.return = Math.max(..._params)
               }
             },
-            add: {
-              follow: ["{params}", "$to"],
+            sum: {
+              follow: ["{params}"],
               method: function(ctx, param){
-                try {
-                  ctx.addData = JSON.parse(global.puzzle.getRawStatement(param));
-                 } catch(e) {
-                    ctx.addData = global.puzzle.getRawStatement(param);
-                 }
-                  
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  var result = 0;
+                  params.forEach(p => {
+                    p = p.trim();
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    else if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
+                    result += parseInt(p);
+                  })
+                  ctx.return = result
               }
             },
             subtract: {
@@ -864,6 +881,17 @@ var lang = {
               }
             },
 
+            add: {
+              follow: ["{params}", "$to"],
+              method: function(ctx, param){
+                try {
+                  ctx.addData = JSON.parse(global.puzzle.getRawStatement(param));
+                 } catch(e) {
+                    ctx.addData = global.puzzle.getRawStatement(param);
+                 }
+                  
+              }
+            },
             every: {
                 follow: ["{time}", "$run"],
                 method: function(ctx, data) {
@@ -897,7 +925,7 @@ var lang = {
                 }
             },
             then: {
-                follow: ["{statement}", "$else"],
+                follow: ["{statement}", "$else", "$stop"],
                 method: function(ctx, statement) {
                     if (ctx.if) {
                         ctx.if = ctx.if.replace(/AND/g, '&&').replace(/OR/g, '||')
