@@ -696,7 +696,6 @@ var lang = {
                     ctx.vars = ctx.vars || {};
                     var ret = (ctx || {}).return;
 
-                  
 
                     Object.setByString(global.puzzle.vars, asVariable, ret)
 
@@ -794,7 +793,7 @@ var lang = {
                 var codeStr = "";
 
                 Object.keys(global.puzzle.vars).forEach(v => {
-                        if(global.puzzle.vars[v] instanceof HTMLElement) {}
+                        if(isObject(global.puzzle.vars[v]) && (global.puzzle.vars[v] || {}).nodeType) {}
                         else if(Array.isArray(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
                         else if(isObject(global.puzzle.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(global.puzzle.vars[v])+";";
                         else if(typeof global.puzzle.vars[v] === "string") codeStr+="var "+v+" = "+(+global.puzzle.vars[v])+";";
@@ -803,7 +802,7 @@ var lang = {
 
                 if(ctx.vars){
                     Object.keys(ctx.vars).forEach(v => {
-                        if(ctx.vars[v] instanceof HTMLElement) {}
+                        if(isObject(ctx.vars[v]) && (ctx[v] || {}).nodeType) {}
                         else if(Array.isArray(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
                         else if(isObject(ctx.vars[v])) codeStr+="var "+v+" = "+ JSON.stringify(ctx.vars[v])+";";
                         else if(typeof ctx.vars[v] === "string") codeStr+="var "+v+" = "+(+ctx.vars[v])+";";
@@ -848,15 +847,21 @@ var lang = {
                   ctx.return = Math.max(..._params)
               }
             },
-            add: {
-              follow: ["{params}", "$to"],
+            sum: {
+              follow: ["{params}"],
               method: function(ctx, param){
-                try {
-                  ctx.addData = JSON.parse(global.puzzle.getRawStatement(param));
-                 } catch(e) {
-                    ctx.addData = global.puzzle.getRawStatement(param);
-                 }
-                  
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  var result = 0;
+                  params.forEach(p => {
+                    p = p.trim();
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
+                    result += parseInt(p);
+                  })
+                  ctx.return = result
               }
             },
             subtract: {
@@ -878,6 +883,17 @@ var lang = {
               }
             },
 
+            add: {
+              follow: ["{params}", "$to"],
+              method: function(ctx, param){
+                try {
+                  ctx.addData = JSON.parse(global.puzzle.getRawStatement(param));
+                 } catch(e) {
+                    ctx.addData = global.puzzle.getRawStatement(param);
+                 }
+                  
+              }
+            },
             every: {
                 follow: ["{time}", "$run"],
                 method: function(ctx, data) {
@@ -1328,7 +1344,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.967",
+  "version": "0.0.969",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
