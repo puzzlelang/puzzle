@@ -105,6 +105,28 @@ var lang = {
                         global.puzzle.output(ctx['unUseNamespace'], 'unused');
                     }
 
+                    if(ctx.fetch){
+
+                        var options = {
+                               method: ctx.method
+                           };
+
+                           if (ctx.method == 'post') options.body = ctx.payload;
+                           else if (ctx.method == 'get' && ctx.payload) url += '?' + ctx.payload;
+                           else if (ctx.method == 'delete') options.body = ctx.payload;
+
+                           fetch(ctx.url, options).then(res => res.text())
+                           .then(text => {
+                               try {
+                                   text = JSON.parse(text)
+                               } catch(e){};
+                               ctx.return = text;
+                                done();
+                              });
+                        return;
+                    }
+                   
+
                     if (ctx['useNamespace']) {
 
                         function downloadModule(fileName, done) {
@@ -439,6 +461,8 @@ var lang = {
                 follow: ["{varName}"],
                 method: function(ctx, varName) {
 
+                    varName = global.puzzle.getRawStatement(varName);
+
                     if (ctx.addData) {
                         if (!global.puzzle.vars.hasOwnProperty(varName)) return global.puzzle.output(varName + 'does not exist');
                         var variable = global.puzzle.vars[varName];
@@ -453,6 +477,8 @@ var lang = {
                                 //global.puzzle.output(e)
                             }
                         }
+                    } else if(ctx.fetch){
+                        ctx.url = varName;
                     }
                 }
             },
@@ -471,6 +497,8 @@ var lang = {
                             if (!global.puzzle.vars[varName].hasOwnProperty(global.puzzle.getRawStatement(ctx.popData))) return global.puzzle.output(global.puzzle.getRawStatement(ctx.popData) + 'does not exist in this object');
                             delete global.puzzle.vars[varName][global.puzzle.getRawStatement(ctx.popData)];
                         }
+                    } else if(ctx.fetch){
+                        ctx.url = varName;
                     }
                 }
             },
@@ -685,6 +713,8 @@ var lang = {
                 follow: ["{asVariable}"],
                 method: function(ctx, asVariable) {
 
+                    ctx._asVariable = asVariable;
+                    
                     try {
                         data.value = JSON.parse(data.value);
                     } catch(e){
@@ -696,6 +726,7 @@ var lang = {
 
 
                     Object.setByString(global.puzzle.vars, asVariable, ret)
+
 
                     ctx.done();
 
@@ -916,11 +947,18 @@ var lang = {
                     ctx.if = condition;
                     if(!ctx.isRoot){
                         Object.keys(ctx.vars).forEach(v => {
-                            if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, ctx.vars[v])
+                            if (ctx.if.includes(v)){
+                                var val = ctx.vars[v];
+                                if(typeof ctx.vars[v] == "string") val = '"'+ctx.vars[v]+'"';
+                                if(isObject(ctx.vars[v])) val = '"'+ctx.vars[v]+'"';
+                                ctx.if = ctx.if.replace(v, val)
+                            } 
                         })
                     }
                     Object.keys(global.puzzle.vars).forEach(v => {
-                        if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, global.puzzle.vars[v])
+                        var val = global.puzzle.vars[v];
+                        if(typeof global.puzzle.vars[v] == "string") val = '"'+global.puzzle.vars[v]+'"';
+                        if (ctx.if.includes(v)) ctx.if = ctx.if.replace(v, val)
                     })
                 }
             },
@@ -1232,8 +1270,48 @@ var lang = {
                     if(environment == 'browser') ctx.return = btoa(_data);
                     else if(environment == 'node') ctx.return = Buffer.from(_data, 'base64').toString()
                 }
+            },
+
+            post: {
+                follow: ["{data}", "$to"],
+                method: function(ctx, data) {
+                    ctx.fetch = true;
+                    ctx.method = 'post';
+                    ctx.payload = data;
+                }
+            },
+            patch: {
+                follow: ["{data}", "$to"],
+                method: function(ctx, data) {
+                    ctx.fetch = true;
+                    ctx.method = 'patch';
+                    ctx.payload = data;
+                }
+            },
+            put: {
+                follow: ["{data}", "$to"],
+                method: function(ctx, data) {
+                    ctx.fetch = true;
+                    ctx.method = 'put';
+                    ctx.payload = data;
+                }
+            },
+            fetch: {
+                follow: ["$from", "{query}"],
+                method: function(ctx, query) {
+                    ctx.fetch = true;
+                    ctx.method = 'get';
+                    ctx.payload = query;
+                }
+            },
+            delete: {
+                follow: ["$from", "{query}"],
+                method: function(ctx, query) {
+                    ctx.fetch = true;
+                    ctx.method = 'delete';
+                    ctx.payload = query;
+                }
             }
-            // UI:
         },
         delimeter: ";",
         assignmentOperator: "=",
