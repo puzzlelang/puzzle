@@ -161,8 +161,6 @@ var puzzle = {
 
         //this.lang.default = _defaultSyntax;
 
-        //console.log(this.lang)
-
         if(done) done()
 
     },
@@ -486,10 +484,10 @@ var puzzle = {
                     execNamespace = this.lang.default[global.puzzle.ctx[partId]._sequence[0]].ns || 'default';
                 }
 
-                this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId]);
+                if((this.lang[execNamespace]._static || {}).execStatement) this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId]);
                 return;
             } else if (tokens.length == 0) {
-                this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
+                if((this.lang[execNamespace]._static || {}).execStatement) this.lang[execNamespace]._static.execStatement(done, global.puzzle.ctx[partId])
                 return;
             }
 
@@ -659,7 +657,6 @@ var puzzle = {
 
                         var t = tokens[0].replace(/(\r\n|\n|\r)/gm, "");
 
-                       
                         if(t.includes('.')){
                            
                             if(this.lang[t.split('.')[0]]){
@@ -668,10 +665,20 @@ var puzzle = {
                   
                                 t = t.split('.')[1]
                             }
+                        } else if(this.lang[tokens[0]]) {
+                            namespace = tokens[0];
+                            tokens.shift();
+                            t = tokens[0].replace(/(\r\n|\n|\r)/gm, "");
                         } else {
                             if(this.lang.default[t]) namespace = this.lang.default[t].ns || 'default';
                             else namespace = 'default';
+
+                            if(this.lang.currentNamespace) namespace = this.lang.currentNamespace;
+                            if(!this.lang[this.lang.currentNamespace][tokens[0]]) namespace = 'default';
+
+                           // console.log('ns', tokens, namespace)
                         }
+
 
                         var lastToken = tokens.shift();
 
@@ -763,7 +770,9 @@ var puzzle = {
                         else global.puzzle.vars[(global.puzzle.ctx[next.partId] || {})._asVariable] = (global.puzzle.ctx[next.partId] || {}).return;
                     }*/
 
-                  
+                    if(((global.puzzle.ctx[next.partId] || {})._sequence || []).includes('as'))
+                        Object.setByString(global.puzzle.vars, (global.puzzle.ctx[next.partId] || {})._asVariable, (global.puzzle.ctx[next.partId] || {}).return)
+
                     // puzzle.schedule
                     execSchedule(puzzle.schedule.shift());
                 });
@@ -790,7 +799,6 @@ var puzzle = {
     }
 }
 
-
 global.puzzle = puzzle;
 
 try {
@@ -810,5 +818,6 @@ try {
 } catch (e) {
 
 }
+
 
 module.exports = puzzle;
