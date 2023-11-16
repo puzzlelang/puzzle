@@ -43,6 +43,8 @@ var isObject = (a) => {
     return (!!a) && (a.constructor === Object);
 };
 
+const average = arr => arr.reduce( ( p, c ) => p + c, 0 ) / arr.length;
+
 var isLiteral = (a) => {
     if(!a) return false;
     var literalParts = ['"', '(', '{', "'"];
@@ -714,7 +716,7 @@ var lang = {
                 method: function(ctx, asVariable) {
 
                     ctx._asVariable = asVariable;
-                    
+
                     try {
                         data.value = JSON.parse(data.value);
                     } catch(e){
@@ -726,7 +728,6 @@ var lang = {
 
 
                     Object.setByString(global.puzzle.vars, asVariable, ret)
-
 
                     ctx.done();
 
@@ -911,7 +912,32 @@ var lang = {
                   ctx.return = result
               }
             },
+            count: {
+              follow: ["{params}"],
+              method: function(ctx, param){
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  ctx.return = params.length
+              }
+            },
+            average: {
+              follow: ["{params}"],
+              method: function(ctx, param){
+                  var params = global.puzzle.getRawStatement(param);
+                  params = params.split(',');
+                  var resultArr = [];
+                  params.forEach(p => {
+                    p = p.trim();
+                    if(Object.byString(ctx.vars, p))
+                        p = Object.byString(ctx.vars, p);
+                    if(Object.byString(global.puzzle.vars, p))
+                        p = Object.byString(global.puzzle.vars, p)
 
+                    resultArr.push(parseInt(p))
+                  })
+                  ctx.return = average(resultArr);
+              }
+            },
             add: {
               follow: ["{params}", "$to"],
               method: function(ctx, param){
