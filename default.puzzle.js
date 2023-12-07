@@ -856,7 +856,7 @@ var lang = {
                     else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
                     
-                    _params.push(parseInt(p))
+                    _params.push(parseFloat(p))
                   })
                   ctx.return = Math.min(..._params)
               }
@@ -872,7 +872,7 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
-                    _params.push(parseInt(p))
+                    _params.push(parseFloat(p))
                   })
                   ctx.return = Math.max(..._params)
               }
@@ -889,7 +889,7 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
-                    result += parseInt(p);
+                    result += parseFloat(p);
                   })
                   ctx.return = result
               }
@@ -907,7 +907,7 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
-                    result -= parseInt(p);
+                    result -= parseFloat(p);
                   })
                   ctx.return = result
               }
@@ -933,7 +933,7 @@ var lang = {
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
 
-                    resultArr.push(parseInt(p))
+                    resultArr.push(parseFloat(p))
                   })
                   ctx.return = average(resultArr);
               }
