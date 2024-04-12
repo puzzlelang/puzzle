@@ -796,6 +796,7 @@ var puzzle = {
                 global.puzzle.vars[key.substring(4)] = puzzle.moduleStorage.get(key);
             }
         })
+
     }
 }
 
@@ -804,6 +805,9 @@ global.puzzle = puzzle;
 try {
     window.puzzle = puzzle;
     try {
+
+        window.puzzle.vars = window;
+
         window.addEventListener('DOMContentLoaded', (event) => {
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {

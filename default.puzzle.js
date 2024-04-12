@@ -798,7 +798,12 @@ var lang = {
                             var func = global.puzzle.subscripts[subscript];
                             global.puzzle.parse(func.body, Object.assign(ctx.vars, vars));
                         } else if(Object.byString(global.puzzle.vars, subscript)) {
-                            global.puzzle.parse(Object.byString(global.puzzle.vars, subscript), Object.assign(ctx.vars, vars));
+                            
+                            if(typeof Object.byString(global.puzzle.vars, subscript) === "function"){
+                                
+                                ctx.return = Object.byString(global.puzzle.vars, subscript)(vars);
+
+                            } else global.puzzle.parse(Object.byString(global.puzzle.vars, subscript), Object.assign(ctx.vars, vars));
                         } else if(isLiteral(subscript)) {
                             global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(ctx.vars, vars));
                         } 

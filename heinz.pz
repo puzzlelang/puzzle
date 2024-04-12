@@ -1,0 +1,22 @@
+set rabatt 30;
+
+sum (3,5,7,3,1) as noteSum;
+
+ 
+
+calc (100 - 50 / 100 * 30) as netSum1;
+
+calc (34 - 34 / 100 * 30) as taxSum1;
+
+calc (netSum1 + taxSum1) as grossSum;
+
+ 
+
+print netSum1;
+
+set totalNet netSum1;
+
+set totalTax taxSum1;
+
+set totalGross grossSum;
+

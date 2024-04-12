@@ -800,7 +800,12 @@ var lang = {
                             var func = global.puzzle.subscripts[subscript];
                             global.puzzle.parse(func.body, Object.assign(ctx.vars, vars));
                         } else if(Object.byString(global.puzzle.vars, subscript)) {
-                            global.puzzle.parse(Object.byString(global.puzzle.vars, subscript), Object.assign(ctx.vars, vars));
+                            
+                            if(typeof Object.byString(global.puzzle.vars, subscript) === "function"){
+                                
+                                ctx.return = Object.byString(global.puzzle.vars, subscript)(vars);
+
+                            } else global.puzzle.parse(Object.byString(global.puzzle.vars, subscript), Object.assign(ctx.vars, vars));
                         } else if(isLiteral(subscript)) {
                             global.puzzle.parse(global.puzzle.getRawStatement(subscript), Object.assign(ctx.vars, vars));
                         } 
@@ -858,7 +863,7 @@ var lang = {
                     else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
                     
-                    _params.push(parseInt(p))
+                    _params.push(parseFloat(p))
                   })
                   ctx.return = Math.min(..._params)
               }
@@ -874,7 +879,7 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
-                    _params.push(parseInt(p))
+                    _params.push(parseFloat(p))
                   })
                   ctx.return = Math.max(..._params)
               }
@@ -891,7 +896,7 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
-                    result += parseInt(p);
+                    result += parseFloat(p);
                   })
                   ctx.return = result
               }
@@ -909,7 +914,7 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     else if(Object.byString(global.puzzle.vars, p) !== undefined)
                         p = Object.byString(global.puzzle.vars, p)
-                    result -= parseInt(p);
+                    result -= parseFloat(p);
                   })
                   ctx.return = result
               }
@@ -935,7 +940,7 @@ var lang = {
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
 
-                    resultArr.push(parseInt(p))
+                    resultArr.push(parseFloat(p))
                   })
                   ctx.return = average(resultArr);
               }
@@ -1448,7 +1453,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.970",
+  "version": "0.0.973",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -2279,6 +2284,7 @@ var puzzle = {
                 global.puzzle.vars[key.substring(4)] = puzzle.moduleStorage.get(key);
             }
         })
+
     }
 }
 
@@ -2287,6 +2293,9 @@ global.puzzle = puzzle;
 try {
     window.puzzle = puzzle;
     try {
+
+        window.puzzle.vars = window;
+
         window.addEventListener('DOMContentLoaded', (event) => {
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
