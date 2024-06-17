@@ -1459,7 +1459,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.975",
+  "version": "0.0.976",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -2300,7 +2300,7 @@ try {
         //window.puzzle.vars = window;
 
         window.addEventListener('DOMContentLoaded', (event) => {
-            window.puzzle.parse('bind-vars window;');
+            //window.puzzle.parse('bind-vars window;');
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
                 if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {
