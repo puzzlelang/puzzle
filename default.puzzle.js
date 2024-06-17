@@ -897,8 +897,6 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
-
-                    console.log(p, typeof p, parseInt(p))
                     result += ~~p;
                   })
                   ctx.return = result

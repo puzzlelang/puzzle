@@ -899,8 +899,6 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
-
-                    console.log(p, typeof p, parseInt(p))
                     result += ~~p;
                   })
                   ctx.return = result
@@ -1461,7 +1459,7 @@ exports.Response = global.Response;
 },{}],7:[function(require,module,exports){
 module.exports={
   "name": "puzzlelang",
-  "version": "0.0.973",
+  "version": "0.0.975",
   "description": "An abstract, extendable programing language",
   "main": "puzzle.js",
   "bin": {
@@ -2299,9 +2297,10 @@ try {
     window.puzzle = puzzle;
     try {
 
-        window.puzzle.vars = window;
+        //window.puzzle.vars = window;
 
         window.addEventListener('DOMContentLoaded', (event) => {
+            window.puzzle.parse('bind-vars window;');
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
                 if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {

@@ -803,9 +803,10 @@ try {
     window.puzzle = puzzle;
     try {
 
-        window.puzzle.vars = window;
+        //window.puzzle.vars = window;
 
         window.addEventListener('DOMContentLoaded', (event) => {
+            window.puzzle.parse('bind-vars window;');
             var scriptTags = document.getElementsByTagName("script");
             Array.from(scriptTags).forEach(function(s) {
                 if (s.getAttribute("type") == "text/x-puzzle" && !s.getAttribute("src")) {
