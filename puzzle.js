@@ -176,7 +176,6 @@ var puzzle = {
             var possibleVarParts = splitMulti(statement, ['=', ',', ':', '+', '-', '*', '/', '\\', '(', ')', '{', '}', '[', ']'])
         */
 
-
         if(typeof statement !== 'string') returnValue = statement;
 
         if(isObject(statement)) return statement;
@@ -203,14 +202,12 @@ var puzzle = {
 
         } else returnValue = statement;
 
-       
 
         if(Object.byString(vars || {}, returnValue) !== undefined) returnValue = Object.byString(vars, returnValue);
         else if(Object.byString(global.puzzle.vars, returnValue) !== undefined) {
-            returnValue = Object.byString(global.puzzle.vars, returnValue);
+           returnValue = Object.byString(global.puzzle.vars, returnValue);
         }
 
-       
         return returnValue
     },
 

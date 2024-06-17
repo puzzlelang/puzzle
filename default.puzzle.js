@@ -853,6 +853,7 @@ var lang = {
               follow: ["{params}"],
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
+                  if(typeof params !== "string") return ctx.return = params;
                   params = params.split(',');
                   var _params = [];
                   params.forEach(p => {
@@ -870,6 +871,7 @@ var lang = {
               follow: ["{params}"],
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
+                  if(typeof params !== "string") return ctx.return = params;
                   params = params.split(',');
                   var _params = [];
                   params.forEach(p => {
@@ -886,6 +888,7 @@ var lang = {
               follow: ["{params}"],
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
+                  if(typeof params !== "string") return ctx.return = params;
                   params = params.split(',');
                   var result = 0;
                   params.forEach(p => {
@@ -894,7 +897,9 @@ var lang = {
                         p = Object.byString(ctx.vars, p);
                     if(Object.byString(global.puzzle.vars, p))
                         p = Object.byString(global.puzzle.vars, p)
-                    result += parseFloat(p);
+
+                    console.log(p, typeof p, parseInt(p))
+                    result += ~~p;
                   })
                   ctx.return = result
               }
@@ -903,6 +908,7 @@ var lang = {
               follow: ["{params}"],
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
+                  if(typeof params !== "string") return ctx.return = params;
                   params = params.split(',');
                   var _params = [];
                   var result = params[0];
@@ -921,6 +927,7 @@ var lang = {
               follow: ["{params}"],
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
+                  if(typeof params !== "string") return ctx.return = params;
                   params = params.split(',');
                   ctx.return = params.length
               }
@@ -929,6 +936,7 @@ var lang = {
               follow: ["{params}"],
               method: function(ctx, param){
                   var params = global.puzzle.getRawStatement(param);
+                  if(typeof params !== "string") return ctx.return = params;
                   params = params.split(',');
                   var resultArr = [];
                   params.forEach(p => {
