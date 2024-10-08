@@ -1,15 +1,19 @@
-![puzzle](https://github.com/puzzlelang/puzzlelang.github.io/blob/master/assets/puzzle.png?raw=true "Puzzle logo")
-
 <div class="cover-main"><!-- _coverpage.md -->
-<h1 class="header" style="padding: 0px !important;margin-left:0px;">An <span class="highlight-primary">abstract</span>, fluent programming language on top of JavaScript</h1>
+<h1 class="header" style="padding: 0px !important;margin-left:0px;">An <span class="highlight-primary">abstract language</span> on JavaScript for any purpose</h1>
 
-> Comes with ready-to-use features for any purpose
+![puzzle](https://github.com/puzzlelang/puzzlelang.github.io/blob/master/assets/puzzle.png?raw=true "Puzzle logo")
 
 ***Important:*** The puzzle project is in early stage and under development. It's not yet production ready. If you'd like to contribute to the code or the module ecosystem, feel free to open a PR.
 
 # Example
 
 ```puzzle
+var names = ["Peter", "Mag", "Stewie"]
+
+loop.over(names).do(name => {
+  print(name)
+})
+
 every(1000).print('hello world')
 ```
 
@@ -25,7 +29,7 @@ $ npm i puzzlelang --global
 ```javascript
 const puzzle = require('puzzlelang');
 
-print('hello')
+after(2000).run(() => print('hello'))
 ```
 
 > Browsers
@@ -35,7 +39,7 @@ print('hello')
 ```
 ```html
 <script type="text/javascript">
-  print("hello from the browser!");
+  repeat(7).run(() => print("hello from the browser!"))
 </script>
 ```
 
@@ -52,12 +56,9 @@ print('hello')
 Variables can be defined either the JavaScript way or using puzzle syntax
 
 ```javascript
-// with JavaScript
 var name = 'Peter';
-
-// with Puzzle
+// or
 set('name', 'Peter')
-print(name)
 ```
 
 ## Persistent Variables
@@ -73,14 +74,13 @@ set('name', 'Peter').local()
 Like variables, functions can also be defined either the JavaScript way or using puzzle syntax
 
 ```javascript
-set('sayHello', (name) => {
-  print('hello ' + name)
-})
-
-// With JavaScript
 var sayHello = () => {
   print('hello')
 }
+// or
+set('sayHello', (name) => {
+  print('hello ' + name)
+})
 ```
 
 
