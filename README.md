@@ -1,70 +1,31 @@
-# PUZZLE
-
-![Node.js Package](https://github.com/puzzlelang/puzzle/workflows/Node.js%20Package/badge.svg)
-
 ![puzzle](https://github.com/puzzlelang/puzzlelang.github.io/blob/master/assets/puzzle.png?raw=true "Puzzle logo")
 
+<div class="cover-main"><!-- _coverpage.md -->
+<h1 class="header" style="padding: 0px !important;margin-left:0px;">An <span class="highlight-primary">abstract</span>, fluent programming language on top of JavaScript</h1>
 
-PUZZLE as an abstract, extendable programming language.
+> Comes with ready-to-use features for any purpose
 
 ***Important:*** The puzzle project is in early stage and under development. It's not yet production ready. If you'd like to contribute to the code or the module ecosystem, feel free to open a PR.
 
 # Example
 
-
 ```puzzle
-// Output something
-print 'Welcome future puzzle developer!';
-
-// Include a thrid party module (local or remote)
-use 'https://url.com/module.js';
-
-// stora a variable
-set name Test;
+every(1000).print('hello world')
 ```
 
 # Get started
 
-PUZZLE runs on JavaScript Engines and can be used on Node, Browsers and via it's CLI.
+PUZZLE runs in any JavaScript environment, including Node and Browsers.
 
-## Install
+> Node
 
 ```shell
 $ npm i puzzlelang --global
 ```
-
-## Interactive Shell (CLI)
-
-
-```shell
-$ puzzle
-$ print "Hello World!"
-"Hello World"
-```
-
-## Run a File
-
-
 ```javascript
-// hello.puzzle
-print "I am a puzzle file"
-```
+const puzzle = require('puzzlelang');
 
-
-```shell
-$ puzzle run hello.puzzle
-"I am a puzzle file"
-```
-
-
-## Embedded (JavaScript)
-
-puzzle scripts can also be run inside JavaScript
-
-> Node
-
-```javascript
-puzzle.parse('print "Hello, I am embedded"')
+print('hello')
 ```
 
 > Browsers
@@ -72,27 +33,89 @@ puzzle.parse('print "Hello, I am embedded"')
 ```html
 <script src="https://cdn.jsdelivr.net/npm/puzzlelang@latest/puzzle.browser.js">
 ```
-
-```javascript
-// For Node.js
-const puzzle = require('puzzlelang');
-
-// For browsers:
-<script src="puzzle.js"/>
-<script type="text/x-puzzle">
-  print "hello from the browser!";
+```html
+<script type="text/javascript">
+  print("hello from the browser!");
 </script>
 ```
 
+# Language Basics
 
-# Contribute
+## Print
 
-You are welcome to contribute to the puzzle language and ecosystem. Make sure you familiarize yourself with the [Contribution Guidelines](.github/CONTRIBUTE.md) before opening a PR or Issue.
+```javascript
+print('hello')
+```
 
-# License
+## Variables
 
-PUZZLE is open source and released under the MIT License.
+Variables can be defined either the JavaScript way or using puzzle syntax
 
-[ See the license ](https://github.com/puzzlelang/puzzle/blob/master/LICENSE)
+```javascript
+// with JavaScript
+var name = 'Peter';
 
-Copyright (c) M. Boelling
+// with Puzzle
+set('name', 'Peter')
+print(name)
+```
+
+## Persistent Variables
+
+Persistend variables are stored locally
+
+```javascript
+set('name', 'Peter').local()
+```
+
+## Functions
+
+Like variables, functions can also be defined either the JavaScript way or using puzzle syntax
+
+```javascript
+set('sayHello', (name) => {
+  print('hello ' + name)
+})
+
+// With JavaScript
+var sayHello = () => {
+  print('hello')
+}
+```
+
+
+## Scheduled Functions
+
+Functions can be scheduled
+
+```javascript
+// Repeat every X milliseconds
+every(2000).run(sayHello)
+
+// Repeat X times
+repeat(10).run(sayHello)
+
+// Run after X milliseconds
+after(10000).run(sayHello)
+```
+
+## Loops
+
+Loops can iteragte over data (arrays)
+
+```javascript
+var array = [1,2,3]
+
+loop.over(data).do(it => {
+  print(it)
+})
+```
+
+
+## Math
+
+```javascript
+// min and max
+min([1,4,6,7]).as('result')
+max([4,7,8,2]).as('result')
+```
