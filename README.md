@@ -1,5 +1,5 @@
 <div class="cover-main"><!-- _coverpage.md -->
-<h1 class="header" style="padding: 0px !important;margin-left:0px;">An <span class="highlight-primary">abstract language</span> on JavaScript for any purpose</h1>
+<h1 class="header" style="padding: 0px !important;margin-left:0px;">An <span class="highlight-primary">abstract language</span> on top of JavaScript for any purpose</h1>
 
 ![puzzle](https://github.com/puzzlelang/puzzlelang.github.io/blob/master/assets/puzzle.png?raw=true "Puzzle logo")
 
