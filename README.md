@@ -56,8 +56,6 @@ print('hello')
 Variables can be defined either the JavaScript way or using puzzle syntax
 
 ```javascript
-var name = 'Peter';
-// or
 set('name', 'Peter')
 ```
 
@@ -74,10 +72,6 @@ set('name', 'Peter').local()
 Like variables, functions can also be defined either the JavaScript way or using puzzle syntax
 
 ```javascript
-var sayHello = () => {
-  print('hello')
-}
-// or
 set('sayHello', (name) => {
   print('hello ' + name)
 })
